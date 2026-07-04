@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Legacy P&P BD{% endblock %} — Legacy Planning & Preservation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+
+<div id="nav-overlay" class="nav-overlay"></div>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <nav id="sidebar" class="sidebar">
+    <div class="sidebar-brand">
+      <h1>Legacy P&P</h1>
+      <span>BD Workspace</span>
+    </div>
+
+    <div class="sidebar-nav">
+      <a href="{{ url_for('dashboard.index') }}"><span class="icon">⌂</span> Dashboard</a>
+
+      <div class="nav-section">Track 1 — Gov't</div>
+      <a href="{{ url_for('opportunities.index') }}?track=Government"><span class="icon">◈</span> Opportunities</a>
+      <a href="{{ url_for('government.index') }}"><span class="icon">📋</span> Solicitations</a>
+      <a href="{{ url_for('award_history.index') }}?type=Contract"><span class="icon">🏆</span> Contract Awards</a>
+
+      <div class="nav-section">Track 2 — Grants</div>
+      <a href="{{ url_for('grants.index') }}"><span class="icon">◈</span> Grant Opps</a>
+      <a href="{{ url_for('funders.index') }}"><span class="icon">🏛</span> Funders</a>
+      <a href="{{ url_for('award_history.index') }}?type=Grant"><span class="icon">🏆</span> Grant Awards</a>
+
+      <div class="nav-section">Track 3 — Gigs</div>
+      <a href="{{ url_for('opportunities.index') }}?track=Professional"><span class="icon">◈</span> Professional Opps</a>
+
+      <div class="nav-section">All Opportunities</div>
+      <a href="{{ url_for('opportunities.index') }}"><span class="icon">◉</span> All Opps</a>
+      <a href="{{ url_for('award_history.index') }}"><span class="icon">📊</span> Award History</a>
+
+      <div class="nav-section">Pipeline & Projects</div>
+      <a href="{{ url_for('pipeline.index') }}"><span class="icon">→</span> Pipeline</a>
+      <a href="{{ url_for('projects.index') }}"><span class="icon">✦</span> Active Projects</a>
+
+      <div class="nav-section">Relationships</div>
+      <a href="{{ url_for('contacts.index') }}"><span class="icon">👤</span> Contacts</a>
+      <a href="{{ url_for('institutions.index') }}"><span class="icon">🏛</span> Institutions</a>
+
+      <div class="nav-section">Resources</div>
+      <a href="{{ url_for('guides.index') }}"><span class="icon">📝</span> Bid Guides & Cap Stmts</a>
+      <a href="{{ url_for('digest_log.index') }}"><span class="icon">✉</span> Digest Log</a>
+
+      <div class="nav-section">System</div>
+      <a href="{{ url_for('settings.index') }}"><span class="icon">⚙</span> Settings</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="{{ url_for('auth.logout') }}">Log out</a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu">☰</button>
+        <h2>{% block page_title %}{% endblock %}</h2>
+      </div>
+      <div class="actions">{% block top_actions %}{% endblock %}</div>
+    </div>
+
+    <div class="page-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'danger' }}" data-autodismiss>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

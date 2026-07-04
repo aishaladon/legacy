@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Edit Project{% endblock %}
+{% block page_title %}Edit Project{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Contract / Grant Number</label>
+          <input type="text" name="contract_or_grant_number" value="{{ project.contract_or_grant_number or '' }}">
+        </div>
+        <div class="form-group">
+          <label>Project Type</label>
+          <select name="project_type">
+            <option value="">— Select —</option>
+            {% for pt in ['Government Contract', 'Grant-Funded', 'Gig', 'Subcontract'] %}
+              <option value="{{ pt }}" {{ 'selected' if project.project_type == pt }}>{{ pt }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" name="start_date" value="{{ project.start_date.isoformat() if project.start_date else '' }}">
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" name="end_date" value="{{ project.end_date.isoformat() if project.end_date else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Total Value ($)</label>
+          <input type="number" name="total_value" value="{{ project.total_value if project.total_value else '' }}" step="1">
+        </div>
+        <div class="form-group">
+          <label>Milestone Status</label>
+          <select name="milestone_status">
+            <option value="">— Select —</option>
+            {% for ms in ['On Track', 'At Risk', 'Delayed', 'Complete'] %}
+              <option value="{{ ms }}" {{ 'selected' if project.milestone_status == ms }}>{{ ms }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Payment Schedule</label>
+          <textarea name="payment_schedule" rows="3">{{ project.payment_schedule or '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Payment Milestones</label>
+          <textarea name="payment_milestones" rows="3">{{ project.payment_milestones or '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Subcontractors</label>
+          <textarea name="subcontractors" rows="2">{{ project.subcontractors or '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Deliverables</label>
+          <textarea name="deliverables" rows="3">{{ project.deliverables or '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Deliverable Status</label>
+          <textarea name="deliverable_status" rows="2">{{ project.deliverable_status or '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Travel Required</label>
+          <div style="margin-top:.5rem;">
+            <label style="display:flex;align-items:center;gap:.4rem;">
+              <input type="checkbox" name="travel_required" {{ 'checked' if project.travel_required }}> Yes
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Travel Dates</label>
+          <input type="text" name="travel_dates" value="{{ project.travel_dates or '' }}">
+        </div>
+        <div class="form-group full">
+          <label>Accommodation Details</label>
+          <input type="text" name="accommodation_details" value="{{ project.accommodation_details or '' }}">
+        </div>
+        <div class="form-group full">
+          <label>Monthly Report Due Dates</label>
+          <input type="text" name="monthly_report_due_dates" value="{{ project.monthly_report_due_dates or '' }}" placeholder="e.g. 15th of each month">
+        </div>
+        <div class="form-group full">
+          <label>Notes</label>
+          <textarea name="notes" rows="3">{{ project.notes or '' }}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

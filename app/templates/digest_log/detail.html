@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Digest — {{ digest.date_sent.strftime('%B %-d, %Y') if digest.date_sent else 'Detail' }}{% endblock %}
+{% block page_title %}Digest Detail{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header"><h3>Full Digest</h3></div>
+      <div class="card-body">
+        {% if digest.full_digest_text %}
+          <pre style="white-space:pre-wrap;font-family:inherit;font-size:.875rem;margin:0;">{{ digest.full_digest_text }}</pre>
+        {% else %}
+          <p class="text-muted text-sm">No digest text available.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h3>Summary Counts</h3></div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Date Sent</label><p>{{ digest.date_sent.strftime('%B %-d, %Y') if digest.date_sent else '—' }}</p></div>
+          <div class="detail-field"><label>New Opportunities</label><p>{{ digest.new_opportunities_count if digest.new_opportunities_count is not none else '—' }}</p></div>
+          <div class="detail-field"><label>Grant Awards Found</label><p>{{ digest.grant_awards_found if digest.grant_awards_found is not none else '—' }}</p></div>
+          <div class="detail-field"><label>Expiring Contracts Found</label><p>{{ digest.expiring_contracts_found if digest.expiring_contracts_found is not none else '—' }}</p></div>
+          <div class="detail-field"><label>New Contacts Found</label><p>{{ digest.new_contacts_found if digest.new_contacts_found is not none else '—' }}</p></div>
+          <div class="detail-field"><label>Pipeline Updates</label><p>{{ digest.pipeline_updates_count if digest.pipeline_updates_count is not none else '—' }}</p></div>
+        </div>
+        {% if digest.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ digest.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

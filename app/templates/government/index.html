@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Government Solicitations{% endblock %}
+{% block page_title %}Government Solicitations{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    {% if contracts %}
+    <table>
+      <thead>
+        <tr>
+          <th>Solicitation #</th>
+          <th>Agency</th>
+          <th>Agency Type</th>
+          <th>Response Type</th>
+          <th>Deadline</th>
+          <th>Set-Aside</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for contract in contracts %}
+        <tr>
+          <td><a href="{{ url_for('government.detail', contract_id=contract.id) }}">{{ contract.solicitation_number or '—' }}</a></td>
+          <td class="text-sm">{{ contract.agency_name or '—' }}</td>
+          <td class="text-sm">{{ contract.agency_type or '—' }}</td>
+          <td class="text-sm">{{ contract.response_type or '—' }}</td>
+          <td class="text-sm">{{ contract.submission_deadline.strftime('%b %-d, %Y') if contract.submission_deadline else '—' }}</td>
+          <td class="text-sm">{{ contract.set_aside_type or '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">No government solicitations found.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

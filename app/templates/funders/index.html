@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Funders{% endblock %}
+{% block page_title %}Funders{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('funders.new') }}" class="btn btn-primary btn-sm">+ Add Funder</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    {% if funders %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Typical Award Range</th>
+          <th>Application Close</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for funder in funders %}
+        <tr>
+          <td><a href="{{ url_for('funders.detail', funder_id=funder.id) }}">{{ funder.name }}</a></td>
+          <td class="text-sm">{{ funder.funder_type or '—' }}</td>
+          <td class="text-sm">
+            {% if funder.typical_award_min or funder.typical_award_max %}
+              {% if funder.typical_award_min %}${{ '{:,.0f}'.format(funder.typical_award_min) }}{% endif %}
+              {% if funder.typical_award_min and funder.typical_award_max %} – {% endif %}
+              {% if funder.typical_award_max %}${{ '{:,.0f}'.format(funder.typical_award_max) }}{% endif %}
+            {% else %}—{% endif %}
+          </td>
+          <td class="text-sm">{{ funder.application_cycle_close.strftime('%b %-d, %Y') if funder.application_cycle_close else '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">No funders yet. <a href="{{ url_for('funders.new') }}">Add one.</a></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

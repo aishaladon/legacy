@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Award Detail{% endblock %}
+{% block page_title %}Award Record{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('award_history.edit', award_id=award.id) }}" class="btn btn-outline btn-sm">Edit</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>{{ award.awardee_name or 'Award Record' }}</h3>
+    {% if award.award_type %}<span class="badge badge-default">{{ award.award_type }}</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="detail-fields">
+      <div class="detail-field"><label>Awardee Name</label><p>{{ award.awardee_name or '—' }}</p></div>
+      <div class="detail-field"><label>Award Type</label><p>{{ award.award_type or '—' }}</p></div>
+      <div class="detail-field"><label>Award Amount</label><p>{% if award.award_amount %}${{ '{:,.0f}'.format(award.award_amount) }}{% else %}—{% endif %}</p></div>
+      <div class="detail-field"><label>Award Date</label><p>{{ award.award_date.strftime('%B %-d, %Y') if award.award_date else '—' }}</p></div>
+      <div class="detail-field"><label>Awarding Agency / Funder</label><p>{{ award.awarding_agency_or_funder or '—' }}</p></div>
+      <div class="detail-field"><label>Contract / Grant Number</label><p>{{ award.contract_or_grant_number or '—' }}</p></div>
+      <div class="detail-field"><label>NAICS Code</label><p>{{ award.naics_code or '—' }}</p></div>
+      <div class="detail-field"><label>Place of Performance</label><p>{{ award.place_of_performance or '—' }}</p></div>
+      <div class="detail-field"><label>Period of Performance</label><p>{{ award.period_of_performance or '—' }}</p></div>
+      <div class="detail-field"><label>Set-Aside Type</label><p>{{ award.set_aside_type or '—' }}</p></div>
+      <div class="detail-field"><label>Subcontract Opportunity</label><p>{{ 'Yes' if award.subcontract_opportunity else 'No' }}</p></div>
+      <div class="detail-field"><label>Subcontract Outreach Status</label><p>{{ award.subcontract_outreach_status or '—' }}</p></div>
+      <div class="detail-field"><label>Subcontract Contact</label><p>{{ award.subcontract_contact or '—' }}</p></div>
+    </div>
+    {% if award.description %}
+      <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+      <div class="detail-field"><label>Description</label><p style="white-space:pre-wrap;">{{ award.description }}</p></div>
+    {% endif %}
+    {% if award.notes %}
+      <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+      <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ award.notes }}</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

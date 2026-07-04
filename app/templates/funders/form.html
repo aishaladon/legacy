@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if funder else 'New' }} Funder{% endblock %}
+{% block page_title %}{{ 'Edit' if funder else 'New' }} Funder{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Funder Name *</label>
+          <input type="text" name="name" value="{{ funder.name if funder else '' }}" required>
+        </div>
+        <div class="form-group">
+          <label>Funder Type</label>
+          <select name="funder_type">
+            <option value="">— Select —</option>
+            {% for ft in ['Federal Agency', 'Foundation', 'State Agency', 'Corporate', 'Community Foundation', 'Other'] %}
+              <option value="{{ ft }}" {{ 'selected' if funder and funder.funder_type == ft }}>{{ ft }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Website</label>
+          <input type="url" name="website" value="{{ funder.website if funder else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Typical Award Min ($)</label>
+          <input type="number" name="typical_award_min" value="{{ funder.typical_award_min if funder and funder.typical_award_min else '' }}" step="1">
+        </div>
+        <div class="form-group">
+          <label>Typical Award Max ($)</label>
+          <input type="number" name="typical_award_max" value="{{ funder.typical_award_max if funder and funder.typical_award_max else '' }}" step="1">
+        </div>
+        <div class="form-group">
+          <label>Application Cycle Open</label>
+          <input type="date" name="application_cycle_open" value="{{ funder.application_cycle_open.isoformat() if funder and funder.application_cycle_open else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Application Cycle Close</label>
+          <input type="date" name="application_cycle_close" value="{{ funder.application_cycle_close.isoformat() if funder and funder.application_cycle_close else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Grant Duration</label>
+          <input type="text" name="grant_duration" value="{{ funder.grant_duration if funder else '' }}" placeholder="e.g. 1–3 years">
+        </div>
+        <div class="form-group">
+          <label>LOI Required</label>
+          <div style="margin-top:.5rem;">
+            <label style="display:flex;align-items:center;gap:.4rem;">
+              <input type="checkbox" name="loi_required" {{ 'checked' if funder and funder.loi_required }}> Yes
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>LOI Deadline</label>
+          <input type="date" name="loi_deadline" value="{{ funder.loi_deadline.isoformat() if funder and funder.loi_deadline else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Geographic Focus</label>
+          <input type="text" name="geographic_focus" value="{{ funder.geographic_focus if funder else '' }}">
+        </div>
+        <div class="form-group full">
+          <label>Priority Areas</label>
+          <input type="text" name="priority_areas" value="{{ funder.priority_areas if funder else '' }}">
+        </div>
+        <div class="form-group full">
+          <label>Eligibility Requirements</label>
+          <textarea name="eligibility_requirements" rows="3">{{ funder.eligibility_requirements if funder else '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Notes</label>
+          <textarea name="notes" rows="3">{{ funder.notes if funder else '' }}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary">{{ 'Save Changes' if funder else 'Add Funder' }}</button>
+        <a href="{{ url_for('funders.index') }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if source else 'New' }} Data Source{% endblock %}
+{% block page_title %}{{ 'Edit' if source else 'New' }} Data Source{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Source Name *</label>
+          <input type="text" name="name" value="{{ source.name if source else '' }}" required placeholder="e.g. SAM.gov API">
+        </div>
+        <div class="form-group">
+          <label>Source Type</label>
+          <select name="source_type">
+            <option value="">— Select —</option>
+            {% for st in ['API', 'Web Scrape', 'Email', 'RSS', 'Manual'] %}
+              <option value="{{ st }}" {{ 'selected' if source and source.source_type == st }}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Track</label>
+          <select name="track">
+            <option value="">— Select —</option>
+            {% for t in ['Government', 'Grant', 'Professional', 'All'] %}
+              <option value="{{ t }}" {{ 'selected' if source and source.track == t }}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Source URL</label>
+          <input type="url" name="source_url" value="{{ source.source_url if source else '' }}" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Login Required</label>
+          <div style="margin-top:.5rem;">
+            <label style="display:flex;align-items:center;gap:.4rem;">
+              <input type="checkbox" name="login_required" {{ 'checked' if source and source.login_required }}> Yes
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Credentials Location</label>
+          <input type="text" name="credentials_location" value="{{ source.credentials_location if source else '' }}" placeholder="e.g. .env / 1Password vault">
+        </div>
+        <div class="form-group">
+          <label>Check Frequency</label>
+          <select name="check_frequency">
+            <option value="">— Select —</option>
+            {% for f in ['Hourly', 'Daily', 'Weekly'] %}
+              <option value="{{ f }}" {{ 'selected' if source and source.check_frequency == f }}>{{ f }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Active</label>
+          <div style="margin-top:.5rem;">
+            <label style="display:flex;align-items:center;gap:.4rem;">
+              <input type="checkbox" name="active" {{ 'checked' if not source or source.active }}> Yes
+            </label>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>NAICS Filter</label>
+          <input type="text" name="naics_filter" value="{{ source.naics_filter if source else '' }}" placeholder="e.g. 519120,541611">
+        </div>
+        <div class="form-group full">
+          <label>Keyword Filter</label>
+          <input type="text" name="keyword_filter" value="{{ source.keyword_filter if source else '' }}" placeholder="e.g. digitization, archives, preservation">
+        </div>
+        <div class="form-group full">
+          <label>Notes</label>
+          <textarea name="notes" rows="3">{{ source.notes if source else '' }}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary">{{ 'Save Changes' if source else 'Add Data Source' }}</button>
+        <a href="{{ url_for('settings.index') }}#sources" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Grant Opportunities{% endblock %}
+{% block page_title %}Grant Opportunities{% endblock %}
+
+{% block content %}
+<form method="get" class="filter-bar">
+  <select name="outreach_status" onchange="this.form.submit()">
+    <option value="">All Statuses</option>
+    {% for s in ['Not Started', 'Contacted', 'Responded', 'Meeting Scheduled', 'Proposal Sent', 'Won', 'Lost'] %}
+      <option value="{{ s }}" {{ 'selected' if request.args.get('outreach_status') == s }}>{{ s }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    {% if grants %}
+    <table>
+      <thead>
+        <tr>
+          <th>Program Name</th>
+          <th>Opportunity</th>
+          <th>Award Amount</th>
+          <th>Award Date</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for grant in grants %}
+        <tr>
+          <td><a href="{{ url_for('grants.detail', grant_id=grant.id) }}">{{ grant.grant_program_name or '—' }}</a></td>
+          <td class="text-sm">{{ grant.opportunity.title | truncate(45) if grant.opportunity else '—' }}</td>
+          <td class="text-sm">{% if grant.award_amount %}${{ '{:,.0f}'.format(grant.award_amount) }}{% else %}—{% endif %}</td>
+          <td class="text-sm">{{ grant.award_date.strftime('%b %-d, %Y') if grant.award_date else '—' }}</td>
+          <td class="text-sm">{{ grant.grant_type or '—' }}</td>
+          <td>
+            {% if grant.outreach_status %}
+              <span class="badge badge-{{ 'won' if grant.outreach_status == 'Won' else 'lost' if grant.outreach_status == 'Lost' else 'pending' if grant.outreach_status in ['Contacted','Responded'] else 'new' if grant.outreach_status == 'Proposal Sent' else 'default' }}">{{ grant.outreach_status }}</span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">No grant opportunities found.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

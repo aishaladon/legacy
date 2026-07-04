@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ contact.full_name }}{% endblock %}
+{% block page_title %}Contact{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('contacts.edit', contact_id=contact.id) }}" class="btn btn-outline btn-sm">Edit</a>
+{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header">
+        <h3>{{ contact.full_name }}</h3>
+        <span class="badge badge-{{ contact.relationship_warmth | lower }}">{{ contact.relationship_warmth }}</span>
+      </div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Title</label><p>{{ contact.title or '—' }}</p></div>
+          <div class="detail-field"><label>Type</label><p>{{ contact.contact_type or '—' }}</p></div>
+          <div class="detail-field"><label>Institution</label><p>{% if contact.institution %}<a href="{{ url_for('institutions.detail', inst_id=contact.institution.id) }}">{{ contact.institution.name }}</a>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Email</label><p>{% if contact.email %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Phone</label><p>{{ contact.phone or '—' }}</p></div>
+          <div class="detail-field"><label>LinkedIn</label><p>{% if contact.linkedin_url %}<a href="{{ contact.linkedin_url }}" target="_blank">View ↗</a>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Last Contact</label><p>{{ contact.last_contact_date.strftime('%B %-d, %Y') if contact.last_contact_date else '—' }}</p></div>
+          <div class="detail-field"><label>Next Follow-Up</label><p>{{ contact.next_followup_date.strftime('%B %-d, %Y') if contact.next_followup_date else '—' }}</p></div>
+        </div>
+        {% if contact.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ contact.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Activity Log</h3></div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('contacts.add_log', contact_id=contact.id) }}" style="margin-bottom:1.25rem;">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="form-group">
+              <label>Activity Type</label>
+              <select name="activity_type">
+                {% for t in ['Email Sent','Phone Call','Meeting','Follow-Up','Note Added','Other'] %}
+                  <option>{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Next Action Date</label>
+              <input type="date" name="next_action_date">
+            </div>
+            <div class="form-group full">
+              <label>Description</label>
+              <textarea name="description" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Outcome</label>
+              <input type="text" name="outcome">
+            </div>
+            <div class="form-group">
+              <label>Next Action</label>
+              <input type="text" name="next_action">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm mt-1">Log Activity</button>
+        </form>
+
+        {% if logs %}
+          <ul class="activity-list">
+          {% for log in logs %}
+            <li class="activity-item">
+              <strong>{{ log.activity_type }}</strong> — {{ log.description or '' }}
+              {% if log.outcome %}<div class="text-muted">Outcome: {{ log.outcome }}</div>{% endif %}
+              {% if log.next_action %}<div class="text-muted">Next: {{ log.next_action }}{% if log.next_action_date %} by {{ log.next_action_date.strftime('%b %-d') }}{% endif %}</div>{% endif %}
+              <div class="activity-meta">{{ log.activity_date.strftime('%B %-d, %Y') if log.activity_date else '' }}</div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted text-sm">No activity logged yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h3>Quick Info</h3></div>
+      <div class="card-body text-sm">
+        <p><strong>Added:</strong> {{ contact.date_added.strftime('%B %-d, %Y') if contact.date_added else '—' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

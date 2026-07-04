@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if inst else 'New' }} Institution{% endblock %}
+{% block page_title %}{{ 'Edit' if inst else 'New' }} Institution{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Institution Name *</label>
+          <input type="text" name="name" value="{{ inst.name if inst else '' }}" required>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select name="institution_type">
+            <option value="">— Select —</option>
+            {% for it in institution_types %}
+              <option value="{{ it }}" {{ 'selected' if inst and inst.institution_type == it }}>{{ it }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Region</label>
+          <select name="region">
+            <option value="">— Select —</option>
+            {% for r in ['California','Northeast','Southeast','Midwest','Gulf Coast','Southwest','National'] %}
+              <option value="{{ r }}" {{ 'selected' if inst and inst.region == r }}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Street Address</label>
+          <input type="text" name="address" value="{{ inst.address if inst else '' }}">
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" name="city" value="{{ inst.city if inst else '' }}">
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" name="state" value="{{ inst.state if inst else '' }}" maxlength="2">
+        </div>
+        <div class="form-group full">
+          <label>Website</label>
+          <input type="url" name="website" value="{{ inst.website if inst else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Past Client</label>
+          <div class="toggle-wrap" style="margin-top:.5rem;">
+            <input type="checkbox" name="past_client" class="toggle" {{ 'checked' if inst and inst.past_client }}>
+            <span class="text-sm">Yes</span>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Past Project Summary</label>
+          <textarea name="past_project_summary" rows="3">{{ inst.past_project_summary if inst else '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Grant History Notes</label>
+          <textarea name="grant_history" rows="3">{{ inst.grant_history if inst else '' }}</textarea>
+        </div>
+        <div class="form-group full">
+          <label>Notes</label>
+          <textarea name="notes" rows="3">{{ inst.notes if inst else '' }}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary">{{ 'Save Changes' if inst else 'Add Institution' }}</button>
+        <a href="{{ url_for('institutions.index') }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

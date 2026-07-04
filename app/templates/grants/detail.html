@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Grant Opportunity{% endblock %}
+{% block page_title %}Grant Opportunity{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header">
+        <h3>{{ grant.grant_program_name or 'Grant Opportunity' }}</h3>
+        {% if grant.outreach_status %}
+          <span class="badge badge-{{ 'won' if grant.outreach_status == 'Won' else 'lost' if grant.outreach_status == 'Lost' else 'pending' if grant.outreach_status in ['Contacted','Responded'] else 'new' if grant.outreach_status == 'Proposal Sent' else 'default' }}">{{ grant.outreach_status }}</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Program Name</label><p>{{ grant.grant_program_name or '—' }}</p></div>
+          <div class="detail-field"><label>Funder</label><p>{% if grant.funder %}<a href="{{ url_for('funders.detail', funder_id=grant.funder.id) }}">{{ grant.funder.name }}</a>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Award Amount</label><p>{% if grant.award_amount %}${{ '{:,.0f}'.format(grant.award_amount) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Award Date</label><p>{{ grant.award_date.strftime('%B %-d, %Y') if grant.award_date else '—' }}</p></div>
+          <div class="detail-field"><label>Grant Type</label><p>{{ grant.grant_type or '—' }}</p></div>
+          <div class="detail-field"><label>Grant Duration</label><p>{{ grant.grant_duration or '—' }}</p></div>
+          <div class="detail-field"><label>Current Year of Grant</label><p>{{ grant.current_year_of_grant or '—' }}</p></div>
+          <div class="detail-field"><label>Year 2 Follow-Up</label><p>{{ grant.year2_followup_date.strftime('%B %-d, %Y') if grant.year2_followup_date else '—' }}</p></div>
+          <div class="detail-field"><label>Year 3 Follow-Up</label><p>{{ grant.year3_followup_date.strftime('%B %-d, %Y') if grant.year3_followup_date else '—' }}</p></div>
+          <div class="detail-field"><label>Outreach Status</label><p>{{ grant.outreach_status or '—' }}</p></div>
+          <div class="detail-field"><label>Outreach Date</label><p>{{ grant.outreach_date.strftime('%B %-d, %Y') if grant.outreach_date else '—' }}</p></div>
+        </div>
+        {% if grant.eligibility_requirements %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Eligibility Requirements</label><p style="white-space:pre-wrap;">{{ grant.eligibility_requirements }}</p></div>
+        {% endif %}
+        {% if grant.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ grant.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    {% if grant.institution %}
+    <div class="card mb-2">
+      <div class="card-header"><h3>Institution</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('institutions.detail', inst_id=grant.institution.id) }}">{{ grant.institution.name }}</a>
+      </div>
+    </div>
+    {% endif %}
+    {% if grant.contact %}
+    <div class="card mb-2">
+      <div class="card-header"><h3>Contact</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('contacts.detail', contact_id=grant.contact.id) }}">{{ grant.contact.full_name }}</a>
+        {% if grant.contact.title %}<p class="text-muted">{{ grant.contact.title }}</p>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+    {% if grant.opportunity %}
+    <div class="card">
+      <div class="card-header"><h3>Opportunity</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('opportunities.detail', opp_id=grant.opportunity.id) }}">{{ grant.opportunity.title | truncate(50) }}</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

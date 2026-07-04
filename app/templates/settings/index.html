@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+
+<!-- System settings -->
+<div class="card mb-2">
+  <div class="card-header"><h3>System Preferences</h3></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('settings.update') }}">
+      <div class="form-grid">
+      {% for s in settings %}
+        <div class="form-group">
+          <label>{{ s.name | replace('_', ' ') | title }}</label>
+          {% if s.setting_type == 'Toggle' %}
+            <div class="toggle-wrap" style="margin-top:.5rem;">
+              <input type="checkbox" name="setting_{{ s.name }}" class="toggle" {{ 'checked' if s.value in ['true','1','yes'] }}>
+            </div>
+          {% else %}
+            <input type="{{ 'number' if s.setting_type == 'Number' else 'email' if s.setting_type == 'Email' else 'text' }}"
+                   name="setting_{{ s.name }}" value="{{ s.value or '' }}">
+          {% endif %}
+          {% if s.description %}<small class="text-muted">{{ s.description }}</small>{% endif %}
+        </div>
+      {% endfor %}
+      </div>
+      <button class="btn btn-primary mt-2">Save Settings</button>
+    </form>
+  </div>
+</div>
+
+<!-- NAICS Codes -->
+<div class="card mb-2" id="naics">
+  <div class="card-header"><h3>NAICS Codes</h3></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>Description</th><th>Track</th><th>Primary</th><th>Active</th><th></th></tr></thead>
+      <tbody>
+      {% for nc in naics_codes %}
+        <tr>
+          <td class="fw-600">{{ nc.code }}</td>
+          <td class="text-sm">{{ nc.description }}</td>
+          <td class="text-sm">{{ nc.track }}</td>
+          <td>{% if nc.primary %}<span class="badge badge-gold">Primary</span>{% endif %}</td>
+          <td>
+            <form method="post" action="{{ url_for('settings.naics_toggle', code_id=nc.id) }}">
+              <button class="btn btn-sm btn-outline">{{ 'Deactivate' if nc.active else 'Activate' }}</button>
+            </form>
+          </td>
+          <td><span class="badge {{ 'badge-new' if nc.active else 'badge-default' }}">{{ 'Active' if nc.active else 'Off' }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body" style="border-top:1px solid var(--border);">
+    <form method="post" action="{{ url_for('settings.naics_new') }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;">
+      <div class="form-group" style="flex:0 0 100px;">
+        <label>Code</label>
+        <input type="text" name="code" placeholder="519120" required>
+      </div>
+      <div class="form-group" style="flex:1;min-width:200px;">
+        <label>Description</label>
+        <input type="text" name="description" required>
+      </div>
+      <div class="form-group">
+        <label>Track</label>
+        <select name="track">
+          {% for t in ['All','Government','Grant','Professional'] %}
+            <option>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <label style="display:flex;align-items:center;gap:.3rem;margin-bottom:.2rem;"><input type="checkbox" name="primary"> Primary</label>
+      <label style="display:flex;align-items:center;gap:.3rem;margin-bottom:.2rem;"><input type="checkbox" name="active" checked> Active</label>
+      <button class="btn btn-primary btn-sm">+ Add</button>
+    </form>
+  </div>
+</div>
+
+<!-- Keywords -->
+<div class="card mb-2" id="keywords">
+  <div class="card-header"><h3>Keywords</h3></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Keyword</th><th>Track</th><th>Priority</th><th>Active</th><th></th></tr></thead>
+      <tbody>
+      {% for kw in keywords %}
+        <tr>
+          <td>{{ kw.keyword }}</td>
+          <td class="text-sm">{{ kw.track }}</td>
+          <td><span class="badge badge-{{ 'gold' if kw.priority == 'High' else 'pending' if kw.priority == 'Medium' else 'default' }}">{{ kw.priority }}</span></td>
+          <td><span class="badge {{ 'badge-new' if kw.active else 'badge-default' }}">{{ 'Active' if kw.active else 'Off' }}</span></td>
+          <td>
+            <form method="post" action="{{ url_for('settings.keyword_toggle', kw_id=kw.id) }}">
+              <button class="btn btn-sm btn-outline">{{ 'Deactivate' if kw.active else 'Activate' }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body" style="border-top:1px solid var(--border);">
+    <form method="post" action="{{ url_for('settings.keyword_new') }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;">
+      <div class="form-group" style="flex:1;min-width:180px;">
+        <label>Keyword</label>
+        <input type="text" name="keyword" placeholder="digitization" required>
+      </div>
+      <div class="form-group">
+        <label>Track</label>
+        <select name="track">
+          {% for t in ['All','Government','Grant','Professional'] %}
+            <option>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select name="priority">
+          {% for p in ['High','Medium','Low'] %}
+            <option>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <label style="display:flex;align-items:center;gap:.3rem;margin-bottom:.2rem;"><input type="checkbox" name="active" checked> Active</label>
+      <button class="btn btn-primary btn-sm">+ Add</button>
+    </form>
+  </div>
+</div>
+
+<!-- Data Sources -->
+<div class="card" id="sources">
+  <div class="card-header">
+    <h3>Data Sources</h3>
+    <a href="{{ url_for('settings.source_new') }}" class="btn btn-sm btn-outline">+ Add Source</a>
+  </div>
+  <div class="table-wrap">
+    {% if data_sources %}
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Track</th><th>Frequency</th><th>Last Checked</th><th>Active</th><th></th></tr></thead>
+      <tbody>
+      {% for ds in data_sources %}
+        <tr>
+          <td>{{ ds.name }}</td>
+          <td class="text-sm">{{ ds.source_type }}</td>
+          <td class="text-sm">{{ ds.track }}</td>
+          <td class="text-sm">{{ ds.check_frequency }}</td>
+          <td class="text-sm">{{ ds.last_checked.strftime('%b %-d, %-I:%M %p') if ds.last_checked else 'Never' }}</td>
+          <td><span class="badge {{ 'badge-new' if ds.active else 'badge-default' }}">{{ 'Active' if ds.active else 'Off' }}</span></td>
+          <td>
+            <form method="post" action="{{ url_for('settings.source_toggle', source_id=ds.id) }}">
+              <button class="btn btn-sm btn-outline">Toggle</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">No data sources configured yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

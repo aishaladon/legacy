@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Award History{% endblock %}
+{% block page_title %}Award History{% endblock %}
+
+{% block content %}
+<form method="get" class="filter-bar">
+  <select name="award_type" onchange="this.form.submit()">
+    <option value="">All Types</option>
+    {% for t in ['Contract', 'Grant'] %}
+      <option value="{{ t }}" {{ 'selected' if request.args.get('award_type') == t }}>{{ t }}</option>
+    {% endfor %}
+  </select>
+  <select name="subcontract" onchange="this.form.submit()">
+    <option value="">All</option>
+    <option value="yes" {{ 'selected' if request.args.get('subcontract') == 'yes' }}>Subcontract Opps Only</option>
+  </select>
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    {% if awards %}
+    <table>
+      <thead>
+        <tr>
+          <th>Awardee</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Agency / Funder</th>
+          <th>Subcontract Opp</th>
+          <th>Outreach Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for award in awards %}
+        <tr>
+          <td><a href="{{ url_for('award_history.detail', award_id=award.id) }}">{{ award.awardee_name or '—' }}</a></td>
+          <td class="text-sm">{{ award.award_type or '—' }}</td>
+          <td class="text-sm">{% if award.award_amount %}${{ '{:,.0f}'.format(award.award_amount) }}{% else %}—{% endif %}</td>
+          <td class="text-sm">{{ award.award_date.strftime('%b %-d, %Y') if award.award_date else '—' }}</td>
+          <td class="text-sm">{{ award.awarding_agency_or_funder or '—' }}</td>
+          <td>
+            {% if award.subcontract_opportunity %}
+              <span class="badge badge-new">Yes</span>
+            {% else %}
+              <span class="badge badge-default">No</span>
+            {% endif %}
+          </td>
+          <td class="text-sm">{{ award.subcontract_outreach_status or '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">No award history found.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

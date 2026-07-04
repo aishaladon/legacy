@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}{{ opp.title | truncate(40) }}{% endblock %}
+{% block page_title %}Opportunity Detail{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('opportunities.edit', opp_id=opp.id) }}" class="btn btn-outline btn-sm">Edit</a>
+  <form method="post" action="{{ url_for('pipeline.create_from_opportunity', opp_id=opp.id) }}" style="display:inline;">
+    <button class="btn btn-primary btn-sm">→ Add to Pipeline</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header">
+        <h3>{{ opp.title }}</h3>
+        <span class="badge badge-{{ opp.status | lower | replace(' ','-') }}">{{ opp.status }}</span>
+      </div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Track</label><p>{{ opp.track or '—' }}</p></div>
+          <div class="detail-field"><label>Type</label><p>{{ opp.opportunity_type or '—' }}</p></div>
+          <div class="detail-field"><label>Source</label><p>{{ opp.source or '—' }}</p></div>
+          <div class="detail-field"><label>Source URL</label><p>{% if opp.source_url %}<a href="{{ opp.source_url }}" target="_blank">View ↗</a>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Posted</label><p>{{ opp.posted_date.strftime('%B %-d, %Y') if opp.posted_date else '—' }}</p></div>
+          <div class="detail-field"><label>Due Date</label><p>{{ opp.due_date.strftime('%B %-d, %Y') if opp.due_date else '—' }}</p></div>
+          <div class="detail-field"><label>Value (Min)</label><p>{% if opp.contract_amount_min %}${{ '{:,.0f}'.format(opp.contract_amount_min) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Value (Max)</label><p>{% if opp.contract_amount_max %}${{ '{:,.0f}'.format(opp.contract_amount_max) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>NAICS</label><p>{{ opp.naics_code or '—' }}</p></div>
+          <div class="detail-field"><label>Set-Aside</label><p>{{ opp.set_aside_type or '—' }}</p></div>
+          <div class="detail-field"><label>Institution Type</label><p>{{ opp.institution_type or '—' }}</p></div>
+          <div class="detail-field"><label>Region</label><p>{{ opp.region or '—' }}</p></div>
+          <div class="detail-field"><label>Location</label><p>{{ [opp.location_city, opp.location_state] | select | join(', ') or '—' }}</p></div>
+          <div class="detail-field"><label>Alignment Score</label><p>
+            {% if opp.alignment_score %}
+              {% set sc = opp.alignment_score %}
+              <span class="score score-{{ 'high' if sc >= 7 else 'mid' if sc >= 4 else 'low' }}">{{ sc }}</span> / 10
+            {% else %}—{% endif %}
+          </p></div>
+          <div class="detail-field"><label>Added</label><p>{{ opp.date_added.strftime('%B %-d, %Y') if opp.date_added else '—' }}</p></div>
+        </div>
+        {% if opp.description %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field full"><label>Description</label><p style="white-space:pre-wrap;margin-top:.4rem;">{{ opp.description }}</p></div>
+        {% endif %}
+        {% if opp.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field full"><label>Notes</label><p style="white-space:pre-wrap;margin-top:.4rem;">{{ opp.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick status update -->
+    <div class="card mb-2">
+      <div class="card-header"><h3>Update Status</h3></div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('opportunities.update_status', opp_id=opp.id) }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+          <select name="status" style="flex:1;min-width:160px;border:1px solid var(--border);border-radius:var(--radius);padding:.4rem .6rem;">
+            {% for s in ['New','Reviewing','Bidding','Submitted','Won','Lost','Passed','Archived'] %}
+              <option value="{{ s }}" {{ 'selected' if opp.status == s }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-outline btn-sm">Save Status</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Activity log -->
+    <div class="card">
+      <div class="card-header"><h3>Activity Log</h3></div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('opportunities.add_log', opp_id=opp.id) }}" style="margin-bottom:1.25rem;">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="form-group">
+              <label>Activity Type</label>
+              <select name="activity_type">
+                {% for t in ['Email Sent','Phone Call','Meeting','Bid Submitted','Follow-Up','Note Added','Status Changed','Document Uploaded','Other'] %}
+                  <option>{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Next Action Date</label>
+              <input type="date" name="next_action_date">
+            </div>
+            <div class="form-group full">
+              <label>Description</label>
+              <textarea name="description" rows="2" placeholder="What happened?"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Outcome</label>
+              <input type="text" name="outcome" placeholder="Response received, etc.">
+            </div>
+            <div class="form-group">
+              <label>Next Action</label>
+              <input type="text" name="next_action" placeholder="What to do next">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm mt-1">Log Activity</button>
+        </form>
+
+        {% if logs %}
+          <ul class="activity-list">
+          {% for log in logs %}
+            <li class="activity-item">
+              <strong>{{ log.activity_type }}</strong> — {{ log.description or '' }}
+              {% if log.outcome %}<div class="text-muted">Outcome: {{ log.outcome }}</div>{% endif %}
+              {% if log.next_action %}<div class="text-muted">Next: {{ log.next_action }}{% if log.next_action_date %} by {{ log.next_action_date.strftime('%b %-d') }}{% endif %}</div>{% endif %}
+              <div class="activity-meta">{{ log.activity_date.strftime('%B %-d, %Y') if log.activity_date else '' }}</div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted text-sm">No activity logged yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div>
+    {% if opp.pipeline %}
+    <div class="card mb-2">
+      <div class="card-header"><h3>Pipeline</h3></div>
+      <div class="card-body">
+        <p class="text-sm"><strong>Stage:</strong> {{ opp.pipeline.stage }}</p>
+        <p class="text-sm mt-1"><strong>Go/No-Go:</strong>
+          <span class="badge badge-{{ 'go' if opp.pipeline.go_no_go == 'Go' else 'nogo' if opp.pipeline.go_no_go == 'No-Go' else 'pending' }}">
+            {{ opp.pipeline.go_no_go or 'Pending' }}
+          </span>
+        </p>
+        <a href="{{ url_for('pipeline.detail', pipeline_id=opp.pipeline.id) }}" class="btn btn-outline btn-sm mt-2">View Pipeline Record →</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if opp.government_contract %}
+    <div class="card mb-2">
+      <div class="card-header"><h3>Solicitation Details</h3></div>
+      <div class="card-body text-sm">
+        <p><strong>Sol. #:</strong> {{ opp.government_contract.solicitation_number or '—' }}</p>
+        <p><strong>Agency:</strong> {{ opp.government_contract.agency_name or '—' }}</p>
+        <p><strong>Response Type:</strong> {{ opp.government_contract.response_type or '—' }}</p>
+        <p><strong>Q&A Deadline:</strong> {{ opp.government_contract.qa_deadline.strftime('%b %-d, %Y') if opp.government_contract.qa_deadline else '—' }}</p>
+        <p><strong>Sub. Deadline:</strong> {{ opp.government_contract.submission_deadline.strftime('%b %-d, %Y') if opp.government_contract.submission_deadline else '—' }}</p>
+        <p><strong>Incumbent:</strong> {{ opp.government_contract.incumbent_contractor or '—' }}</p>
+        <a href="{{ url_for('government.detail', contract_id=opp.government_contract.id) }}" class="btn btn-outline btn-sm mt-2">Full Details →</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if opp.grant_opportunity %}
+    <div class="card mb-2">
+      <div class="card-header"><h3>Grant Details</h3></div>
+      <div class="card-body text-sm">
+        <p><strong>Program:</strong> {{ opp.grant_opportunity.grant_program_name or '—' }}</p>
+        <p><strong>Award:</strong> {% if opp.grant_opportunity.award_amount %}${{ '{:,.0f}'.format(opp.grant_opportunity.award_amount) }}{% else %}—{% endif %}</p>
+        <p><strong>Outreach:</strong> {{ opp.grant_opportunity.outreach_status }}</p>
+        <a href="{{ url_for('grants.detail', grant_id=opp.grant_opportunity.id) }}" class="btn btn-outline btn-sm mt-2">Full Details →</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Pipeline Record{% endblock %}
+{% block page_title %}Pipeline{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('pipeline.edit', pipeline_id=item.id) }}" class="btn btn-outline btn-sm">Edit</a>
+  {% if item.stage == 'Won' and not item.project %}
+  <form method="post" action="{{ url_for('projects.create_from_pipeline', pipeline_id=item.id) }}" style="display:inline;">
+    <button class="btn btn-primary btn-sm">→ Create Project</button>
+  </form>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header">
+        <h3>{{ item.opportunity.title | truncate(70) }}</h3>
+        <span class="badge badge-{{ 'go' if item.go_no_go == 'Go' else 'nogo' if item.go_no_go == 'No-Go' else 'pending' }}">{{ item.go_no_go or 'Pending' }}</span>
+      </div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Stage</label><p>{{ item.stage }}</p></div>
+          <div class="detail-field"><label>Decision Date</label><p>{{ item.decision_date.strftime('%B %-d, %Y') if item.decision_date else '—' }}</p></div>
+          <div class="detail-field"><label>Submission Date</label><p>{{ item.submission_date.strftime('%B %-d, %Y') if item.submission_date else '—' }}</p></div>
+          <div class="detail-field"><label>Submitted Amount</label><p>{% if item.submitted_amount %}${{ '{:,.0f}'.format(item.submitted_amount) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Outcome</label><p>{% if item.outcome %}<span class="badge badge-{{ 'won' if item.outcome == 'Won' else 'lost' if item.outcome == 'Lost' else 'default' }}">{{ item.outcome }}</span>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Outcome Date</label><p>{{ item.outcome_date.strftime('%B %-d, %Y') if item.outcome_date else '—' }}</p></div>
+          <div class="detail-field"><label>Follow-Up Date</label><p>{{ item.followup_date.strftime('%B %-d, %Y') if item.followup_date else '—' }}</p></div>
+        </div>
+        {% if item.lessons_learned %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Lessons Learned</label><p style="white-space:pre-wrap;">{{ item.lessons_learned }}</p></div>
+        {% endif %}
+        {% if item.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ item.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Activity Log</h3></div>
+      <div class="card-body">
+        {% if logs %}
+          <ul class="activity-list">
+          {% for log in logs %}
+            <li class="activity-item">
+              <strong>{{ log.activity_type }}</strong> — {{ log.description or '' }}
+              <div class="activity-meta">{{ log.activity_date.strftime('%B %-d, %Y') if log.activity_date else '' }}</div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted text-sm">No activity logged.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card mb-2">
+      <div class="card-header"><h3>Opportunity</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('opportunities.detail', opp_id=item.opportunity.id) }}">View full opportunity →</a>
+        <p class="mt-1"><strong>Due:</strong> {{ item.opportunity.due_date.strftime('%B %-d, %Y') if item.opportunity.due_date else '—' }}</p>
+        <p><strong>Value:</strong> {% if item.opportunity.contract_amount_max %}up to ${{ '{:,.0f}'.format(item.opportunity.contract_amount_max) }}{% else %}—{% endif %}</p>
+      </div>
+    </div>
+    {% if item.project %}
+    <div class="card">
+      <div class="card-header"><h3>Project</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('projects.detail', project_id=item.project.id) }}">View project →</a>
+        <p class="mt-1"><strong>Status:</strong> {{ item.project.milestone_status or 'Active' }}</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Project{% endblock %}
+{% block page_title %}Project{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('projects.edit', project_id=project.id) }}" class="btn btn-outline btn-sm">Edit</a>
+{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header">
+        <h3>{{ project.pipeline.opportunity.title | truncate(70) }}</h3>
+        {% if project.milestone_status %}
+          <span class="badge badge-{{ 'new' if project.milestone_status == 'On Track' else 'pending' if project.milestone_status == 'At Risk' else 'lost' if project.milestone_status == 'Delayed' else 'default' }}">{{ project.milestone_status }}</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Contract / Grant #</label><p>{{ project.contract_or_grant_number or '—' }}</p></div>
+          <div class="detail-field"><label>Project Type</label><p>{{ project.project_type or '—' }}</p></div>
+          <div class="detail-field"><label>Start Date</label><p>{{ project.start_date.strftime('%B %-d, %Y') if project.start_date else '—' }}</p></div>
+          <div class="detail-field"><label>End Date</label><p>{{ project.end_date.strftime('%B %-d, %Y') if project.end_date else '—' }}</p></div>
+          <div class="detail-field"><label>Total Value</label><p>{% if project.total_value %}${{ '{:,.0f}'.format(project.total_value) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Milestone Status</label><p>{{ project.milestone_status or '—' }}</p></div>
+          <div class="detail-field"><label>Travel Required</label><p>{{ 'Yes' if project.travel_required else 'No' }}</p></div>
+          <div class="detail-field"><label>Monthly Report Due Dates</label><p>{{ project.monthly_report_due_dates or '—' }}</p></div>
+        </div>
+
+        {% if project.deliverables %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Deliverables</label><p style="white-space:pre-wrap;">{{ project.deliverables }}</p></div>
+        {% endif %}
+        {% if project.payment_milestones %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Payment Milestones</label><p style="white-space:pre-wrap;">{{ project.payment_milestones }}</p></div>
+        {% endif %}
+        {% if project.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ project.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Activity Log</h3></div>
+      <div class="card-body">
+        {% if logs %}
+          <ul class="activity-list">
+          {% for log in logs %}
+            <li class="activity-item">
+              <strong>{{ log.activity_type }}</strong> — {{ log.description or '' }}
+              {% if log.outcome %}<div class="text-muted">Outcome: {{ log.outcome }}</div>{% endif %}
+              {% if log.next_action %}<div class="text-muted">Next: {{ log.next_action }}{% if log.next_action_date %} by {{ log.next_action_date.strftime('%b %-d') }}{% endif %}</div>{% endif %}
+              <div class="activity-meta">{{ log.activity_date.strftime('%B %-d, %Y') if log.activity_date else '' }}</div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted text-sm">No activity logged.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    {% if project.institution %}
+    <div class="card mb-2">
+      <div class="card-header"><h3>Institution</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('institutions.detail', inst_id=project.institution.id) }}">{{ project.institution.name }}</a>
+      </div>
+    </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><h3>Pipeline</h3></div>
+      <div class="card-body text-sm">
+        <a href="{{ url_for('pipeline.detail', pipeline_id=project.pipeline.id) }}">View pipeline record →</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

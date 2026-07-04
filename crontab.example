@@ -1,0 +1,15 @@
+# Legacy P&P BD Workspace — Cron Schedule
+# Install with: crontab -e
+# Replace /path/to/legacy-bd and /path/to/venv with your actual paths.
+# All times are server time — adjust if server is not in Pacific Time.
+
+# ── Check data sources 3× per day (morning, noon, evening Pacific) ────────────
+0  7  * * *  /path/to/venv/bin/python /path/to/legacy-bd/automation/run_checks.py >> /path/to/legacy-bd/logs/checks.log 2>&1
+0 12  * * *  /path/to/venv/bin/python /path/to/legacy-bd/automation/run_checks.py >> /path/to/legacy-bd/logs/checks.log 2>&1
+0 17  * * *  /path/to/venv/bin/python /path/to/legacy-bd/automation/run_checks.py >> /path/to/legacy-bd/logs/checks.log 2>&1
+
+# ── Daily digest — 7:00 AM Pacific ───────────────────────────────────────────
+0  7  * * *  /path/to/venv/bin/python /path/to/legacy-bd/automation/digest_sender.py >> /path/to/legacy-bd/logs/digest.log 2>&1
+
+# ── Database backup — 2:00 AM daily ──────────────────────────────────────────
+0  2  * * *  mysqldump -u DB_USER -pDB_PASSWORD DB_NAME > /path/to/backups/legacy-bd-$(date +\%Y\%m\%d).sql

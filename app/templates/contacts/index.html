@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+{% block page_title %}Contacts{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('contacts.new') }}" class="btn btn-primary btn-sm">+ Add Contact</a>
+{% endblock %}
+
+{% block content %}
+<form method="get" class="filter-bar">
+  <select name="warmth" onchange="this.form.submit()">
+    <option value="">All Warmth</option>
+    {% for w in ['Hot','Warm','Cold'] %}
+      <option value="{{ w }}" {{ 'selected' if request.args.get('warmth')==w }}>{{ w }}</option>
+    {% endfor %}
+  </select>
+  <select name="type" onchange="this.form.submit()">
+    <option value="">All Types</option>
+    {% for ct in contact_types %}
+      <option value="{{ ct }}" {{ 'selected' if request.args.get('type')==ct }}>{{ ct }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    {% if contacts %}
+    <table>
+      <thead><tr><th>Name</th><th>Title</th><th>Institution</th><th>Type</th><th>Warmth</th><th>Next Follow-Up</th></tr></thead>
+      <tbody>
+      {% for c in contacts %}
+        <tr>
+          <td><a href="{{ url_for('contacts.detail', contact_id=c.id) }}">{{ c.full_name }}</a></td>
+          <td class="text-sm">{{ c.title or '—' }}</td>
+          <td class="text-sm">{% if c.institution %}<a href="{{ url_for('institutions.detail', inst_id=c.institution.id) }}">{{ c.institution.name | truncate(35) }}</a>{% else %}—{% endif %}</td>
+          <td class="text-sm">{{ c.contact_type or '—' }}</td>
+          <td><span class="badge badge-{{ c.relationship_warmth | lower }}">{{ c.relationship_warmth }}</span></td>
+          <td class="text-sm">{{ c.next_followup_date.strftime('%b %-d') if c.next_followup_date else '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">No contacts yet. <a href="{{ url_for('contacts.new') }}">Add one.</a></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

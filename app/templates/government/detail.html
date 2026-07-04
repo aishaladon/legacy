@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Solicitation {{ contract.solicitation_number or '' }}{% endblock %}
+{% block page_title %}Government Contract{% endblock %}
+{% block top_actions %}
+  {% if contract.opportunity %}
+    <a href="{{ url_for('opportunities.detail', opp_id=contract.opportunity.id) }}" class="btn btn-outline btn-sm">View Opportunity</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card mb-2">
+  <div class="card-header">
+    <h3>{{ contract.solicitation_number or 'Solicitation' }}</h3>
+    {% if contract.agency_name %}<span class="badge badge-default">{{ contract.agency_name }}</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="detail-fields">
+      <div class="detail-field"><label>Solicitation Number</label><p>{{ contract.solicitation_number or '—' }}</p></div>
+      <div class="detail-field"><label>Agency Name</label><p>{{ contract.agency_name or '—' }}</p></div>
+      <div class="detail-field"><label>Agency Type</label><p>{{ contract.agency_type or '—' }}</p></div>
+      <div class="detail-field"><label>Office</label><p>{{ contract.office or '—' }}</p></div>
+      <div class="detail-field"><label>Response Type</label><p>{{ contract.response_type or '—' }}</p></div>
+      <div class="detail-field"><label>Submission Deadline</label><p>{{ contract.submission_deadline.strftime('%B %-d, %Y') if contract.submission_deadline else '—' }}</p></div>
+      <div class="detail-field"><label>Contract Type</label><p>{{ contract.contract_type or '—' }}</p></div>
+      <div class="detail-field"><label>Set-Aside Type</label><p>{{ contract.set_aside_type or '—' }}</p></div>
+      <div class="detail-field"><label>NAICS Code</label><p>{{ contract.naics_code or '—' }}</p></div>
+      <div class="detail-field"><label>Place of Performance</label><p>{{ contract.place_of_performance or '—' }}</p></div>
+      <div class="detail-field"><label>Period of Performance</label><p>{{ contract.period_of_performance or '—' }}</p></div>
+      <div class="detail-field"><label>Estimated Value</label><p>{% if contract.estimated_value %}${{ '{:,.0f}'.format(contract.estimated_value) }}{% else %}—{% endif %}</p></div>
+      <div class="detail-field"><label>Incumbent</label><p>{{ contract.incumbent or '—' }}</p></div>
+      <div class="detail-field"><label>Point of Contact</label><p>{{ contract.point_of_contact or '—' }}</p></div>
+      <div class="detail-field"><label>Contact Email</label><p>{% if contract.contact_email %}<a href="mailto:{{ contract.contact_email }}">{{ contract.contact_email }}</a>{% else %}—{% endif %}</p></div>
+      <div class="detail-field"><label>Source URL</label><p>{% if contract.source_url %}<a href="{{ contract.source_url }}" target="_blank">SAM.gov ↗</a>{% else %}—{% endif %}</p></div>
+    </div>
+    {% if contract.description %}
+      <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+      <div class="detail-field"><label>Description</label><p style="white-space:pre-wrap;">{{ contract.description }}</p></div>
+    {% endif %}
+    {% if contract.notes %}
+      <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+      <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ contract.notes }}</p></div>
+    {% endif %}
+  </div>
+</div>
+
+{% if contract.opportunity %}
+<div class="card">
+  <div class="card-header"><h3>Linked Opportunity</h3></div>
+  <div class="card-body text-sm">
+    <a href="{{ url_for('opportunities.detail', opp_id=contract.opportunity.id) }}">{{ contract.opportunity.title | truncate(70) }} →</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

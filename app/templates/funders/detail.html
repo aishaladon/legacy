@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ funder.name }}{% endblock %}
+{% block page_title %}Funder{% endblock %}
+{% block top_actions %}
+  <a href="{{ url_for('funders.edit', funder_id=funder.id) }}" class="btn btn-outline btn-sm">Edit</a>
+{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+  <div>
+    <div class="card mb-2">
+      <div class="card-header">
+        <h3>{{ funder.name }}</h3>
+        {% if funder.funder_type %}<span class="badge badge-default">{{ funder.funder_type }}</span>{% endif %}
+      </div>
+      <div class="card-body">
+        <div class="detail-fields">
+          <div class="detail-field"><label>Funder Type</label><p>{{ funder.funder_type or '—' }}</p></div>
+          <div class="detail-field"><label>Website</label><p>{% if funder.website %}<a href="{{ funder.website }}" target="_blank">Visit ↗</a>{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Min Award</label><p>{% if funder.typical_award_min %}${{ '{:,.0f}'.format(funder.typical_award_min) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Max Award</label><p>{% if funder.typical_award_max %}${{ '{:,.0f}'.format(funder.typical_award_max) }}{% else %}—{% endif %}</p></div>
+          <div class="detail-field"><label>Application Cycle Open</label><p>{{ funder.application_cycle_open.strftime('%B %-d, %Y') if funder.application_cycle_open else '—' }}</p></div>
+          <div class="detail-field"><label>Application Cycle Close</label><p>{{ funder.application_cycle_close.strftime('%B %-d, %Y') if funder.application_cycle_close else '—' }}</p></div>
+          <div class="detail-field"><label>Grant Duration</label><p>{{ funder.grant_duration or '—' }}</p></div>
+          <div class="detail-field"><label>LOI Required</label><p>{{ 'Yes' if funder.loi_required else 'No' }}</p></div>
+          <div class="detail-field"><label>LOI Deadline</label><p>{{ funder.loi_deadline.strftime('%B %-d, %Y') if funder.loi_deadline else '—' }}</p></div>
+          <div class="detail-field"><label>Geographic Focus</label><p>{{ funder.geographic_focus or '—' }}</p></div>
+          <div class="detail-field"><label>Priority Areas</label><p>{{ funder.priority_areas or '—' }}</p></div>
+        </div>
+        {% if funder.eligibility_requirements %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Eligibility Requirements</label><p style="white-space:pre-wrap;">{{ funder.eligibility_requirements }}</p></div>
+        {% endif %}
+        {% if funder.notes %}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+          <div class="detail-field"><label>Notes</label><p style="white-space:pre-wrap;">{{ funder.notes }}</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><h3>Grant Opportunities ({{ grant_opportunities | length }})</h3></div>
+      <div class="card-body">
+        {% if grant_opportunities %}
+          <ul class="activity-list">
+          {% for grant in grant_opportunities %}
+            <li class="activity-item">
+              <a href="{{ url_for('grants.detail', grant_id=grant.id) }}">{{ grant.grant_program_name or 'Grant Opportunity' }}</a>
+              <div class="activity-meta">
+                {% if grant.award_amount %}${{ '{:,.0f}'.format(grant.award_amount) }}{% endif %}
+                {% if grant.outreach_status %} · {{ grant.outreach_status }}{% endif %}
+              </div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted text-sm">No grant opportunities linked.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
