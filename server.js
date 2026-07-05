@@ -34,6 +34,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/', require('./routes/auth'));
+app.use('/', require('./routes/getting_started'));
 app.use('/', require('./routes/dashboard'));
 app.use('/opportunities', require('./routes/opportunities'));
 app.use('/government', require('./routes/government'));

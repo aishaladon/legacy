@@ -140,6 +140,40 @@ a:hover { text-decoration: underline; }
   width: 100%;
 }
 
+/* ── Getting Started ────────────────────────────────────── */
+.gs-steps { display: flex; flex-direction: column; gap: 1.25rem; }
+.gs-step {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow);
+}
+.gs-step--resources { background: #f8f9fb; }
+.gs-step-num {
+  flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--brand); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .875rem;
+}
+.gs-step--resources .gs-step-num {
+  background: var(--accent); font-size: 1rem;
+}
+.gs-step-body { flex: 1; }
+.gs-step-body h3 { font-size: 1rem; font-weight: 700; margin-bottom: .35rem; }
+.gs-step-body p { font-size: .875rem; color: var(--text-muted); margin-bottom: .75rem; line-height: 1.5; }
+.gs-example {
+  font-size: .8rem; color: var(--text-muted);
+  background: var(--bg); border-radius: var(--radius);
+  padding: .6rem .75rem; margin-top: .75rem; line-height: 1.6;
+}
+.gs-pipeline-stages {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .5rem;
+}
+.gs-arrow { color: var(--text-muted); font-size: .8rem; }
+.gs-resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem; margin-top: .5rem; }
+.gs-resource { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+.gs-resource strong { display: block; margin-bottom: .35rem; font-size: .9rem; }
+.gs-resource p { font-size: .8rem; color: var(--text-muted); margin-bottom: .5rem; line-height: 1.5; }
+
 /* ── Stat tiles ─────────────────────────────────────────── */
 .stat-grid {
   display: grid;
