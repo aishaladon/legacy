@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Legacy BD Workspace — Main Stylesheet
+   Legacy GovCon — Main Stylesheet
    ═══════════════════════════════════════════════════════ */
 
 :root {
@@ -130,10 +130,15 @@ a:hover { text-decoration: underline; }
 /* ── Page header ────────────────────────────────────────── */
 .page-header {
   display: flex; align-items: center; gap: 1rem;
-  margin-bottom: 1.25rem; flex-wrap: wrap;
+  margin-bottom: .5rem; flex-wrap: wrap;
 }
 .page-header h2 { font-size: 1.35rem; font-weight: 700; }
 .page-actions   { display: flex; gap: .5rem; align-items: center; margin-left: auto; flex-wrap: wrap; }
+.page-desc {
+  color: var(--text-muted); font-size: .875rem;
+  margin-bottom: 1.25rem; line-height: 1.5;
+  width: 100%;
+}
 
 /* ── Stat tiles ─────────────────────────────────────────── */
 .stat-grid {

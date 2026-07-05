@@ -50,7 +50,7 @@ app.use('/digest-log', require('./routes/digest_log'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Legacy BD Workspace running on port ${PORT}`);
+  console.log(`Legacy GovCon running on port ${PORT}`);
 });
 
 module.exports = app;
