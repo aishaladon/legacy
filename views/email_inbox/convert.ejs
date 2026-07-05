@@ -3,6 +3,17 @@
   <a href="/email-inbox" class="btn-link">Back to Inbox</a>
 </div>
 
+<% if (isDigest) { %>
+<div class="digest-banner">
+  <span class="digest-banner-icon">&#9632;</span>
+  <div>
+    <strong>This looks like a digest with multiple opportunities.</strong>
+    Want to import them as separate records instead?
+  </div>
+  <a href="/email-inbox/<%= email.uid %>/parse" class="btn btn-primary btn-sm">Parse &amp; Import All</a>
+</div>
+<% } %>
+
 <div class="email-preview-card">
   <div class="email-preview-row"><span class="email-lbl">From</span><span><%= email.from %></span></div>
   <div class="email-preview-row"><span class="email-lbl">Subject</span><span><%= email.subject %></span></div>
