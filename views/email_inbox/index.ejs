@@ -1,0 +1,52 @@
+<div class="page-header">
+  <h2>Email Inbox</h2>
+</div>
+<p class="page-desc">Emails received at info@legacypnp.ltd — review opportunity-related messages and convert them into tracked opportunities.</p>
+
+<% if (error) { %>
+  <div class="inbox-error">
+    <strong>Could not connect to mailbox.</strong><br>
+    <span><%= error %></span><br>
+    <small>Check that IMAP_HOST, IMAP_USERNAME, and IMAP_PASSWORD are set in your Hostinger environment variables.</small>
+  </div>
+<% } else if (messages.length === 0) { %>
+  <div class="empty-state">
+    <p>No messages found in INBOX.</p>
+  </div>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table inbox-table">
+      <thead>
+        <tr>
+          <th style="width:2rem;"></th>
+          <th>From</th>
+          <th>Subject</th>
+          <th>Date</th>
+          <th style="width:8rem;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% messages.forEach(function(msg) { %>
+          <tr class="<%= msg.seen ? '' : 'inbox-unread' %>">
+            <td class="inbox-dot-cell">
+              <% if (!msg.seen) { %><span class="inbox-unread-dot"></span><% } %>
+            </td>
+            <td class="inbox-from"><%= msg.from %></td>
+            <td class="inbox-subject">
+              <%= msg.subject %>
+            </td>
+            <td class="inbox-date">
+              <% if (msg.date) { %>
+                <%= new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              <% } %>
+            </td>
+            <td class="inbox-action">
+              <a href="/email-inbox/<%= msg.uid %>/convert" class="btn btn-sm btn-primary">Convert</a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <p class="inbox-note">Showing the last <%= messages.length %> email(s). Newest first.</p>
+<% } %>

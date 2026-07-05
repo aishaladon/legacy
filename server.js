@@ -48,6 +48,7 @@ app.use('/award-history', require('./routes/award_history'));
 app.use('/guides', require('./routes/guides'));
 app.use('/settings', require('./routes/settings'));
 app.use('/digest-log', require('./routes/digest_log'));
+app.use('/email-inbox', require('./routes/email_inbox'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
