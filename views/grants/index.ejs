@@ -4,6 +4,20 @@
 </div>
 <p class="page-desc">Grant funding opportunities from federal agencies, foundations, and institutions — track eligibility, award ranges, and application deadlines.</p>
 
+<details class="how-to">
+  <summary>How to use Grant Opportunities</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Click <strong>+ Add</strong> to enter a grant. Add the funder from the <strong>Funders</strong> list — if the funder isn't there yet, add them first.</li>
+      <li><strong>Match Required</strong> means the grant requires you to contribute a percentage of your own funds alongside the award — factor this into whether to pursue.</li>
+      <li>Set the <strong>due date</strong> accurately — grant deadlines are firm and missing them disqualifies your application.</li>
+      <li>Use the <strong>Funder</strong> filter to see all grants from a specific foundation or agency.</li>
+      <li>Click the title to open the detail page, add eligibility notes, and link to your Pipeline when you decide to apply.</li>
+    </ol>
+    <p>Sources: Grants.gov (federal), California state grants portal, foundation websites, and email alerts from funders you follow.</p>
+  </div>
+</details>
+
 <form class="filter-bar" method="GET" action="/grants">
   <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title…" class="filter-input">
   <select name="funder_id" class="filter-select">

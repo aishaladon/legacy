@@ -4,6 +4,19 @@
 </div>
 <p class="page-desc">Agencies, foundations, universities, and organizations you pursue opportunities with — the anchor entities in your BD network.</p>
 
+<details class="how-to">
+  <summary>How to use Institutions</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Institutions are the <strong>organizations you do business with</strong> — federal agencies, state agencies, foundations, universities, prime contractors, and nonprofits.</li>
+      <li>Add an institution before adding contacts or opportunities linked to it — the system uses institutions as the anchor for your entire network.</li>
+      <li>Include the website, type, and region so you can filter intelligently when building teaming arrangements or targeting a specific sector.</li>
+      <li>Click an institution's name to see all linked contacts and opportunities in one view.</li>
+    </ol>
+    <p>Examples to add: Department of Defense, NEA, California Arts Council, local prime contractors you could team with, or foundations that fund preservation work.</p>
+  </div>
+</details>
+
 <form class="filter-bar" method="GET" action="/institutions">
   <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name…" class="filter-input">
   <input type="text" name="state" value="<%= filters.state || '' %>" placeholder="State (e.g. CA)" class="filter-input filter-input--sm">

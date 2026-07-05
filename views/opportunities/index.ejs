@@ -4,6 +4,20 @@
 </div>
 <p class="page-desc">Every contract, grant, and professional opportunity tracked in one place — from first discovery through award.</p>
 
+<details class="how-to">
+  <summary>How to use All Opportunities</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Click <strong>+ Add</strong> to manually enter an opportunity, or use <strong>Email Inbox</strong> to import directly from BidMatch or GovExpert emails.</li>
+      <li>Use the <strong>Type</strong> filter to separate government contracts, grants, subcontracts, and jobs. Use <strong>Status</strong> to focus on what's active.</li>
+      <li>Click any opportunity title to open its detail page — this is where you add notes, link contacts and institutions, and move it into the Pipeline.</li>
+      <li>Star important opportunities (&#9733;) to pin them to the top of the list.</li>
+      <li>Once you decide to pursue, open the detail page and click <strong>Add to Pipeline</strong> to begin tracking stages and win probability.</li>
+    </ol>
+    <p>Statuses: <strong>New</strong> → just discovered &nbsp;|&nbsp; <strong>Reviewing</strong> → evaluating fit &nbsp;|&nbsp; <strong>Pursuing</strong> → actively working it &nbsp;|&nbsp; <strong>Submitted</strong> → proposal sent &nbsp;|&nbsp; <strong>Awarded / Not Pursuing / Closed</strong></p>
+  </div>
+</details>
+
 <form class="filter-bar" method="GET" action="/opportunities">
   <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title…" class="filter-input">
   <select name="type" class="filter-select">
