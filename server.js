@@ -1,5 +1,9 @@
 require('dotenv').config();
 const express = require('express');
+
+// Startup env check
+console.log('ENV LOADED — ADMIN_USERNAME:', process.env.ADMIN_USERNAME || '(not set)');
+console.log('ENV LOADED — DB_HOST:', process.env.DB_HOST || '(not set)');
 const session = require('express-session');
 const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
