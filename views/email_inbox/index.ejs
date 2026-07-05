@@ -1,7 +1,20 @@
 <div class="page-header">
   <h2>Email Inbox</h2>
+  <div class="page-header-actions">
+    <% if (showAll) { %>
+      <a href="/email-inbox" class="btn btn-secondary btn-sm">Show Opportunities Only</a>
+    <% } else { %>
+      <a href="/email-inbox?show=all" class="btn btn-secondary btn-sm">Show All Emails</a>
+    <% } %>
+  </div>
 </div>
-<p class="page-desc">Emails received at info@legacypnp.ltd — review opportunity-related messages and convert them into tracked opportunities.</p>
+<p class="page-desc">
+  <% if (showAll) { %>
+    Showing all emails from your inbox.
+  <% } else { %>
+    Showing opportunity-related emails only — bid alerts, daily digests, grants, and contract notices.
+  <% } %>
+</p>
 
 <% if (error) { %>
   <div class="inbox-error">
@@ -11,42 +24,53 @@
   </div>
 <% } else if (messages.length === 0) { %>
   <div class="empty-state">
-    <p>No messages found in INBOX.</p>
+    <p>No opportunity-related emails found. <a href="/email-inbox?show=all">Show all emails</a> instead.</p>
   </div>
 <% } else { %>
   <div class="table-wrap">
     <table class="data-table inbox-table">
       <thead>
         <tr>
-          <th style="width:2rem;"></th>
+          <th style="width:1.75rem;"></th>
           <th>From</th>
           <th>Subject</th>
           <th>Date</th>
-          <th style="width:8rem;"></th>
+          <th style="width:13rem;"></th>
         </tr>
       </thead>
       <tbody>
-        <% messages.forEach(function(msg) { %>
-          <tr class="<%= msg.seen ? '' : 'inbox-unread' %>">
+        <% messages.forEach(function(msg) {
+          const isConverted = msg.action && msg.action.action === 'converted';
+        %>
+          <tr class="<%= msg.seen ? '' : 'inbox-unread' %> <%= isConverted ? 'inbox-converted' : '' %>">
             <td class="inbox-dot-cell">
-              <% if (!msg.seen) { %><span class="inbox-unread-dot"></span><% } %>
+              <% if (!msg.seen && !isConverted) { %><span class="inbox-unread-dot"></span><% } %>
+              <% if (isConverted) { %><span class="inbox-converted-dot" title="Converted">&#10003;</span><% } %>
             </td>
             <td class="inbox-from"><%= msg.from %></td>
-            <td class="inbox-subject">
-              <%= msg.subject %>
-            </td>
+            <td class="inbox-subject"><%= msg.subject %></td>
             <td class="inbox-date">
               <% if (msg.date) { %>
                 <%= new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
               <% } %>
             </td>
             <td class="inbox-action">
-              <a href="/email-inbox/<%= msg.uid %>/convert" class="btn btn-sm btn-primary">Convert</a>
+              <% if (isConverted) { %>
+                <span class="badge badge-success">Converted</span>
+                <form action="/email-inbox/<%= msg.uid %>/archive" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-link btn-link--muted" title="Remove from list">Hide</button>
+                </form>
+              <% } else { %>
+                <a href="/email-inbox/<%= msg.uid %>/convert" class="btn btn-sm btn-primary">Convert</a>
+                <form action="/email-inbox/<%= msg.uid %>/archive" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-secondary" title="Remove from inbox list">Archive</button>
+                </form>
+              <% } %>
             </td>
           </tr>
         <% }); %>
       </tbody>
     </table>
   </div>
-  <p class="inbox-note">Showing the last <%= messages.length %> email(s). Newest first.</p>
+  <p class="inbox-note">Showing <%= messages.length %> email(s). Newest first.</p>
 <% } %>

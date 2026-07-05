@@ -396,7 +396,12 @@ a:hover { text-decoration: underline; }
 .inbox-table .inbox-date  { width: 9rem; white-space: nowrap; color: var(--text-muted); font-size: .85rem; }
 .inbox-table .inbox-action{ width: 7rem; text-align: right; }
 .inbox-unread td { font-weight: 600; }
+.inbox-converted { opacity: .65; }
+.inbox-converted td { text-decoration: none; }
+.inbox-converted-dot { color: var(--success); font-size: .95rem; font-weight: 700; }
 .inbox-note { margin-top: .75rem; font-size: .8rem; color: var(--text-muted); }
+.badge-success { background: #c6f6d5; color: var(--success); }
+.btn-link--muted { color: var(--text-muted); font-size: .8rem; margin-left: .25rem; }
 
 .email-preview-card {
   background: var(--surface); border: 1px solid var(--border);

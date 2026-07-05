@@ -13,7 +13,7 @@
 <h3 class="section-heading">Opportunity Details</h3>
 <p class="page-desc">Review and edit the fields below before saving. The email subject and body have been pre-filled — add any additional details you know.</p>
 
-<form action="/opportunities" method="POST" class="form-card">
+<form action="/email-inbox/<%= email.uid %>/save" method="POST" class="form-card">
   <div class="form-row">
     <div class="form-group form-group--wide">
       <label>Title <span class="req">*</span></label>
