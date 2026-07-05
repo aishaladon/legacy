@@ -12,6 +12,12 @@ router.post('/login', async (req, res) => {
   const adminUser = process.env.ADMIN_USERNAME;
   const adminPass = process.env.ADMIN_PASSWORD;
 
+  console.log('LOGIN — submitted username:', JSON.stringify(username));
+  console.log('LOGIN — expected username:', JSON.stringify(adminUser));
+  console.log('LOGIN — username match:', username === adminUser);
+  console.log('LOGIN — submitted pw length:', password?.length);
+  console.log('LOGIN — expected pw length:', adminPass?.length);
+
   if (username !== adminUser) {
     req.flash('error', 'Invalid credentials.');
     return res.redirect('/login');
