@@ -37,6 +37,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/', require('./routes/setup'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/dashboard'));
 app.use('/opportunities', require('./routes/opportunities'));
