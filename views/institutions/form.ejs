@@ -1,0 +1,42 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (institution) { %><a href="/institutions/<%= institution.id %>" class="btn-link">Cancel</a><% } else { %><a href="/institutions" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= institution ? '/institutions/' + institution.id + '/edit' : '/institutions' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Name <span class="req">*</span></label>
+      <input type="text" name="name" value="<%= institution ? institution.name : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <input type="text" name="institution_type" value="<%= institution ? (institution.institution_type || '') : '' %>" placeholder="Museum, Library, University…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>City</label>
+      <input type="text" name="city" value="<%= institution ? (institution.city || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>State</label>
+      <input type="text" name="state" value="<%= institution ? (institution.state || '') : '' %>" placeholder="CA">
+    </div>
+    <div class="form-group">
+      <label>Region</label>
+      <input type="text" name="region" value="<%= institution ? (institution.region || '') : '' %>" placeholder="California, Northeast…">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Website</label>
+      <input type="url" name="website" value="<%= institution ? (institution.website || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="4"><%= institution ? (institution.notes || '') : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

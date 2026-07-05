@@ -1,0 +1,121 @@
+<div class="page-header">
+  <h2>
+    <% if (opp.is_starred) { %><span class="star">&#9733;</span> <% } %>
+    <%= opp.title %>
+  </h2>
+  <div class="page-actions">
+    <form action="/opportunities/<%= opp.id %>/star" method="POST" style="display:inline">
+      <button type="submit" class="btn btn-secondary"><%= opp.is_starred ? '&#9733; Unstar' : '&#9734; Star' %></button>
+    </form>
+    <a href="/opportunities/<%= opp.id %>/edit" class="btn btn-secondary">Edit</a>
+    <% if (!pipeline) { %>
+      <a href="/pipeline/add/<%= opp.id %>" class="btn btn-primary">Add to Pipeline</a>
+    <% } %>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <section class="card">
+    <h3>Overview</h3>
+    <dl class="detail-list">
+      <dt>Type</dt><dd><span class="badge badge--<%= opp.opportunity_type.toLowerCase().replace(' ','-') %>"><%= opp.opportunity_type %></span></dd>
+      <dt>Status</dt><dd><span class="badge badge--<%= opp.status.toLowerCase().replace(' ','-') %>"><%= opp.status %></span></dd>
+      <dt>Region</dt><dd><%= opp.region || '—' %></dd>
+      <dt>Source</dt><dd><%= opp.source || '—' %><% if (opp.source_url) { %> <a href="<%= opp.source_url %>" target="_blank" rel="noopener">&#8599;</a><% } %></dd>
+      <dt>Posted</dt><dd><%= opp.posted_date ? new Date(opp.posted_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—' %></dd>
+      <dt>Due</dt><dd class="<%= opp.due_date && new Date(opp.due_date) < new Date(Date.now()+14*86400000) ? 'due-date--urgent' : '' %>"><%= opp.due_date ? new Date(opp.due_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—' %></dd>
+      <dt>Amount</dt><dd>
+        <% if (opp.amount_min && opp.amount_max) { %>
+          $<%= Number(opp.amount_min).toLocaleString() %> – $<%= Number(opp.amount_max).toLocaleString() %>
+        <% } else if (opp.amount_max) { %>
+          Up to $<%= Number(opp.amount_max).toLocaleString() %>
+        <% } else if (opp.amount_min) { %>
+          $<%= Number(opp.amount_min).toLocaleString() %>+
+        <% } else { %> — <% } %>
+      </dd>
+      <dt>Alignment Score</dt><dd><%= opp.alignment_score ? Number(opp.alignment_score).toFixed(1) + ' / 10' : 'Not scored' %></dd>
+      <dt>Institution</dt><dd><%= opp.institution_name || '—' %></dd>
+      <dt>Contact</dt><dd><%= opp.first_name ? opp.first_name + ' ' + opp.last_name : '—' %></dd>
+    </dl>
+  </section>
+
+  <% if (govContract) { %>
+  <section class="card">
+    <h3>Contract Details</h3>
+    <dl class="detail-list">
+      <dt>Solicitation #</dt><dd><%= govContract.solicitation_number || '—' %></dd>
+      <dt>Agency</dt><dd><%= govContract.agency || '—' %></dd>
+      <dt>Sub-Agency</dt><dd><%= govContract.sub_agency || '—' %></dd>
+      <dt>NAICS Code</dt><dd><%= govContract.naics_code || '—' %></dd>
+      <dt>Set-Aside</dt><dd><%= govContract.set_aside || 'None' %></dd>
+      <dt>Contract Type</dt><dd><%= govContract.contract_type || '—' %></dd>
+      <dt>Place of Performance</dt><dd><%= govContract.place_of_performance || '—' %></dd>
+      <dt>SAM Notice ID</dt><dd><%= govContract.sam_notice_id || '—' %></dd>
+    </dl>
+  </section>
+  <% } %>
+
+  <% if (grantOpp) { %>
+  <section class="card">
+    <h3>Grant Details</h3>
+    <dl class="detail-list">
+      <dt>Funder</dt><dd><%= grantOpp.funder_name || '—' %></dd>
+      <dt>Program</dt><dd><%= grantOpp.program_name || '—' %></dd>
+      <dt>Grant #</dt><dd><%= grantOpp.grant_number || '—' %></dd>
+      <dt>Eligible Applicants</dt><dd><%= grantOpp.eligible_applicants || '—' %></dd>
+      <dt>Match Required</dt><dd><%= grantOpp.match_required ? 'Yes (' + (grantOpp.match_percentage || '?') + '%)' : 'No' %></dd>
+      <dt>Application Portal</dt><dd><% if (grantOpp.application_portal) { %><a href="<%= grantOpp.application_portal %>" target="_blank" rel="noopener">Open portal &#8599;</a><% } else { %>—<% } %></dd>
+    </dl>
+  </section>
+  <% } %>
+
+  <% if (pipeline) { %>
+  <section class="card">
+    <h3>Pipeline</h3>
+    <dl class="detail-list">
+      <dt>Stage</dt><dd><span class="badge"><%= pipeline.stage %></span></dd>
+      <dt>Probability</dt><dd><%= pipeline.probability != null ? pipeline.probability + '%' : '—' %></dd>
+      <dt>Expected Value</dt><dd><%= pipeline.expected_value ? '$' + Number(pipeline.expected_value).toLocaleString() : '—' %></dd>
+      <dt>Next Action</dt><dd><%= pipeline.next_action || '—' %></dd>
+      <dt>Next Action Date</dt><dd><%= pipeline.next_action_date ? new Date(pipeline.next_action_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></dd>
+    </dl>
+    <a href="/pipeline/<%= pipeline.id %>/edit" class="btn btn-secondary" style="margin-top:0.75rem">Update Stage</a>
+  </section>
+  <% } %>
+</div>
+
+<% if (opp.description) { %>
+<section class="card" style="margin-top:1rem">
+  <h3>Description / Notes</h3>
+  <div class="prose"><%= opp.description %></div>
+</section>
+<% } %>
+
+<% if (opp.alignment_notes) { %>
+<section class="card" style="margin-top:1rem">
+  <h3>Alignment Notes</h3>
+  <div class="prose"><%= opp.alignment_notes %></div>
+</section>
+<% } %>
+
+<section class="card" style="margin-top:1rem">
+  <h3>Activity</h3>
+  <% if (activity.length === 0) { %>
+    <p class="empty-state">No activity yet.</p>
+  <% } else { %>
+    <ul class="activity-list">
+      <% activity.forEach(function(a) { %>
+        <li class="activity-item">
+          <span class="activity-time"><%= new Date(a.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) %></span>
+          <span class="activity-desc"><%= a.description || a.action %></span>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>
+
+<div style="margin-top:1.5rem">
+  <form action="/opportunities/<%= opp.id %>/delete" method="POST" onsubmit="return confirm('Delete this opportunity? This cannot be undone.')">
+    <button type="submit" class="btn btn-danger">Delete Opportunity</button>
+  </form>
+</div>

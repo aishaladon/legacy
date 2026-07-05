@@ -1,0 +1,42 @@
+<div class="page-header">
+  <h2>Award History</h2>
+  <a href="/award-history/new" class="btn btn-primary">+ Add</a>
+</div>
+
+<form class="filter-bar" method="GET" action="/award-history">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title or agency…" class="filter-input">
+  <select name="award_type" class="filter-select">
+    <option value="">All Types</option>
+    <% ['Government Contract','Grant','Subcontract','Other'].forEach(function(t) { %>
+      <option value="<%= t %>" <%= filters.award_type === t ? 'selected' : '' %>><%= t %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/award-history" class="btn-link">Clear</a>
+</form>
+
+<% if (awards.length === 0) { %>
+  <p class="empty-state">No award history found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Title</th><th>Type</th><th>Agency / Funder</th><th>Institution</th><th>Amount</th><th>Period</th><th>Set-Aside</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% awards.forEach(function(a) { %>
+          <tr>
+            <td><%= a.title %></td>
+            <td><span class="badge badge--<%= a.award_type.toLowerCase().replace(' ','-') %>"><%= a.award_type %></span></td>
+            <td><%= a.agency_funder || '—' %></td>
+            <td><%= a.institution_name || '—' %></td>
+            <td><%= a.amount ? '$' + Number(a.amount).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+            <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—' %></td>
+            <td><%= a.set_aside || '—' %></td>
+            <td><a href="/award-history/<%= a.id %>/edit" class="btn-link">Edit</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

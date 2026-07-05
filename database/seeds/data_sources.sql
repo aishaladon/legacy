@@ -1,10 +1,10 @@
-INSERT INTO data_sources (name, source_type, source_url, login_required, credentials_location, check_frequency, active, naics_filter, keyword_filter, track, notes) VALUES
-('SAM.gov',         'API',       'https://api.sam.gov/opportunities/v2/search', 0, 'SAM_GOV_API_KEY in .env', 'Daily',  1, '519120,541990,561410,541922', 'digitization,archival,archives,preservation', 'Government', 'Federal solicitations API — free key required'),
-('USASpending.gov', 'API',       'https://api.usaspending.gov',                 0, NULL,                        'Daily',  1, '519120,541990,561410,541922', NULL,                                             'Government', 'Award history and expiring contracts'),
-('ArchiveGig',      'Web Scrape','https://archivegig.com',                       0, NULL,                        'Daily',  1, NULL,                           NULL,                                             'Professional','Archival gig and consulting postings'),
-('SAA Job Board',   'Web Scrape','https://careers.archivists.org',               0, NULL,                        'Daily',  1, NULL,                           NULL,                                             'Professional','Society of American Archivists'),
-('ALA Job Board',   'Web Scrape','https://joblist.ala.org',                      0, NULL,                        'Daily',  1, NULL,                           NULL,                                             'Professional','American Library Association'),
-('AAM Job Board',   'Web Scrape','https://www.aam-us.org/professional-resources/jobs', 0, NULL,                  'Daily',  1, NULL,                           NULL,                                             'Professional','American Alliance of Museums'),
-('IMLS Grants',     'Web Scrape','https://www.imls.gov/grants/awarded-grants',   0, NULL,                        'Daily',  1, NULL,                           'digitization,archival,preservation,collection',  'Grant',      'Institute of Museum and Library Services — award announcements'),
-('NEH Grants',      'Web Scrape','https://www.neh.gov/grants/recent-awards',     0, NULL,                        'Daily',  1, NULL,                           'digitization,archival,preservation,humanities',  'Grant',      'National Endowment for the Humanities'),
-('Email Inbox',     'Email',     NULL,                                            1, 'IMAP_* vars in .env',       'Hourly', 1, NULL,                           NULL,                                             'All',        'Parses info@legacypnp.ltd for APEX, BidSync, listserv, forwarded opps');
+INSERT IGNORE INTO data_sources (name, source_type, url, is_active, check_interval, notes) VALUES
+('SAM.gov',         'API',       'https://api.sam.gov/opportunities/v2/search',        1, 24, 'Federal solicitations API — SAM_GOV_API_KEY required in .env'),
+('USASpending.gov', 'API',       'https://api.usaspending.gov',                         1, 24, 'Award history and expiring contracts — no key required'),
+('ArchiveGig',      'Web Scrape','https://archivegig.com',                              1, 24, 'Archival gig and consulting postings'),
+('SAA Job Board',   'Web Scrape','https://careers.archivists.org',                      1, 24, 'Society of American Archivists'),
+('ALA Job Board',   'Web Scrape','https://joblist.ala.org',                             1, 24, 'American Library Association'),
+('AAM Job Board',   'Web Scrape','https://www.aam-us.org/professional-resources/jobs',  1, 24, 'American Alliance of Museums'),
+('IMLS Grants',     'Web Scrape','https://www.imls.gov/grants/awarded-grants',          1, 24, 'Institute of Museum and Library Services — award announcements'),
+('NEH Grants',      'Web Scrape','https://www.neh.gov/grants/recent-awards',            1, 24, 'National Endowment for the Humanities'),
+('Email Inbox',     'Email',     NULL,                                                   1,  1, 'Parses info@legacypnp.ltd via IMAP — IMAP_* vars in .env');

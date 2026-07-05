@@ -1,0 +1,39 @@
+<div class="page-header">
+  <h2>Contacts</h2>
+  <a href="/contacts/new" class="btn btn-primary">+ Add</a>
+</div>
+
+<form class="filter-bar" method="GET" action="/contacts">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name or title…" class="filter-input">
+  <select name="institution_id" class="filter-select">
+    <option value="">All Institutions</option>
+    <% institutions.forEach(function(i) { %>
+      <option value="<%= i.id %>" <%= filters.institution_id == i.id ? 'selected' : '' %>><%= i.name %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/contacts" class="btn-link">Clear</a>
+</form>
+
+<% if (contacts.length === 0) { %>
+  <p class="empty-state">No contacts found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Name</th><th>Title</th><th>Institution</th><th>Email</th><th>Phone</th></tr>
+      </thead>
+      <tbody>
+        <% contacts.forEach(function(c) { %>
+          <tr>
+            <td><a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a></td>
+            <td><%= c.title || '—' %></td>
+            <td><%= c.institution_name || '—' %></td>
+            <td><%= c.email ? '<a href="mailto:' + c.email + '">' + c.email + '</a>' : '—' %></td>
+            <td><%= c.phone || '—' %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

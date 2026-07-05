@@ -1,0 +1,35 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (guide) { %><a href="/guides/<%= guide.id %>" class="btn-link">Cancel</a><% } else { %><a href="/guides" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= guide ? '/guides/' + guide.id + '/edit' : '/guides' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" name="title" value="<%= guide ? guide.title : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Opportunity Type</label>
+      <select name="opportunity_type">
+        <% ['Government Contract','Grant','RFP','NOFO','Other'].forEach(function(t) { %>
+          <option value="<%= t %>" <%= (guide && guide.opportunity_type === t) ? 'selected' : '' %>><%= t %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Sort Order</label>
+      <input type="number" name="sort_order" value="<%= guide ? guide.sort_order : 0 %>">
+    </div>
+  </div>
+  <div class="form-group form-check">
+    <label><input type="checkbox" name="is_template" value="1" <%= (guide && guide.is_template) ? 'checked' : '' %>> This is a reusable template</label>
+  </div>
+  <div class="form-group">
+    <label>Content <span class="req">*</span></label>
+    <textarea name="content" rows="20" required><%= guide ? guide.content : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

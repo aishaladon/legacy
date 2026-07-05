@@ -1,0 +1,36 @@
+<div class="page-header">
+  <h2>Funders</h2>
+  <a href="/funders/new" class="btn btn-primary">+ Add</a>
+</div>
+
+<form class="filter-bar" method="GET" action="/funders">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name…" class="filter-input">
+  <select name="type" class="filter-select">
+    <option value="">All Types</option>
+    <% ['Federal','State','Foundation','Corporate','Other'].forEach(function(t) { %>
+      <option value="<%= t %>" <%= filters.type === t ? 'selected' : '' %>><%= t %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/funders" class="btn-link">Clear</a>
+</form>
+
+<% if (funders.length === 0) { %>
+  <p class="empty-state">No funders found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Eligible Institutions</th><th>Website</th></tr></thead>
+      <tbody>
+        <% funders.forEach(function(f) { %>
+          <tr>
+            <td><a href="/funders/<%= f.id %>"><%= f.name %></a></td>
+            <td><span class="badge"><%= f.funder_type %></span></td>
+            <td><%= f.eligible_institution_types ? f.eligible_institution_types.substring(0,60) + (f.eligible_institution_types.length > 60 ? '…' : '') : '—' %></td>
+            <td><% if (f.website) { %><a href="<%= f.website %>" target="_blank" rel="noopener">&#8599;</a><% } else { %>—<% } %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

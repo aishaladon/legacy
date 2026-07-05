@@ -1,0 +1,35 @@
+<div class="page-header">
+  <h2>Institutions</h2>
+  <a href="/institutions/new" class="btn btn-primary">+ Add</a>
+</div>
+
+<form class="filter-bar" method="GET" action="/institutions">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name…" class="filter-input">
+  <input type="text" name="state" value="<%= filters.state || '' %>" placeholder="State (e.g. CA)" class="filter-input filter-input--sm">
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/institutions" class="btn-link">Clear</a>
+</form>
+
+<% if (institutions.length === 0) { %>
+  <p class="empty-state">No institutions found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>City</th><th>State</th><th>Region</th><th>Website</th></tr>
+      </thead>
+      <tbody>
+        <% institutions.forEach(function(i) { %>
+          <tr>
+            <td><a href="/institutions/<%= i.id %>"><%= i.name %></a></td>
+            <td><%= i.institution_type || '—' %></td>
+            <td><%= i.city || '—' %></td>
+            <td><%= i.state || '—' %></td>
+            <td><%= i.region || '—' %></td>
+            <td><% if (i.website) { %><a href="<%= i.website %>" target="_blank" rel="noopener">&#8599;</a><% } else { %>—<% } %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

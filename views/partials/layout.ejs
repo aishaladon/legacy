@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Legacy BD</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('sidebar') %>
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle">&#9776;</button>
+      <span class="topbar-title"><%= title %></span>
+      <form action="/logout" method="POST" class="logout-form">
+        <button type="submit" class="btn-link">Log out</button>
+      </form>
+    </header>
+
+    <main class="content">
+      <% if (flash_success && flash_success.length) { %>
+        <div class="flash flash-success"><%= flash_success[0] %></div>
+      <% } %>
+      <% if (flash_error && flash_error.length) { %>
+        <div class="flash flash-error"><%= flash_error[0] %></div>
+      <% } %>
+      <% if (flash_info && flash_info.length) { %>
+        <div class="flash flash-info"><%= flash_info[0] %></div>
+      <% } %>
+
+      <%- body %>
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h2>Dashboard</h2>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-tile">
+    <div class="stat-value"><%= oppCounts.new_count || 0 %></div>
+    <div class="stat-label">New Opportunities</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-value"><%= oppCounts.pursuing || 0 %></div>
+    <div class="stat-label">Pursuing</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-value"><%= oppCounts.submitted || 0 %></div>
+    <div class="stat-label">Submitted</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-value"><%= pipelineCounts.in_pipeline || 0 %></div>
+    <div class="stat-label">In Pipeline</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-value"><%= projectCounts.active_projects || 0 %></div>
+    <div class="stat-label">Active Projects</div>
+  </div>
+  <div class="stat-tile stat-tile--warn">
+    <div class="stat-value"><%= oppCounts.due_soon || 0 %></div>
+    <div class="stat-label">Due in 14 Days</div>
+  </div>
+</div>
+
+<div class="dashboard-cols">
+  <section class="card">
+    <div class="card-header">
+      <h3>Due Soon</h3>
+      <a href="/opportunities?status=Pursuing" class="btn-link">View all</a>
+    </div>
+    <% if (dueSoon.length === 0) { %>
+      <p class="empty-state">No deadlines in the next 14 days.</p>
+    <% } else { %>
+      <ul class="item-list">
+        <% dueSoon.forEach(function(o) { %>
+          <li class="item-row">
+            <a href="/opportunities/<%= o.id %>" class="item-title"><%= o.title %></a>
+            <span class="badge badge--<%= o.opportunity_type.toLowerCase().replace(' ','') %>"><%= o.opportunity_type %></span>
+            <span class="due-date due-date--urgent"><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—' %></span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Recent Opportunities</h3>
+      <a href="/opportunities" class="btn-link">View all</a>
+    </div>
+    <% if (recentOpps.length === 0) { %>
+      <p class="empty-state">No opportunities yet. <a href="/opportunities/new">Add one</a>.</p>
+    <% } else { %>
+      <ul class="item-list">
+        <% recentOpps.forEach(function(o) { %>
+          <li class="item-row">
+            <% if (o.is_starred) { %><span class="star">&#9733;</span><% } %>
+            <a href="/opportunities/<%= o.id %>" class="item-title"><%= o.title %></a>
+            <span class="badge badge--<%= o.status.toLowerCase().replace(' ','-') %>"><%= o.status %></span>
+            <% if (o.alignment_score) { %>
+              <span class="score">&#9679; <%= Number(o.alignment_score).toFixed(1) %></span>
+            <% } %>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+</div>

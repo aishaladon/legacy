@@ -1,0 +1,53 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (contact) { %><a href="/contacts/<%= contact.id %>" class="btn-link">Cancel</a><% } else { %><a href="/contacts" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= contact ? '/contacts/' + contact.id + '/edit' : '/contacts' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group">
+      <label>First Name <span class="req">*</span></label>
+      <input type="text" name="first_name" value="<%= contact ? contact.first_name : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Last Name <span class="req">*</span></label>
+      <input type="text" name="last_name" value="<%= contact ? contact.last_name : '' %>" required>
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Title / Role</label>
+      <input type="text" name="title" value="<%= contact ? (contact.title || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Institution</label>
+      <select name="institution_id">
+        <option value="">— None —</option>
+        <% institutions.forEach(function(i) { %>
+          <option value="<%= i.id %>" <%= (contact && contact.institution_id == i.id) ? 'selected' : '' %>><%= i.name %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" name="email" value="<%= contact ? (contact.email || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" name="phone" value="<%= contact ? (contact.phone || '') : '' %>">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>LinkedIn</label>
+      <input type="url" name="linkedin" value="<%= contact ? (contact.linkedin || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="4"><%= contact ? (contact.notes || '') : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

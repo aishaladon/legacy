@@ -1,0 +1,23 @@
+<div class="page-header">
+  <h2>Bid Writing Guides</h2>
+  <a href="/guides/new" class="btn btn-primary">+ New Guide</a>
+</div>
+
+<% if (guides.length === 0) { %>
+  <p class="empty-state">No guides yet. <a href="/guides/new">Create your first bid writing guide</a>.</p>
+<% } else { %>
+  <div class="guide-grid">
+    <% guides.forEach(function(g) { %>
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <span class="badge"><%= g.opportunity_type %></span>
+          <% if (g.is_template) { %><span class="badge badge--template">Template</span><% } %>
+        </div>
+        <h3 class="guide-title"><a href="/guides/<%= g.id %>"><%= g.title %></a></h3>
+        <div class="guide-actions">
+          <a href="/guides/<%= g.id %>/edit" class="btn-link">Edit</a>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } %>

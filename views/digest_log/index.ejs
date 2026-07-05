@@ -1,0 +1,26 @@
+<div class="page-header">
+  <h2>Daily Digest Log</h2>
+</div>
+
+<% if (digests.length === 0) { %>
+  <p class="empty-state">No digests sent yet. Automation will populate this once cron jobs are configured.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Sent</th><th>Subject</th><th>Opportunities</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% digests.forEach(function(d) { %>
+          <tr>
+            <td><%= new Date(d.sent_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) %></td>
+            <td><%= d.subject || '—' %></td>
+            <td><%= d.opportunities_count %></td>
+            <td><span class="badge badge--<%= d.status.toLowerCase() %>"><%= d.status %></span></td>
+            <td><a href="/digest-log/<%= d.id %>" class="btn-link">View</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

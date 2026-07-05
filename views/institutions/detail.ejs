@@ -1,0 +1,59 @@
+<div class="page-header">
+  <h2><%= institution.name %></h2>
+  <a href="/institutions/<%= institution.id %>/edit" class="btn btn-secondary">Edit</a>
+</div>
+
+<div class="detail-grid">
+  <section class="card">
+    <h3>Overview</h3>
+    <dl class="detail-list">
+      <dt>Type</dt><dd><%= institution.institution_type || '—' %></dd>
+      <dt>City</dt><dd><%= institution.city || '—' %></dd>
+      <dt>State</dt><dd><%= institution.state || '—' %></dd>
+      <dt>Region</dt><dd><%= institution.region || '—' %></dd>
+      <dt>Website</dt><dd><% if (institution.website) { %><a href="<%= institution.website %>" target="_blank" rel="noopener"><%= institution.website %></a><% } else { %>—<% } %></dd>
+    </dl>
+    <% if (institution.notes) { %><div class="prose" style="margin-top:1rem"><%= institution.notes %></div><% } %>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Contacts (<%= contacts.length %>)</h3>
+      <a href="/contacts/new" class="btn-link">+ Add</a>
+    </div>
+    <% if (contacts.length === 0) { %>
+      <p class="empty-state">No contacts.</p>
+    <% } else { %>
+      <ul class="item-list">
+        <% contacts.forEach(function(c) { %>
+          <li class="item-row">
+            <a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a>
+            <span class="muted"><%= c.title || '' %></span>
+            <% if (c.email) { %><a href="mailto:<%= c.email %>" class="muted"><%= c.email %></a><% } %>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<% if (awards.length > 0) { %>
+<section class="card" style="margin-top:1rem">
+  <h3>Award History</h3>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Title</th><th>Type</th><th>Amount</th><th>Period</th></tr></thead>
+      <tbody>
+        <% awards.forEach(function(a) { %>
+          <tr>
+            <td><%= a.title %></td>
+            <td><%= a.award_type %></td>
+            <td><%= a.amount ? '$' + Number(a.amount).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+            <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—' %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } %>

@@ -1,4 +1,4 @@
-INSERT INTO funders (name, funder_type, website, eligible_institution_types, notes) VALUES
+INSERT IGNORE INTO funders (name, funder_type, website, eligible_institution_types, notes) VALUES
 ('IMLS — Institute of Museum and Library Services', 'Federal',    'https://www.imls.gov',                    'Museums, Libraries, Archives, Tribal institutions',         'Primary federal funder for digitization and preservation projects'),
 ('NEH — National Endowment for the Humanities',    'Federal',    'https://www.neh.gov',                     'Universities, Cultural institutions, Nonprofits',           'Preservation and Access, Digital Humanities grants'),
 ('California Humanities',                          'State',      'https://calhum.org',                      'California nonprofits and cultural institutions',           'State humanities council — grant cycles vary'),

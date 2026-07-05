@@ -1,4 +1,4 @@
-INSERT INTO user_settings (name, value, setting_type, description) VALUES
+INSERT IGNORE INTO user_settings (name, value, setting_type, description) VALUES
 ('digest_email_address',          'info@legacypnp.ltd',        'Email',  'Address to send the daily digest to'),
 ('digest_delivery_time',          '07:00',                     'Text',   'Time to send digest (HH:MM, 24h, Pacific Time)'),
 ('minimum_contract_amount',       '5000',                      'Number', 'Filter out opportunities below this dollar amount'),

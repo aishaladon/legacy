@@ -1,0 +1,59 @@
+<div class="page-header">
+  <h2>Grant Opportunities</h2>
+  <a href="/grants/new" class="btn btn-primary">+ Add</a>
+</div>
+
+<form class="filter-bar" method="GET" action="/grants">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title…" class="filter-input">
+  <select name="funder_id" class="filter-select">
+    <option value="">All Funders</option>
+    <% funders.forEach(function(f) { %>
+      <option value="<%= f.id %>" <%= filters.funder_id == f.id ? 'selected' : '' %>><%= f.name %></option>
+    <% }); %>
+  </select>
+  <select name="status" class="filter-select">
+    <option value="">All Statuses</option>
+    <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/grants" class="btn-link">Clear</a>
+</form>
+
+<% if (grants.length === 0) { %>
+  <p class="empty-state">No grant opportunities found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Title</th>
+          <th>Funder</th>
+          <th>Program</th>
+          <th>Due</th>
+          <th>Amount</th>
+          <th>Match?</th>
+          <th>Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% grants.forEach(function(g) { %>
+          <tr>
+            <td><% if (g.is_starred) { %><span class="star">&#9733;</span><% } %></td>
+            <td><a href="/opportunities/<%= g.id %>"><%= g.title %></a></td>
+            <td><%= g.funder_name || '—' %></td>
+            <td><%= g.program_name || '—' %></td>
+            <td><%= g.due_date ? new Date(g.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></td>
+            <td><% if (g.amount_max) { %>$<%= Number(g.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else if (g.amount_min) { %>$<%= Number(g.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+<% } else { %>—<% } %></td>
+            <td><%= g.match_required ? 'Yes' : 'No' %></td>
+            <td><%= g.alignment_score ? Number(g.alignment_score).toFixed(1) : '—' %></td>
+            <td><span class="badge badge--<%= g.status.toLowerCase().replace(' ','-') %>"><%= g.status %></span></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

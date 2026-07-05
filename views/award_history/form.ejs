@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <a href="/award-history" class="btn-link">Cancel</a>
+</div>
+
+<form action="<%= award ? '/award-history/' + award.id + '/edit' : '/award-history' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" name="title" value="<%= award ? award.title : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select name="award_type">
+        <% ['Government Contract','Grant','Subcontract','Other'].forEach(function(t) { %>
+          <option value="<%= t %>" <%= (award && award.award_type === t) ? 'selected' : '' %>><%= t %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Agency / Funder</label>
+      <input type="text" name="agency_funder" value="<%= award ? (award.agency_funder || '') : '' %>">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Institution</label>
+      <select name="institution_id">
+        <option value="">— None —</option>
+        <% institutions.forEach(function(i) { %>
+          <option value="<%= i.id %>" <%= (award && award.institution_id == i.id) ? 'selected' : '' %>><%= i.name %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Award / Contract Number</label>
+      <input type="text" name="award_number" value="<%= award ? (award.award_number || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>NAICS Code</label>
+      <input type="text" name="naics_code" value="<%= award ? (award.naics_code || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Set-Aside</label>
+      <input type="text" name="set_aside" value="<%= award ? (award.set_aside || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Amount ($)</label>
+      <input type="number" name="amount" value="<%= award ? (award.amount || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Period Start</label>
+      <input type="date" name="period_start" value="<%= award && award.period_start ? new Date(award.period_start).toISOString().split('T')[0] : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Period End</label>
+      <input type="date" name="period_end" value="<%= award && award.period_end ? new Date(award.period_end).toISOString().split('T')[0] : '' %>">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Source URL</label>
+      <input type="url" name="source_url" value="<%= award ? (award.source_url || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="4"><%= award ? (award.notes || '') : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

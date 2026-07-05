@@ -1,0 +1,23 @@
+{
+  "name": "legacy-bd-workspace",
+  "version": "1.0.0",
+  "description": "Legacy P&P Business Development Workspace",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "init": "node init_db.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-flash": "^0.1.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.0",
+    "mysql2": "^3.9.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

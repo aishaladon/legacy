@@ -1,0 +1,73 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <a href="/projects" class="btn-link">Cancel</a>
+</div>
+
+<form action="<%= project ? '/projects/' + project.id + '/edit' : '/projects' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" name="title" value="<%= project ? project.title : '' %>" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Type</label>
+      <select name="project_type">
+        <% ['Government Contract','Grant','Subcontract','Other'].forEach(function(t) { %>
+          <option value="<%= t %>" <%= (project && project.project_type === t) ? 'selected' : '' %>><%= t %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <% ['Active','On Hold','Complete','Cancelled'].forEach(function(s) { %>
+          <option value="<%= s %>" <%= (project && project.status === s) ? 'selected' : '' %>><%= s %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Institution</label>
+      <select name="institution_id">
+        <option value="">— None —</option>
+        <% institutions.forEach(function(i) { %>
+          <option value="<%= i.id %>" <%= (project && project.institution_id == i.id) ? 'selected' : '' %>><%= i.name %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Start Date</label>
+      <input type="date" name="start_date" value="<%= project && project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '' %>">
+    </div>
+    <div class="form-group">
+      <label>End Date</label>
+      <input type="date" name="end_date" value="<%= project && project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Contract Value ($)</label>
+      <input type="number" name="contract_value" value="<%= project ? (project.contract_value || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Contract Number</label>
+      <input type="text" name="contract_number" value="<%= project ? (project.contract_number || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Co-PI / Partners</label>
+    <input type="text" name="co_pi" value="<%= project ? (project.co_pi || '') : '' %>">
+  </div>
+  <div class="form-group">
+    <label>Deliverables Notes</label>
+    <textarea name="deliverables_notes" rows="4"><%= project ? (project.deliverables_notes || '') : '' %></textarea>
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="3"><%= project ? (project.notes || '') : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
