@@ -445,6 +445,32 @@ a:hover { text-decoration: underline; }
 }
 .section-heading { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; color: var(--brand); }
 
+/* ── SAM.gov Search ────────────────────────────────────── */
+.sam-no-key {
+  background: #fffbeb; border: 1px solid #f6d860; border-radius: var(--radius);
+  padding: 1rem 1.25rem; color: #744210; margin-bottom: 1.25rem; font-size: .875rem;
+}
+.sam-no-key code { background: #fef3c7; padding: .1rem .35rem; border-radius: 3px; font-family: monospace; }
+.sam-search-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+.sam-search-row { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin-bottom: .5rem; }
+.sam-search-row:last-child { margin-bottom: 0; }
+.sam-search-wide { flex: 1; min-width: 200px; }
+.sam-search-btn-group { display: flex; gap: .5rem; align-items: flex-end; }
+.sam-results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; font-size: .875rem; color: var(--text-muted); }
+.sam-pagination { display: flex; gap: .5rem; }
+.sam-pagination--bottom { margin-top: 1rem; justify-content: center; }
+.sam-results { display: flex; flex-direction: column; gap: .65rem; }
+.sam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .9rem 1.1rem; box-shadow: var(--shadow); }
+.sam-card-title { font-weight: 600; font-size: .95rem; margin-bottom: .4rem; }
+.sam-card-title a { color: var(--brand); }
+.sam-card-title a:hover { color: var(--brand-light); }
+.sam-card-meta { display: flex; flex-wrap: wrap; gap: .4rem .9rem; font-size: .8rem; color: var(--text-muted); margin-bottom: .4rem; }
+.sam-meta-item strong { color: var(--text); }
+.sam-set-aside { background: #ebf8ff; color: #2a69ac; padding: .1rem .5rem; border-radius: 99px; font-weight: 600; font-size: .72rem; }
+.sam-card-dates { display: flex; gap: 1rem; font-size: .8rem; color: var(--text-muted); margin-bottom: .6rem; }
+.sam-due--urgent { color: var(--danger); font-weight: 700; }
+.sam-card-actions { display: flex; gap: .5rem; }
+
 /* ── Digest banner ─────────────────────────────────────── */
 .digest-banner {
   display: flex; align-items: center; gap: 1rem;

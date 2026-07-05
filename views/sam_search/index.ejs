@@ -1,0 +1,141 @@
+<div class="page-header">
+  <h2>SAM.gov Search</h2>
+</div>
+<p class="page-desc">Search active federal contract opportunities directly from SAM.gov. Save any result to your tracked opportunities with one click.</p>
+
+<details class="how-to">
+  <summary>How to use SAM.gov Search</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Enter a <strong>keyword</strong> (e.g. "historic preservation", "archival services", "records management"), your <strong>NAICS code</strong>, or filter by <strong>set-aside</strong> type — use any combination.</li>
+      <li>Results come directly from SAM.gov in real time — no middleman, no daily digest delay.</li>
+      <li>Click <strong>Save</strong> on any result to add it to your Government Contracts list instantly. The solicitation number, agency, NAICS code, and due date are all imported automatically.</li>
+      <li>Click <strong>View on SAM.gov</strong> to read the full solicitation, attachments, and any amendments before deciding to pursue.</li>
+      <li>To get your free SAM.gov API key: go to <strong>api.data.gov/signup</strong>, register with your email, and add the key as <code>SAM_API_KEY</code> in your Hostinger environment variables.</li>
+    </ol>
+  </div>
+</details>
+
+<% if (!hasKey) { %>
+  <div class="sam-no-key">
+    <strong>SAM_API_KEY not set.</strong>
+    To enable live SAM.gov search, get a free API key at
+    <strong>api.data.gov/signup</strong> (takes about 2 minutes),
+    then add it as <code>SAM_API_KEY</code> in your Hostinger environment variables and redeploy.
+  </div>
+<% } else { %>
+
+<form class="sam-search-form" method="GET" action="/sam-search">
+  <div class="sam-search-row">
+    <div class="form-group sam-search-wide">
+      <label>Keywords</label>
+      <input type="text" name="q" value="<%= filters.q %>" placeholder="e.g. historic preservation, archival, records management">
+    </div>
+    <div class="form-group">
+      <label>NAICS Code</label>
+      <input type="text" name="naics" value="<%= filters.naics %>" placeholder="e.g. 712110" style="width:9rem;">
+    </div>
+  </div>
+  <div class="sam-search-row">
+    <div class="form-group">
+      <label>Set-Aside</label>
+      <select name="set_aside">
+        <option value="">Any Set-Aside</option>
+        <% Object.entries(setAsides).forEach(function([code, label]) { %>
+          <option value="<%= code %>" <%= filters.set_aside === code ? 'selected' : '' %>><%= label %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Posted Within</label>
+      <select name="days">
+        <option value="30"  <%= filters.days === '30'  ? 'selected' : '' %>>Last 30 days</option>
+        <option value="60"  <%= filters.days === '60'  ? 'selected' : '' %>>Last 60 days</option>
+        <option value="90"  <%= filters.days === '90'  ? 'selected' : '' %>>Last 90 days</option>
+        <option value="180" <%= filters.days === '180' ? 'selected' : '' %>>Last 6 months</option>
+      </select>
+    </div>
+    <div class="form-group sam-search-btn-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary">Search SAM.gov</button>
+      <a href="/sam-search" class="btn-link">Clear</a>
+    </div>
+  </div>
+</form>
+
+<% if (error) { %>
+  <div class="inbox-error">
+    <strong>SAM.gov API error.</strong><br><%= error %>
+  </div>
+<% } else if (searched && results !== null) { %>
+
+  <% if (results.length === 0) { %>
+    <p class="empty-state">No results found. Try broader keywords or a longer date range.</p>
+  <% } else { %>
+    <div class="sam-results-header">
+      <span><strong><%= total.toLocaleString() %></strong> total results — showing <%= pageOffset + 1 %>–<%= Math.min(pageOffset + pageSize, total) %></span>
+      <div class="sam-pagination">
+        <% if (pageOffset > 0) { %>
+          <a href="/sam-search?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&set_aside=<%= filters.set_aside %>&days=<%= filters.days %>&offset=<%= pageOffset - pageSize %>" class="btn btn-secondary btn-sm">&#8592; Prev</a>
+        <% } %>
+        <% if (pageOffset + pageSize < total) { %>
+          <a href="/sam-search?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&set_aside=<%= filters.set_aside %>&days=<%= filters.days %>&offset=<%= pageOffset + pageSize %>" class="btn btn-secondary btn-sm">Next &#8594;</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="sam-results">
+      <% results.forEach(function(r) { %>
+        <div class="sam-card">
+          <div class="sam-card-title">
+            <a href="<%= r.samUrl %>" target="_blank" rel="noopener"><%= r.title %></a>
+          </div>
+          <div class="sam-card-meta">
+            <% if (r.agency) { %><span class="sam-meta-item"><strong>Agency:</strong> <%= r.agency %></span><% } %>
+            <% if (r.solicitationNumber) { %><span class="sam-meta-item"><strong>Sol #:</strong> <%= r.solicitationNumber %></span><% } %>
+            <% if (r.naicsCode) { %><span class="sam-meta-item"><strong>NAICS:</strong> <%= r.naicsCode %></span><% } %>
+            <% if (r.setAside) { %><span class="sam-meta-item sam-set-aside"><%= r.setAside %></span><% } %>
+            <% if (r.type) { %><span class="sam-meta-item"><%= r.type %></span><% } %>
+          </div>
+          <div class="sam-card-dates">
+            <% if (r.postedDate) { %><span>Posted: <%= new Date(r.postedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %></span><% } %>
+            <% if (r.dueDate) { %>
+              <span class="sam-due <%= new Date(r.dueDate) < new Date(Date.now() + 14*86400000) ? 'sam-due--urgent' : '' %>">
+                Due: <%= new Date(r.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
+              </span>
+            <% } %>
+          </div>
+          <div class="sam-card-actions">
+            <a href="<%= r.samUrl %>" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View on SAM.gov &#8599;</a>
+            <form action="/sam-search/save" method="POST" style="display:inline;">
+              <input type="hidden" name="title" value="<%= r.title %>">
+              <input type="hidden" name="solicitation_number" value="<%= r.solicitationNumber %>">
+              <input type="hidden" name="agency" value="<%= r.agency %>">
+              <input type="hidden" name="full_agency" value="<%= r.fullAgency %>">
+              <input type="hidden" name="naics_code" value="<%= r.naicsCode %>">
+              <input type="hidden" name="set_aside" value="<%= r.setAside %>">
+              <input type="hidden" name="due_date" value="<%= r.dueDate %>">
+              <input type="hidden" name="posted_date" value="<%= r.postedDate %>">
+              <input type="hidden" name="sam_url" value="<%= r.samUrl %>">
+              <input type="hidden" name="notice_id" value="<%= r.noticeId %>">
+              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            </form>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <% if (total > pageSize) { %>
+    <div class="sam-pagination sam-pagination--bottom">
+      <% if (pageOffset > 0) { %>
+        <a href="/sam-search?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&set_aside=<%= filters.set_aside %>&days=<%= filters.days %>&offset=<%= pageOffset - pageSize %>" class="btn btn-secondary btn-sm">&#8592; Previous Page</a>
+      <% } %>
+      <% if (pageOffset + pageSize < total) { %>
+        <a href="/sam-search?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&set_aside=<%= filters.set_aside %>&days=<%= filters.days %>&offset=<%= pageOffset + pageSize %>" class="btn btn-secondary btn-sm">Next Page &#8594;</a>
+      <% } %>
+    </div>
+    <% } %>
+  <% } %>
+<% } %>
+
+<% } %>

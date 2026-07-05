@@ -37,6 +37,7 @@ app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/getting_started'));
 app.use('/', require('./routes/dashboard'));
 app.use('/opportunities', require('./routes/opportunities'));
+app.use('/sam-search', require('./routes/sam_search'));
 app.use('/government', require('./routes/government'));
 app.use('/grants', require('./routes/grants'));
 app.use('/pipeline', require('./routes/pipeline'));
