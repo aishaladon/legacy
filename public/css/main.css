@@ -525,3 +525,25 @@ a:hover { text-decoration: underline; }
 .parse-preview summary::before { content: '▶'; font-size: .6rem; }
 .parse-preview[open] summary::before { content: '▼'; }
 .parse-footer { margin-top: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+
+/* ── USASpending Research ──────────────────────────────── */
+.usas-card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 1rem; margin-bottom: .5rem;
+}
+.usas-recipient {
+  font-size: 1rem; font-weight: 700; color: var(--text); flex: 1;
+}
+.usas-amount {
+  font-size: 1rem; font-weight: 700; color: var(--success);
+  white-space: nowrap; flex-shrink: 0;
+}
+.usas-description {
+  font-size: .82rem; color: var(--text-muted); margin-bottom: .5rem;
+  line-height: 1.4;
+}
+.usas-total-value { font-size: .82rem; color: var(--text-muted); }
+.usas-total-value strong { color: var(--text); }
+
+/* ── Grants.gov Search ────────────────────────────────── */
+.grants-award-range { font-size: .82rem; }
