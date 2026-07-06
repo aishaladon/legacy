@@ -6,7 +6,7 @@ const { requireLogin } = require('../middleware/auth');
 router.use(requireLogin);
 
 const CONTRACT_CODES = ['A', 'B', 'C', 'D'];
-const GRANT_CODES    = ['02', '03', '04', '05', '06', '07', '08'];
+const GRANT_CODES    = ['02', '03', '04', '05', '06'];
 const IDV_CODES      = ['E', 'F', 'G', 'H', 'I', 'J', 'K'];
 
 const FIELDS = [
