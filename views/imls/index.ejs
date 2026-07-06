@@ -1,0 +1,130 @@
+<div class="page-header">
+  <h2>IMLS Award Search</h2>
+</div>
+<p class="page-desc">Find every museum and library that received an IMLS grant in the past 3–5 years. These organizations have demonstrated they pursue federal funding — they are your warmest targets. Save any recipient to your Institutions list as a Target with one click.</p>
+
+<details class="how-to">
+  <summary>How to use IMLS Award Search</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>The page loads with the last 5 years of IMLS grants by default — no search needed to start exploring.</li>
+      <li>Filter by <strong>Museum Services</strong> to see only museum recipients; filter by <strong>Library Services</strong> for libraries. Leave it on "All" to see the full picture.</li>
+      <li>Search by <strong>keyword</strong> to find grants related to specific topics — try "African American", "historic preservation", "archival", "digitization", or "collections".</li>
+      <li>Filter by <strong>state</strong> to find local institutions you can build in-person relationships with.</li>
+      <li>Click <strong>Save as Target</strong> to add any recipient to your Institutions list. The institution type (Museum or Library) and IMLS program are saved automatically as notes.</li>
+    </ol>
+    <p><strong>Why this matters:</strong> An organization that won an IMLS grant has a grants manager, knows how to work with federal funders, and understands compliance — exactly the profile of a client who values your services and knows how to budget for them.</p>
+  </div>
+</details>
+
+<form class="sam-search-form" method="GET" action="/imls">
+  <div class="sam-search-row">
+    <div class="form-group sam-search-wide">
+      <label>Keyword</label>
+      <input type="text" name="q" value="<%= filters.q %>" placeholder="e.g. African American, historic preservation, digitization, archival">
+    </div>
+    <div class="form-group">
+      <label>State</label>
+      <input type="text" name="state" value="<%= filters.state %>" placeholder="e.g. NY, CA, TX" style="width:5rem;">
+    </div>
+  </div>
+  <div class="sam-search-row">
+    <div class="form-group">
+      <label>Program Area</label>
+      <select name="sub">
+        <% Object.entries(subAgencies).forEach(function([code, label]) { %>
+          <option value="<%= code %>" <%= filters.sub === code ? 'selected' : '' %>><%= label %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Award Years</label>
+      <div style="display:flex;gap:.4rem;align-items:center;">
+        <input type="number" name="year_from" value="<%= filters.year_from %>" min="2000" max="2030" style="width:5.5rem;">
+        <span style="font-size:.8rem;color:var(--text-muted);">to</span>
+        <input type="number" name="year_to"   value="<%= filters.year_to %>"   min="2000" max="2030" style="width:5.5rem;">
+      </div>
+    </div>
+    <div class="form-group sam-search-btn-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary">Search IMLS Awards</button>
+      <a href="/imls" class="btn-link">Reset</a>
+    </div>
+  </div>
+</form>
+
+<% if (error) { %>
+  <div class="inbox-error"><strong>Data error.</strong><br><%= error %><br><small>USASpending may be temporarily unavailable. Try again in a few minutes.</small></div>
+<% } else if (results !== null) { %>
+
+  <% if (results.length === 0) { %>
+    <p class="empty-state">No IMLS awards found for those filters. Try broader keywords or a wider year range.</p>
+  <% } else { %>
+
+    <div class="sam-results-header">
+      <span>
+        <strong><%= (meta.total || 0).toLocaleString() %></strong> IMLS awards found
+        — showing page <%= page %> of <%= Math.ceil((meta.total || 0) / 25) %>
+        <span class="usas-total-value">
+          <% const pageTotal = results.reduce((s,r) => s + (r.amount || 0), 0); %>
+          &nbsp;|&nbsp; Page total: <strong>$<%= pageTotal.toLocaleString('en-US',{maximumFractionDigits:0}) %></strong>
+        </span>
+      </span>
+      <div class="sam-pagination">
+        <% if (page > 1) { %>
+          <a href="/imls?q=<%= encodeURIComponent(filters.q) %>&state=<%= filters.state %>&sub=<%= filters.sub %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">&#8592; Prev</a>
+        <% } %>
+        <% if (meta.hasNext) { %>
+          <a href="/imls?q=<%= encodeURIComponent(filters.q) %>&state=<%= filters.state %>&sub=<%= filters.sub %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">Next &#8594;</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="sam-results">
+      <% results.forEach(function(r) { %>
+        <div class="sam-card">
+          <div class="usas-card-header">
+            <div class="usas-recipient"><%= r.recipient %></div>
+            <div class="usas-amount">$<%= Number(r.amount).toLocaleString('en-US',{maximumFractionDigits:0}) %></div>
+          </div>
+          <div class="sam-card-meta">
+            <% if (r.subAgency) { %><span class="sam-meta-item"><strong>Program:</strong> <%= r.subAgency %></span><% } %>
+            <% if (r.city || r.state) { %><span class="sam-meta-item"><strong>Location:</strong> <%= [r.city, r.state].filter(Boolean).join(', ') %></span><% } %>
+            <% if (r.awardId) { %><span class="sam-meta-item"><strong>Award ID:</strong> <%= r.awardId %></span><% } %>
+          </div>
+          <% if (r.description) { %>
+            <div class="usas-description"><%= r.description.slice(0, 220) %><%= r.description.length > 220 ? '…' : '' %></div>
+          <% } %>
+          <div class="sam-card-dates">
+            <% if (r.startDate) { %><span>Start: <%= new Date(r.startDate).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %></span><% } %>
+            <% if (r.endDate) { %><span>End: <%= new Date(r.endDate).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %></span><% } %>
+          </div>
+          <div class="sam-card-actions">
+            <form action="/imls/save-institution" method="POST" style="display:inline;">
+              <input type="hidden" name="name"        value="<%= r.recipient %>">
+              <input type="hidden" name="city"        value="<%= r.city %>">
+              <input type="hidden" name="state"       value="<%= r.state %>">
+              <input type="hidden" name="sub_agency"  value="<%= r.subAgency %>">
+              <input type="hidden" name="description" value="<%= r.description %>">
+              <button type="submit" class="btn btn-primary btn-sm">Save as Target</button>
+            </form>
+            <a href="https://www.usaspending.gov/search/?hash=<%- encodeURIComponent(JSON.stringify({filters:{recipient_search_text:[r.recipient]}})) %>"
+               target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View on USASpending &#8599;</a>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <% if (meta.hasNext || page > 1) { %>
+    <div class="sam-pagination sam-pagination--bottom">
+      <% if (page > 1) { %>
+        <a href="/imls?q=<%= encodeURIComponent(filters.q) %>&state=<%= filters.state %>&sub=<%= filters.sub %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">&#8592; Previous Page</a>
+      <% } %>
+      <% if (meta.hasNext) { %>
+        <a href="/imls?q=<%= encodeURIComponent(filters.q) %>&state=<%= filters.state %>&sub=<%= filters.sub %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">Next Page &#8594;</a>
+      <% } %>
+    </div>
+    <% } %>
+
+  <% } %>
+<% } %>
