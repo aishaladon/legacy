@@ -5,10 +5,6 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
-const CONTRACT_CODES = ['A', 'B', 'C', 'D'];
-const GRANT_CODES    = ['02', '03', '04', '05', '06'];
-const IDV_CODES      = ['E', 'F', 'G', 'H', 'I', 'J', 'K'];
-
 const FIELDS = [
   'Award ID', 'Recipient Name', 'recipient_id',
   'Start Date', 'End Date', 'Award Amount',
@@ -27,15 +23,20 @@ router.get('/', async (req, res) => {
   if (searched) {
     try {
       const type = award_type || 'contracts';
-      const awardCategory = type === 'grants' ? 'grants'
-                          : type === 'idv'    ? 'idvs'
-                          : 'contracts';
+
+      const CONTRACT_TYPE_CODES = ['A', 'B', 'C', 'D'];
+      const GRANT_TYPE_CODES    = ['02', '03', '04', '05', '06'];
+      const IDV_TYPE_CODES      = ['E', 'F', 'G', 'H', 'I', 'J', 'K'];
+
+      const awardTypeCodes = type === 'grants' ? GRANT_TYPE_CODES
+                           : type === 'idv'    ? IDV_TYPE_CODES
+                           : CONTRACT_TYPE_CODES;
 
       const startYear = parseInt(year_from) || (new Date().getFullYear() - 3);
       const endYear   = parseInt(year_to)   || new Date().getFullYear();
 
       const filters = {
-        award_categories: [awardCategory],
+        award_type_codes: awardTypeCodes,
         time_period: [{ start_date: `${startYear}-01-01`, end_date: `${endYear}-12-31` }]
       };
 

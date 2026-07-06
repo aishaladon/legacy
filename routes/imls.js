@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
     const endYear   = parseInt(year_to)   || thisYear;
 
     const filters = {
-      award_categories: ['grants'],
+      award_type_codes: ['02', '03', '04', '05', '06'],
       time_period: [{ start_date: `${startYear}-01-01`, end_date: `${endYear}-12-31` }]
     };
 
