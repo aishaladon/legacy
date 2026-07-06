@@ -14,13 +14,23 @@
       <dt>Region</dt><dd><%= institution.region || '—' %></dd>
       <dt>Website</dt><dd><% if (institution.website) { %><a href="<%= institution.website %>" target="_blank" rel="noopener"><%= institution.website %></a><% } else { %>—<% } %></dd>
     </dl>
+    <% if (contacts.length > 0) { %>
+      <div class="inst-primary-contact">
+        <strong style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Primary Contact</strong>
+        <div class="inst-contact-name"><%= contacts[0].first_name %> <%= contacts[0].last_name %><% if (contacts[0].title) { %> <span class="inst-contact-title">— <%= contacts[0].title %></span><% } %></div>
+        <div class="inst-contact-details">
+          <% if (contacts[0].email) { %><a href="mailto:<%= contacts[0].email %>"><%= contacts[0].email %></a><% } %>
+          <% if (contacts[0].phone) { %><span><%= contacts[0].phone %></span><% } %>
+        </div>
+      </div>
+    <% } %>
     <% if (institution.notes) { %>
       <div style="margin-top:1rem;">
-        <strong style="font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Relationship Notes</strong>
+        <strong style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Relationship Notes</strong>
         <div class="prose" style="margin-top:.4rem"><%= institution.notes %></div>
       </div>
     <% } else { %>
-      <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No relationship notes yet. <a href="/institutions/<%= institution.id %>/edit" class="btn-link">Add notes</a> about your history, connections, or next steps with this org.</p>
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No relationship notes yet. <a href="/institutions/<%= institution.id %>/edit" class="btn-link">Add notes</a> about your history or next steps.</p>
     <% } %>
   </section>
 

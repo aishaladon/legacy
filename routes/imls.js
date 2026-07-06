@@ -5,8 +5,6 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
-const GRANT_CODES = ['02', '03', '04', '05', '06'];
-
 const FIELDS = [
   'Award ID', 'Recipient Name',
   'Start Date', 'End Date', 'Award Amount',
@@ -16,18 +14,14 @@ const FIELDS = [
 
 const SUB_AGENCY_FILTERS = {
   '':        'All IMLS Programs',
-  'museum':  'Museum Services (Office of Museum Services)',
-  'library': 'Library Services (Office of Library Services)'
+  'museum':  'Museum Services',
+  'library': 'Library Services'
 };
 
 router.get('/', async (req, res) => {
   const { q, state, year_from, year_to, sub, page: rawPage } = req.query;
   const thisYear = new Date().getFullYear();
-  const defaultFrom = String(thisYear - 4);
-  const defaultTo   = String(thisYear);
 
-  // Auto-search on first load with default 5-year window
-  const isFirstLoad = Object.keys(req.query).length === 0;
   let results = null;
   let meta = {};
   let error = null;
@@ -38,26 +32,21 @@ router.get('/', async (req, res) => {
     const endYear   = parseInt(year_to)   || thisYear;
 
     const filters = {
-      award_type_codes: GRANT_CODES,
-      agencies: [{ type: 'awarding', tier: 'toptier', name: 'Institute of Museum and Library Services' }],
+      award_categories: ['grants'],
       time_period: [{ start_date: `${startYear}-01-01`, end_date: `${endYear}-12-31` }]
     };
 
-    if (q) filters.keywords = [q];
-    if (state) filters.place_of_performance_locations = [{ country: 'USA', state: state.toUpperCase() }];
+    // Default: filter to IMLS toptier agency
+    filters.agencies = [{ type: 'awarding', tier: 'toptier', name: 'Institute of Museum and Library Services' }];
 
-    // Museum vs Library sub-filter via keyword injection
     if (sub === 'museum') {
-      filters.agencies = [{
-        type: 'awarding', tier: 'subtier',
-        name: 'Office of Museum Services'
-      }];
+      filters.agencies = [{ type: 'awarding', tier: 'subtier', name: 'Office of Museum Services' }];
     } else if (sub === 'library') {
-      filters.agencies = [{
-        type: 'awarding', tier: 'subtier',
-        name: 'Office of Library Services'
-      }];
+      filters.agencies = [{ type: 'awarding', tier: 'subtier', name: 'Office of Library Services' }];
     }
+
+    if (q)     filters.keywords = [q];
+    if (state) filters.place_of_performance_locations = [{ country: 'USA', state: state.toUpperCase() }];
 
     const body = {
       filters, fields: FIELDS,
@@ -81,15 +70,15 @@ router.get('/', async (req, res) => {
     meta = data.page_metadata || {};
 
     results = (data.results || []).map(r => ({
-      awardId:    r['Award ID']     || '',
-      recipient:  r['Recipient Name'] || '',
-      startDate:  r['Start Date']   || '',
-      endDate:    r['End Date']     || '',
-      amount:     r['Award Amount'] || 0,
-      subAgency:  r['Awarding Sub Agency'] || '',
+      awardId:     r['Award ID']     || '',
+      recipient:   r['Recipient Name'] || '',
+      startDate:   r['Start Date']   || '',
+      endDate:     r['End Date']     || '',
+      amount:      r['Award Amount'] || 0,
+      subAgency:   r['Awarding Sub Agency'] || '',
       description: r['Description'] || '',
-      state:      r['Place of Performance State Code'] || '',
-      city:       r['Place of Performance City Name'] || ''
+      state:       r['Place of Performance State Code'] || '',
+      city:        r['Place of Performance City Name'] || ''
     }));
   } catch (err) {
     error = err.message;
@@ -100,8 +89,8 @@ router.get('/', async (req, res) => {
     results, meta, error,
     filters: {
       q: q || '', state: state || '',
-      year_from: year_from || defaultFrom,
-      year_to:   year_to   || defaultTo,
+      year_from: year_from || String(thisYear - 4),
+      year_to:   year_to   || String(thisYear),
       sub: sub || ''
     },
     subAgencies: SUB_AGENCY_FILTERS,

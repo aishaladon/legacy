@@ -14,6 +14,45 @@ db.query(`
 
 const STATUSES = ['Target', 'Prospect', 'Partner', 'Client', 'Vendor'];
 
+// Save or update the primary contact for an institution
+async function savePrimaryContact(conn, institutionId, body) {
+  const { contact_first_name, contact_last_name, contact_title, contact_email, contact_phone } = body;
+  if (!contact_first_name && !contact_last_name) return;
+
+  const firstName = (contact_first_name || '').trim();
+  const lastName  = (contact_last_name  || '').trim();
+  if (!firstName && !lastName) return;
+
+  // Look for an existing contact linked to this institution with the same name or email
+  let existing = null;
+  if (contact_email) {
+    const [byEmail] = await conn.query(
+      'SELECT id FROM contacts WHERE institution_id = ? AND email = ? LIMIT 1',
+      [institutionId, contact_email]
+    );
+    if (byEmail.length) existing = byEmail[0];
+  }
+  if (!existing) {
+    const [byName] = await conn.query(
+      'SELECT id FROM contacts WHERE institution_id = ? AND first_name = ? AND last_name = ? LIMIT 1',
+      [institutionId, firstName, lastName]
+    );
+    if (byName.length) existing = byName[0];
+  }
+
+  if (existing) {
+    await conn.query(
+      'UPDATE contacts SET first_name=?, last_name=?, title=?, email=?, phone=? WHERE id=?',
+      [firstName, lastName, contact_title || null, contact_email || null, contact_phone || null, existing.id]
+    );
+  } else {
+    await conn.query(
+      'INSERT INTO contacts (institution_id, first_name, last_name, title, email, phone) VALUES (?,?,?,?,?,?)',
+      [institutionId, firstName, lastName, contact_title || null, contact_email || null, contact_phone || null]
+    );
+  }
+}
+
 router.get('/', async (req, res) => {
   const { q, type, state, status } = req.query;
   let where = ['is_active = 1'];
@@ -36,18 +75,33 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/new', (req, res) => {
-  res.render('institutions/form', { title: 'Add Institution', institution: null, statuses: STATUSES });
+  res.render('institutions/form', {
+    title: 'Add Institution', institution: null,
+    primaryContact: null, statuses: STATUSES
+  });
 });
 
 router.post('/', async (req, res) => {
   const { name, institution_type, relationship_status, city, state, region, website, notes } = req.body;
-  const [r] = await db.query(`
-    INSERT INTO institutions (name, institution_type, relationship_status, city, state, region, website, notes)
-    VALUES (?,?,?,?,?,?,?,?)
-  `, [name, institution_type || null, relationship_status || 'Target',
-      city || null, state || null, region || null, website || null, notes || null]);
-  req.flash('success', 'Institution added.');
-  res.redirect(`/institutions/${r.insertId}`);
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [r] = await conn.query(`
+      INSERT INTO institutions (name, institution_type, relationship_status, city, state, region, website, notes)
+      VALUES (?,?,?,?,?,?,?,?)
+    `, [name, institution_type || null, relationship_status || 'Target',
+        city || null, state || null, region || null, website || null, notes || null]);
+    await savePrimaryContact(conn, r.insertId, req.body);
+    await conn.commit();
+    req.flash('success', 'Institution added.');
+    res.redirect(`/institutions/${r.insertId}`);
+  } catch (err) {
+    await conn.rollback();
+    req.flash('error', 'Could not save: ' + err.message);
+    res.redirect('/institutions/new');
+  } finally {
+    conn.release();
+  }
 });
 
 router.get('/:id', async (req, res) => {
@@ -71,26 +125,48 @@ router.get('/:id', async (req, res) => {
     [req.params.id]
   );
 
-  res.render('institutions/detail', { title: institution.name, institution, contacts, awards, opportunities, projects });
+  res.render('institutions/detail', {
+    title: institution.name, institution, contacts, awards, opportunities, projects
+  });
 });
 
 router.get('/:id/edit', async (req, res) => {
   const [[institution]] = await db.query('SELECT * FROM institutions WHERE id = ?', [req.params.id]);
   if (!institution) { req.flash('error', 'Not found.'); return res.redirect('/institutions'); }
-  res.render('institutions/form', { title: 'Edit Institution', institution, statuses: STATUSES });
+  // Load first contact as primary contact for the form
+  const [[primaryContact]] = await db.query(
+    'SELECT * FROM contacts WHERE institution_id = ? AND is_active=1 ORDER BY created_at ASC LIMIT 1',
+    [req.params.id]
+  );
+  res.render('institutions/form', {
+    title: 'Edit Institution', institution,
+    primaryContact: primaryContact || null, statuses: STATUSES
+  });
 });
 
 router.post('/:id/edit', async (req, res) => {
   const { name, institution_type, relationship_status, city, state, region, website, notes } = req.body;
-  await db.query(`
-    UPDATE institutions SET name=?, institution_type=?, relationship_status=?,
-      city=?, state=?, region=?, website=?, notes=?
-    WHERE id=?
-  `, [name, institution_type || null, relationship_status || 'Target',
-      city || null, state || null, region || null, website || null, notes || null,
-      req.params.id]);
-  req.flash('success', 'Institution updated.');
-  res.redirect(`/institutions/${req.params.id}`);
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.query(`
+      UPDATE institutions SET name=?, institution_type=?, relationship_status=?,
+        city=?, state=?, region=?, website=?, notes=?
+      WHERE id=?
+    `, [name, institution_type || null, relationship_status || 'Target',
+        city || null, state || null, region || null, website || null, notes || null,
+        req.params.id]);
+    await savePrimaryContact(conn, req.params.id, req.body);
+    await conn.commit();
+    req.flash('success', 'Institution updated.');
+    res.redirect(`/institutions/${req.params.id}`);
+  } catch (err) {
+    await conn.rollback();
+    req.flash('error', 'Could not save: ' + err.message);
+    res.redirect(`/institutions/${req.params.id}/edit`);
+  } finally {
+    conn.release();
+  }
 });
 
 module.exports = router;

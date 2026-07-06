@@ -27,15 +27,15 @@ router.get('/', async (req, res) => {
   if (searched) {
     try {
       const type = award_type || 'contracts';
-      const awardCodes = type === 'grants' ? GRANT_CODES
-                       : type === 'idv'    ? IDV_CODES
-                       : CONTRACT_CODES;
+      const awardCategory = type === 'grants' ? 'grants'
+                          : type === 'idv'    ? 'idvs'
+                          : 'contracts';
 
       const startYear = parseInt(year_from) || (new Date().getFullYear() - 3);
       const endYear   = parseInt(year_to)   || new Date().getFullYear();
 
       const filters = {
-        award_type_codes: awardCodes,
+        award_categories: [awardCategory],
         time_period: [{ start_date: `${startYear}-01-01`, end_date: `${endYear}-12-31` }]
       };
 

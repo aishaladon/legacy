@@ -559,3 +559,24 @@ a:hover { text-decoration: underline; }
 .inst-status--client   { background: #f0fff4; color: #276749; }
 .inst-status--vendor   { background: #faf5ff; color: #6b46c1; }
 .form-hint { font-size: .75rem; color: var(--text-muted); margin-top: .2rem; display: block; }
+
+/* ── Institution primary contact block ────────────────── */
+.inst-primary-contact {
+  margin-top: 1rem; padding: .75rem 1rem;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.inst-contact-name {
+  font-size: .95rem; font-weight: 600; color: var(--text); margin-top: .25rem;
+}
+.inst-contact-title { font-weight: 400; color: var(--text-muted); }
+.inst-contact-details {
+  display: flex; gap: 1rem; margin-top: .3rem;
+  font-size: .82rem; color: var(--text-muted); flex-wrap: wrap;
+}
+.inst-contact-details a { color: var(--brand); }
+.form-section-title {
+  font-size: .8rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); border-bottom: 1px solid var(--border);
+  padding-bottom: .4rem; margin-bottom: .75rem;
+}
