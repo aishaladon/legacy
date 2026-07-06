@@ -14,7 +14,14 @@
       <dt>Region</dt><dd><%= institution.region || '—' %></dd>
       <dt>Website</dt><dd><% if (institution.website) { %><a href="<%= institution.website %>" target="_blank" rel="noopener"><%= institution.website %></a><% } else { %>—<% } %></dd>
     </dl>
-    <% if (institution.notes) { %><div class="prose" style="margin-top:1rem"><%= institution.notes %></div><% } %>
+    <% if (institution.notes) { %>
+      <div style="margin-top:1rem;">
+        <strong style="font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Relationship Notes</strong>
+        <div class="prose" style="margin-top:.4rem"><%= institution.notes %></div>
+      </div>
+    <% } else { %>
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No relationship notes yet. <a href="/institutions/<%= institution.id %>/edit" class="btn-link">Add notes</a> about your history, connections, or next steps with this org.</p>
+    <% } %>
   </section>
 
   <section class="card">
@@ -23,7 +30,7 @@
       <a href="/contacts/new" class="btn-link">+ Add</a>
     </div>
     <% if (contacts.length === 0) { %>
-      <p class="empty-state">No contacts.</p>
+      <p class="empty-state">No contacts linked to this institution.</p>
     <% } else { %>
       <ul class="item-list">
         <% contacts.forEach(function(c) { %>
@@ -38,9 +45,76 @@
   </section>
 </div>
 
+<!-- Proposals submitted to / for this institution -->
+<section class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>Proposals &amp; Opportunities (<%= opportunities.length %>)</h3>
+    <a href="/opportunities/new" class="btn-link">+ Add</a>
+  </div>
+  <% if (opportunities.length === 0) { %>
+    <p class="empty-state">No proposals or opportunities linked to this institution yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Due</th><th>Amount</th></tr></thead>
+        <tbody>
+          <% opportunities.forEach(function(o) { %>
+            <tr>
+              <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
+              <td><%= o.opportunity_type %></td>
+              <td><span class="badge badge--<%= o.status.toLowerCase().replace(/\s+/g,'-') %>"><%= o.status %></span></td>
+              <td><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></td>
+              <td>
+                <% if (o.amount_min || o.amount_max) { %>
+                  <% if (o.amount_max) { %>Up to $<%= Number(o.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else { %>$<%= Number(o.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+<% } %>
+                <% } else { %>—<% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<!-- Active and past contracts / projects with this institution -->
+<section class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>Contracts &amp; Projects (<%= projects.length %>)</h3>
+    <a href="/projects/new" class="btn-link">+ Add</a>
+  </div>
+  <% if (projects.length === 0) { %>
+    <p class="empty-state">No contracts or projects linked to this institution yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Period</th><th>Value</th><th>Contract #</th></tr></thead>
+        <tbody>
+          <% projects.forEach(function(p) { %>
+            <tr>
+              <td><a href="/projects/<%= p.id %>"><%= p.title %></a></td>
+              <td><%= p.project_type %></td>
+              <td><span class="badge badge--<%= p.status.toLowerCase() %>"><%= p.status %></span></td>
+              <td>
+                <% if (p.start_date) { %><%= new Date(p.start_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %><% } %>
+                <% if (p.start_date && p.end_date) { %> – <% } %>
+                <% if (p.end_date) { %><%= new Date(p.end_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %><% } %>
+                <% if (!p.start_date && !p.end_date) { %>—<% } %>
+              </td>
+              <td><%= p.contract_value ? '$' + Number(p.contract_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+              <td><%= p.contract_number || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
 <% if (awards.length > 0) { %>
 <section class="card" style="margin-top:1rem">
-  <h3>Award History</h3>
+  <h3>Federal Award History (USASpending)</h3>
+  <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Past federal awards this institution has received — from USASpending research data.</p>
   <div class="table-wrap">
     <table class="data-table">
       <thead><tr><th>Title</th><th>Type</th><th>Amount</th><th>Period</th></tr></thead>

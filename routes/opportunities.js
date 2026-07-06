@@ -30,27 +30,28 @@ router.get('/', async (req, res) => {
   });
 });
 
-router.get('/new', (req, res) => {
-  res.render('opportunities/form', { title: 'Add Opportunity', opportunity: null });
+router.get('/new', async (req, res) => {
+  const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
+  res.render('opportunities/form', { title: 'Add Opportunity', opportunity: null, institutions });
 });
 
 router.post('/', async (req, res) => {
   const {
     title, opportunity_type, source, source_url, posted_date, due_date,
-    amount_min, amount_max, description, region, status, is_starred
+    amount_min, amount_max, description, region, status, is_starred, institution_id
   } = req.body;
 
   const [result] = await db.query(`
     INSERT INTO opportunities
       (title, opportunity_type, source, source_url, posted_date, due_date,
-       amount_min, amount_max, description, region, status, is_starred)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+       amount_min, amount_max, description, region, status, is_starred, institution_id)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
   `, [
     title, opportunity_type, source || null, source_url || null,
     posted_date || null, due_date || null,
     amount_min || null, amount_max || null,
     description || null, region || null,
-    status || 'New', is_starred ? 1 : 0
+    status || 'New', is_starred ? 1 : 0, institution_id || null
   ]);
 
   await db.query(
@@ -95,27 +96,28 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/edit', async (req, res) => {
   const [[opportunity]] = await db.query('SELECT * FROM opportunities WHERE id = ?', [req.params.id]);
   if (!opportunity) { req.flash('error', 'Not found.'); return res.redirect('/opportunities'); }
-  res.render('opportunities/form', { title: 'Edit Opportunity', opportunity });
+  const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
+  res.render('opportunities/form', { title: 'Edit Opportunity', opportunity, institutions });
 });
 
 router.post('/:id/edit', async (req, res) => {
   const {
     title, opportunity_type, source, source_url, posted_date, due_date,
-    amount_min, amount_max, description, region, status, is_starred
+    amount_min, amount_max, description, region, status, is_starred, institution_id
   } = req.body;
 
   await db.query(`
     UPDATE opportunities SET
       title=?, opportunity_type=?, source=?, source_url=?, posted_date=?,
       due_date=?, amount_min=?, amount_max=?, description=?, region=?,
-      status=?, is_starred=?
+      status=?, is_starred=?, institution_id=?
     WHERE id=?
   `, [
     title, opportunity_type, source || null, source_url || null,
     posted_date || null, due_date || null,
     amount_min || null, amount_max || null,
     description || null, region || null,
-    status, is_starred ? 1 : 0,
+    status, is_starred ? 1 : 0, institution_id || null,
     req.params.id
   ]);
 

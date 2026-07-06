@@ -68,6 +68,12 @@ const institutions = [
 
   // ── Smithsonian Affiliates & Broader Network ──────────────────────
   { name: 'Smithsonian Affiliations Program', institution_type: 'Program', relationship_status: 'Target', city: 'Washington', state: 'DC', website: 'https://affiliations.si.edu', notes: '200+ affiliated museums across the US; good pipeline for outreach and partnership.' },
+
+  // ── Legacy P&P — Direct Work History ─────────────────────────────
+  { name: 'Lewis H. Latimer House Museum', institution_type: 'Museum', relationship_status: 'Client', city: 'Flushing', state: 'NY', website: 'https://www.latimernow.org', notes: 'Past client. Dedicated to the life and legacy of Lewis H. Latimer, African American inventor. Historic house museum in Queens.' },
+  { name: 'New York Public Library', institution_type: 'Library', relationship_status: 'Client', city: 'New York', state: 'NY', website: 'https://www.nypl.org', notes: 'Past client. One of the largest library systems in the world; Schomburg Center for Research in Black Culture is a key division for preservation and archival work.' },
+  { name: 'Sojourner Truth Museum', institution_type: 'Museum', relationship_status: 'Client', city: 'Sacramento', state: 'CA', website: null, notes: 'Past client. Dedicated to the life and legacy of Sojourner Truth and African American women\'s history.' },
+  { name: 'Amistad Research Center', institution_type: 'Archive / Research Center', relationship_status: 'Prospect', city: 'New Orleans', state: 'LA', website: 'https://www.amistadresearchcenter.org', notes: 'Proposal submitted. Oldest and largest independent archive of African American history. Located at Tulane University. Follow up on application status.' },
 ];
 
 module.exports = { institutions };

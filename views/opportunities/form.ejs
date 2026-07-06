@@ -12,6 +12,18 @@
   </div>
 
   <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Institution / Organization</label>
+      <select name="institution_id">
+        <option value="">— Not linked —</option>
+        <% institutions.forEach(function(i) { %>
+          <option value="<%= i.id %>" <%= (opportunity && opportunity.institution_id == i.id) ? 'selected' : '' %>><%= i.name %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row">
     <div class="form-group">
       <label>Type</label>
       <select name="opportunity_type">

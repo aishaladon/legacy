@@ -62,8 +62,16 @@ router.get('/:id', async (req, res) => {
     'SELECT * FROM award_history WHERE institution_id = ? ORDER BY period_start DESC',
     [req.params.id]
   );
+  const [opportunities] = await db.query(
+    'SELECT id, title, opportunity_type, status, due_date, amount_min, amount_max FROM opportunities WHERE institution_id = ? ORDER BY due_date DESC',
+    [req.params.id]
+  );
+  const [projects] = await db.query(
+    'SELECT id, title, project_type, status, start_date, end_date, contract_value, contract_number FROM projects WHERE institution_id = ? ORDER BY start_date DESC',
+    [req.params.id]
+  );
 
-  res.render('institutions/detail', { title: institution.name, institution, contacts, awards });
+  res.render('institutions/detail', { title: institution.name, institution, contacts, awards, opportunities, projects });
 });
 
 router.get('/:id/edit', async (req, res) => {
