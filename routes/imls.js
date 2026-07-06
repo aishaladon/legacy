@@ -21,72 +21,74 @@ const SUB_AGENCY_FILTERS = {
 router.get('/', async (req, res) => {
   const { q, state, year_from, year_to, sub, page: rawPage } = req.query;
   const thisYear = new Date().getFullYear();
+  const searched = !!(q || state || year_from || year_to || sub || rawPage);
 
   let results = null;
   let meta = {};
   let error = null;
   const page = parseInt(rawPage) || 1;
 
-  try {
-    const startYear = parseInt(year_from) || (thisYear - 4);
-    const endYear   = parseInt(year_to)   || thisYear;
+  if (searched) {
+    try {
+      const startYear = parseInt(year_from) || (thisYear - 4);
+      const endYear   = parseInt(year_to)   || thisYear;
 
-    const filters = {
-      award_type_codes: ['02', '03', '04', '05', '06'],
-      time_period: [{ start_date: `${startYear}-01-01`, end_date: `${endYear}-12-31` }]
-    };
+      const filters = {
+        award_type_codes: ['02', '03', '04', '05'],
+        time_period: [{ start_date: `${startYear}-01-01`, end_date: `${endYear}-12-31` }]
+      };
 
-    // Default: filter to IMLS toptier agency
-    filters.agencies = [{ type: 'awarding', tier: 'toptier', name: 'Institute of Museum and Library Services' }];
+      filters.agencies = [{ type: 'awarding', tier: 'toptier', name: 'Institute of Museum and Library Services' }];
 
-    if (sub === 'museum') {
-      filters.agencies = [{ type: 'awarding', tier: 'subtier', name: 'Office of Museum Services' }];
-    } else if (sub === 'library') {
-      filters.agencies = [{ type: 'awarding', tier: 'subtier', name: 'Office of Library Services' }];
+      if (sub === 'museum') {
+        filters.agencies = [{ type: 'awarding', tier: 'subtier', name: 'Office of Museum Services' }];
+      } else if (sub === 'library') {
+        filters.agencies = [{ type: 'awarding', tier: 'subtier', name: 'Office of Library Services' }];
+      }
+
+      if (q)     filters.keywords = [q];
+      if (state) filters.place_of_performance_locations = [{ country: 'USA', state: state.toUpperCase() }];
+
+      const body = {
+        filters, fields: FIELDS,
+        sort: 'Award Amount', order: 'desc',
+        limit: 25, page
+      };
+
+      const resp = await fetch('https://api.usaspending.gov/api/v2/search/spending_by_award/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000)
+      });
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new Error(`USASpending API ${resp.status}: ${txt.slice(0, 300)}`);
+      }
+
+      const data = await resp.json();
+      meta = data.page_metadata || {};
+
+      results = (data.results || []).map(r => ({
+        awardId:     r['Award ID']     || '',
+        recipient:   r['Recipient Name'] || '',
+        startDate:   r['Start Date']   || '',
+        endDate:     r['End Date']     || '',
+        amount:      r['Award Amount'] || 0,
+        subAgency:   r['Awarding Sub Agency'] || '',
+        description: r['Description'] || '',
+        state:       r['Place of Performance State Code'] || '',
+        city:        r['Place of Performance City Name'] || ''
+      }));
+    } catch (err) {
+      error = err.message;
     }
-
-    if (q)     filters.keywords = [q];
-    if (state) filters.place_of_performance_locations = [{ country: 'USA', state: state.toUpperCase() }];
-
-    const body = {
-      filters, fields: FIELDS,
-      sort: 'Award Amount', order: 'desc',
-      limit: 25, page
-    };
-
-    const resp = await fetch('https://api.usaspending.gov/api/v2/search/spending_by_award/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20000)
-    });
-
-    if (!resp.ok) {
-      const txt = await resp.text();
-      throw new Error(`USASpending API ${resp.status}: ${txt.slice(0, 300)}`);
-    }
-
-    const data = await resp.json();
-    meta = data.page_metadata || {};
-
-    results = (data.results || []).map(r => ({
-      awardId:     r['Award ID']     || '',
-      recipient:   r['Recipient Name'] || '',
-      startDate:   r['Start Date']   || '',
-      endDate:     r['End Date']     || '',
-      amount:      r['Award Amount'] || 0,
-      subAgency:   r['Awarding Sub Agency'] || '',
-      description: r['Description'] || '',
-      state:       r['Place of Performance State Code'] || '',
-      city:        r['Place of Performance City Name'] || ''
-    }));
-  } catch (err) {
-    error = err.message;
   }
 
   res.render('imls/index', {
     title: 'IMLS Award Search',
-    results, meta, error,
+    results, meta, error, searched,
     filters: {
       q: q || '', state: state || '',
       year_from: year_from || String(thisYear - 4),
