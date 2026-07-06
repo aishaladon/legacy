@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
       const type = award_type || 'contracts';
 
       const CONTRACT_TYPE_CODES = ['A', 'B', 'C', 'D'];
-      const GRANT_TYPE_CODES    = ['02', '03', '04', '05', '06'];
+      const GRANT_TYPE_CODES    = ['02', '03', '04', '05'];
       const IDV_TYPE_CODES      = ['E', 'F', 'G', 'H', 'I', 'J', 'K'];
 
       const awardTypeCodes = type === 'grants' ? GRANT_TYPE_CODES
