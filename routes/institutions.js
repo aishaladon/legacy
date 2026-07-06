@@ -5,32 +5,47 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
+// Auto-migrate relationship_status column for existing installs
+db.query(`
+  ALTER TABLE institutions
+  ADD COLUMN IF NOT EXISTS relationship_status
+    ENUM('Target','Prospect','Partner','Client','Vendor') DEFAULT 'Target'
+`).catch(() => {});
+
+const STATUSES = ['Target', 'Prospect', 'Partner', 'Client', 'Vendor'];
+
 router.get('/', async (req, res) => {
-  const { q, type, state } = req.query;
+  const { q, type, state, status } = req.query;
   let where = ['is_active = 1'];
   const params = [];
-  if (q) { where.push('name LIKE ?'); params.push(`%${q}%`); }
-  if (type) { where.push('institution_type = ?'); params.push(type); }
-  if (state) { where.push('state = ?'); params.push(state); }
+  if (q)      { where.push('name LIKE ?');              params.push(`%${q}%`); }
+  if (type)   { where.push('institution_type = ?');     params.push(type); }
+  if (state)  { where.push('state = ?');                params.push(state); }
+  if (status) { where.push('relationship_status = ?');  params.push(status); }
 
   const [institutions] = await db.query(
-    `SELECT * FROM institutions WHERE ${where.join(' AND ')} ORDER BY name`,
+    `SELECT * FROM institutions WHERE ${where.join(' AND ')} ORDER BY
+      FIELD(relationship_status,'Client','Partner','Prospect','Target','Vendor'), name`,
     params
   );
-  res.render('institutions/index', { title: 'Institutions', institutions, filters: { q, type, state } });
+  res.render('institutions/index', {
+    title: 'Institutions', institutions,
+    filters: { q, type, state, status },
+    statuses: STATUSES
+  });
 });
 
 router.get('/new', (req, res) => {
-  res.render('institutions/form', { title: 'Add Institution', institution: null });
+  res.render('institutions/form', { title: 'Add Institution', institution: null, statuses: STATUSES });
 });
 
 router.post('/', async (req, res) => {
-  const { name, institution_type, city, state, region, website, notes } = req.body;
+  const { name, institution_type, relationship_status, city, state, region, website, notes } = req.body;
   const [r] = await db.query(`
-    INSERT INTO institutions (name, institution_type, city, state, region, website, notes)
-    VALUES (?,?,?,?,?,?,?)
-  `, [name, institution_type || null, city || null, state || null,
-      region || null, website || null, notes || null]);
+    INSERT INTO institutions (name, institution_type, relationship_status, city, state, region, website, notes)
+    VALUES (?,?,?,?,?,?,?,?)
+  `, [name, institution_type || null, relationship_status || 'Target',
+      city || null, state || null, region || null, website || null, notes || null]);
   req.flash('success', 'Institution added.');
   res.redirect(`/institutions/${r.insertId}`);
 });
@@ -54,16 +69,18 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/edit', async (req, res) => {
   const [[institution]] = await db.query('SELECT * FROM institutions WHERE id = ?', [req.params.id]);
   if (!institution) { req.flash('error', 'Not found.'); return res.redirect('/institutions'); }
-  res.render('institutions/form', { title: 'Edit Institution', institution });
+  res.render('institutions/form', { title: 'Edit Institution', institution, statuses: STATUSES });
 });
 
 router.post('/:id/edit', async (req, res) => {
-  const { name, institution_type, city, state, region, website, notes } = req.body;
+  const { name, institution_type, relationship_status, city, state, region, website, notes } = req.body;
   await db.query(`
-    UPDATE institutions SET name=?, institution_type=?, city=?, state=?, region=?, website=?, notes=?
+    UPDATE institutions SET name=?, institution_type=?, relationship_status=?,
+      city=?, state=?, region=?, website=?, notes=?
     WHERE id=?
-  `, [name, institution_type || null, city || null, state || null,
-      region || null, website || null, notes || null, req.params.id]);
+  `, [name, institution_type || null, relationship_status || 'Target',
+      city || null, state || null, region || null, website || null, notes || null,
+      req.params.id]);
   req.flash('success', 'Institution updated.');
   res.redirect(`/institutions/${req.params.id}`);
 });

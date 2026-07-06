@@ -11,7 +11,18 @@
     </div>
     <div class="form-group">
       <label>Type</label>
-      <input type="text" name="institution_type" value="<%= institution ? (institution.institution_type || '') : '' %>" placeholder="Museum, Library, University…">
+      <input type="text" name="institution_type" value="<%= institution ? (institution.institution_type || '') : '' %>" placeholder="Museum, Library, Federal Agency…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Relationship Status</label>
+      <select name="relationship_status">
+        <% statuses.forEach(function(s) { %>
+          <option value="<%= s %>" <%= (institution ? institution.relationship_status : 'Target') === s ? 'selected' : '' %>><%= s %></option>
+        <% }); %>
+      </select>
+      <small class="form-hint">Target = want to pursue &nbsp;|&nbsp; Prospect = in contact &nbsp;|&nbsp; Partner = active teaming &nbsp;|&nbsp; Client = they've awarded you work</small>
     </div>
   </div>
   <div class="form-row">

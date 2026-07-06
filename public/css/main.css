@@ -547,3 +547,15 @@ a:hover { text-decoration: underline; }
 
 /* ── Grants.gov Search ────────────────────────────────── */
 .grants-award-range { font-size: .82rem; }
+
+/* ── Institution relationship status badges ───────────── */
+.inst-status {
+  display: inline-block; padding: .15rem .55rem; border-radius: 99px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap;
+}
+.inst-status--target   { background: #f0f4f8; color: #4a5568; }
+.inst-status--prospect { background: #fefcbf; color: #744210; }
+.inst-status--partner  { background: #ebf8ff; color: #2a69ac; }
+.inst-status--client   { background: #f0fff4; color: #276749; }
+.inst-status--vendor   { background: #faf5ff; color: #6b46c1; }
+.form-hint { font-size: .75rem; color: var(--text-muted); margin-top: .2rem; display: block; }

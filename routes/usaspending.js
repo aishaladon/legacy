@@ -110,8 +110,8 @@ router.post('/save-institution', async (req, res) => {
     ].filter(Boolean).join(' | ');
 
     const [r] = await db.query(`
-      INSERT INTO institutions (name, institution_type, state, notes)
-      VALUES (?, 'Prime Contractor', ?, ?)
+      INSERT INTO institutions (name, institution_type, relationship_status, state, notes)
+      VALUES (?, 'Prime Contractor', 'Prospect', ?, ?)
     `, [name, state || null, notes || null]);
 
     req.flash('success', `${name} added as a teaming partner / institution.`);

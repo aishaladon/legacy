@@ -7,6 +7,7 @@
   <section class="card">
     <h3>Overview</h3>
     <dl class="detail-list">
+      <dt>Status</dt><dd><span class="inst-status inst-status--<%= (institution.relationship_status || 'Target').toLowerCase() %>"><%= institution.relationship_status || 'Target' %></span></dd>
       <dt>Type</dt><dd><%= institution.institution_type || '—' %></dd>
       <dt>City</dt><dd><%= institution.city || '—' %></dd>
       <dt>State</dt><dd><%= institution.state || '—' %></dd>

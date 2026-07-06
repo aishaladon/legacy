@@ -2,44 +2,51 @@
   <h2>Institutions</h2>
   <a href="/institutions/new" class="btn btn-primary">+ Add</a>
 </div>
-<p class="page-desc">Agencies, foundations, universities, and organizations you pursue opportunities with — the anchor entities in your BD network.</p>
+<p class="page-desc">Your BD network — agencies, primes, foundations, and universities you want to work with or already do. Use relationship status to track where each org is in your pipeline.</p>
 
 <details class="how-to">
   <summary>How to use Institutions</summary>
   <div class="how-to-body">
     <ol>
-      <li>Institutions are the <strong>organizations you do business with</strong> — federal agencies, state agencies, foundations, universities, prime contractors, and nonprofits.</li>
-      <li>Add an institution before adding contacts or opportunities linked to it — the system uses institutions as the anchor for your entire network.</li>
-      <li>Include the website, type, and region so you can filter intelligently when building teaming arrangements or targeting a specific sector.</li>
-      <li>Click an institution's name to see all linked contacts and opportunities in one view.</li>
+      <li><strong>Start with your target list, not just your history.</strong> Add every agency, funder, and prime contractor you want to pursue — even if you've never had a conversation with them. That's what <em>Target</em> status is for.</li>
+      <li>Move orgs through the pipeline as the relationship develops: <strong>Target → Prospect</strong> (you've made contact) <strong>→ Partner</strong> (active teaming or collaboration) <strong>→ Client</strong> (they've awarded you work).</li>
+      <li>Use <strong>Vendor</strong> for subconsultants and suppliers you bring in on your proposals.</li>
+      <li>Link contacts to their institution so every person in your network is one click from their org's profile, awards history, and opportunities.</li>
+      <li>Use <strong>Save as Teaming Partner</strong> on USASpending to quickly add primes that win contracts in your space — they're both competitors and future teaming partners.</li>
     </ol>
-    <p>Examples to add: Department of Defense, NEA, California Arts Council, local prime contractors you could team with, or foundations that fund preservation work.</p>
+    <p>The list is sorted by relationship depth: Clients and Partners appear first, Targets last — so your hottest relationships are always at the top.</p>
   </div>
 </details>
 
 <form class="filter-bar" method="GET" action="/institutions">
   <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name…" class="filter-input">
+  <select name="status" class="filter-input filter-input--sm">
+    <option value="">All Statuses</option>
+    <% statuses.forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
   <input type="text" name="state" value="<%= filters.state || '' %>" placeholder="State (e.g. CA)" class="filter-input filter-input--sm">
   <button type="submit" class="btn btn-secondary">Filter</button>
   <a href="/institutions" class="btn-link">Clear</a>
 </form>
 
 <% if (institutions.length === 0) { %>
-  <p class="empty-state">No institutions found.</p>
+  <p class="empty-state">No institutions found. <a href="/institutions/new">Add your first target organization.</a></p>
 <% } else { %>
   <div class="table-wrap">
     <table class="data-table">
       <thead>
-        <tr><th>Name</th><th>Type</th><th>City</th><th>State</th><th>Region</th><th>Website</th></tr>
+        <tr><th>Name</th><th>Status</th><th>Type</th><th>City</th><th>State</th><th>Website</th></tr>
       </thead>
       <tbody>
         <% institutions.forEach(function(i) { %>
           <tr>
             <td><a href="/institutions/<%= i.id %>"><%= i.name %></a></td>
+            <td><span class="inst-status inst-status--<%= (i.relationship_status || 'Target').toLowerCase() %>"><%= i.relationship_status || 'Target' %></span></td>
             <td><%= i.institution_type || '—' %></td>
             <td><%= i.city || '—' %></td>
             <td><%= i.state || '—' %></td>
-            <td><%= i.region || '—' %></td>
             <td><% if (i.website) { %><a href="<%= i.website %>" target="_blank" rel="noopener">&#8599;</a><% } else { %>—<% } %></td>
           </tr>
         <% }); %>
