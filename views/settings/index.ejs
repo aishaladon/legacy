@@ -128,3 +128,11 @@
     </table>
   </div>
 </section>
+
+<section class="card" id="seed" style="margin-top:1.5rem">
+  <h3>Starter Data</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1rem;">Load a curated list of target institutions — federal agencies (NARA, NEH, NEA, NPS, IMLS), Smithsonian museums, African American history museums, HBCUs, and key historical societies. Safe to run more than once; existing institutions are skipped.</p>
+  <form action="/settings/seed-institutions" method="POST" onsubmit="return confirm('This will add ~55 starter institutions to your list. Continue?')">
+    <button type="submit" class="btn btn-secondary">Load Starter Institutions (~55 orgs)</button>
+  </form>
+</section>

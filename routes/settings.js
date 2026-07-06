@@ -48,4 +48,22 @@ router.post('/sources/:id/toggle', async (req, res) => {
   res.redirect('/settings#sources');
 });
 
+// One-time seed: loads the starter target institution list
+router.post('/seed-institutions', async (req, res) => {
+  const { institutions } = require('../database/seeds/institutions_data');
+  let added = 0, skipped = 0;
+  for (const inst of institutions) {
+    const [existing] = await db.query('SELECT id FROM institutions WHERE name = ? LIMIT 1', [inst.name]);
+    if (existing.length > 0) { skipped++; continue; }
+    await db.query(`
+      INSERT INTO institutions (name, institution_type, relationship_status, city, state, website, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [inst.name, inst.institution_type, inst.relationship_status,
+        inst.city || null, inst.state || null, inst.website || null, inst.notes || null]);
+    added++;
+  }
+  req.flash('success', `Starter institutions loaded: ${added} added, ${skipped} already existed.`);
+  res.redirect('/institutions');
+});
+
 module.exports = router;
