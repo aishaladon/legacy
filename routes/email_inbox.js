@@ -7,6 +7,8 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
+let lastEmailSync = null;
+
 db.query(`
   CREATE TABLE IF NOT EXISTS email_actions (
     uid VARCHAR(100) NOT NULL,
@@ -220,7 +222,9 @@ router.get('/', async (req, res) => {
     try { await client.logout(); } catch (_) {}
   }
 
-  res.render('email_inbox/index', { title: 'Email Inbox', messages, error, showAll });
+  if (!error) lastEmailSync = new Date();
+
+  res.render('email_inbox/index', { title: 'Email Inbox', messages, error, showAll, lastEmailSync });
 });
 
 // ── Single convert view ──────────────────────────────────

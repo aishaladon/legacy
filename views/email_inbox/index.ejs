@@ -1,6 +1,9 @@
 <div class="page-header">
   <h2>Email Inbox</h2>
   <div class="page-header-actions">
+    <% if (lastEmailSync) { %>
+      <span class="sync-timestamp">Last synced: <%= new Date(lastEmailSync).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) %></span>
+    <% } %>
     <% if (showAll) { %>
       <a href="/email-inbox" class="btn btn-secondary btn-sm">Show Opportunities Only</a>
     <% } else { %>

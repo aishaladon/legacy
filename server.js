@@ -5,6 +5,7 @@ const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 
+const SERVER_STARTED = new Date();
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
   res.locals.flash_success = req.flash('success');
   res.locals.flash_error = req.flash('error');
   res.locals.flash_info = req.flash('info');
+  res.locals.serverStarted = SERVER_STARTED;
   next();
 });
 
@@ -53,6 +55,8 @@ app.use('/guides', require('./routes/guides'));
 app.use('/settings', require('./routes/settings'));
 app.use('/digest-log', require('./routes/digest_log'));
 app.use('/email-inbox', require('./routes/email_inbox'));
+
+require('./services/scheduler');
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

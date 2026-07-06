@@ -129,6 +129,71 @@
   </div>
 </section>
 
+<section class="card" id="automations" style="margin-top:1.5rem">
+  <h3>Automations</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.25rem;">Automatically pull new opportunities from SAM.gov and Grants.gov each morning at 7 AM. New items are added directly to your Opportunities list with status "New". Uses the keywords from your Keywords list above.</p>
+
+  <form action="/settings/automations" method="POST">
+    <div class="auto-toggles">
+      <div class="auto-toggle-row">
+        <div>
+          <strong>SAM.gov Daily Digest</strong>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:.2rem;">Pulls new contract solicitations, sources sought, and presolicitations posted in the last 24 hours. Requires a free SAM.gov API key set as <code>SAM_API_KEY</code> in Hostinger environment variables.</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" name="auto_sam_enabled" value="1" <%= autoEnabled.sam ? 'checked' : '' %>>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="auto-toggle-row" style="margin-top:1rem;">
+        <div>
+          <strong>Grants.gov Daily Pull</strong>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:.2rem;">Pulls newly posted grants matching your keywords. No API key required — Grants.gov is publicly accessible.</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" name="auto_grants_enabled" value="1" <%= autoEnabled.grants ? 'checked' : '' %>>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1rem;">
+      <button type="submit" class="btn btn-primary">Save Automation Settings</button>
+    </div>
+  </form>
+
+  <div style="margin-top:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+    <form action="/settings/run-sam" method="POST">
+      <button type="submit" class="btn btn-secondary">Run SAM.gov Now</button>
+    </form>
+    <form action="/settings/run-grants" method="POST">
+      <button type="submit" class="btn btn-secondary">Run Grants.gov Now</button>
+    </form>
+  </div>
+
+  <% if (autoLogs.length > 0) { %>
+    <h4 style="margin-top:1.5rem;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Recent Automation Runs</h4>
+    <div class="table-wrap" style="margin-top:.5rem">
+      <table class="data-table">
+        <thead><tr><th>Type</th><th>Status</th><th>Found</th><th>New</th><th>Message</th><th>Ran At</th></tr></thead>
+        <tbody>
+          <% autoLogs.forEach(function(log) { %>
+            <tr>
+              <td><%= log.run_type === 'sam_digest' ? 'SAM.gov' : 'Grants.gov' %></td>
+              <td><span class="badge badge--<%= log.status %>"><%= log.status %></span></td>
+              <td><%= log.items_found || 0 %></td>
+              <td><%= log.items_new || 0 %></td>
+              <td style="font-size:.8rem;color:var(--text-muted);max-width:300px;white-space:normal;"><%= log.message || '' %></td>
+              <td style="font-size:.8rem;white-space:nowrap;"><%= new Date(log.ran_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No automation runs yet. Click "Run Now" to test, or enable the toggles to start the daily schedule.</p>
+  <% } %>
+</section>
+
 <section class="card" id="seed" style="margin-top:1.5rem">
   <h3>Starter Data</h3>
   <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1rem;">Load a curated list of target institutions — federal agencies (NARA, NEH, NEA, NPS, IMLS), Smithsonian museums, African American history museums, HBCUs, and key historical societies. Safe to run more than once; existing institutions are skipped.</p>

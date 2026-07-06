@@ -30,6 +30,10 @@
 
       <%- body %>
     </main>
+    <footer class="app-footer">
+      <span>System restarted: <%= new Date(serverStarted).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) %></span>
+      <span>Legacy GovCon &mdash; Legacy P&amp;P Ltd.</span>
+    </footer>
   </div>
   <script src="/js/main.js"></script>
 </body>
