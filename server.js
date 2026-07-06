@@ -39,8 +39,6 @@ app.use('/', require('./routes/dashboard'));
 app.use('/opportunities', require('./routes/opportunities'));
 app.use('/sam-search', require('./routes/sam_search'));
 app.use('/grants-search', require('./routes/grants_search'));
-app.use('/usaspending', require('./routes/usaspending'));
-app.use('/imls', require('./routes/imls'));
 app.use('/government', require('./routes/government'));
 app.use('/grants', require('./routes/grants'));
 app.use('/pipeline', require('./routes/pipeline'));
