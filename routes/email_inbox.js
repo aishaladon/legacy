@@ -4,6 +4,7 @@ const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const Anthropic = require('@anthropic-ai/sdk');
 
 router.use(requireLogin);
 
@@ -118,6 +119,64 @@ function parseDigestEmail(body) {
   });
 
   return results;
+}
+
+// Evaluate opportunities with Claude
+async function evaluateOpportunitiesWithClaude(opportunities) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return opportunities; // Skip if no API key
+
+  try {
+    const client = new Anthropic({ apiKey });
+    const oppTexts = opportunities
+      .map(o => `Title: ${o.title}\nAgency: ${o.agency}\nType: ${o.opportunityType}\nBody: ${o.body}`)
+      .join('\n\n---\n\n');
+
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2000,
+      messages: [
+        {
+          role: 'user',
+          content: `You are evaluating government contract/grant opportunities for Legacy Planning & Preservation Ltd.
+
+Score each opportunity 1-10 for fit. Respond ONLY with valid JSON (no markdown):
+
+{
+  "scores": [
+    {"index": 0, "fit_score": <1-10>, "reasoning": "<brief reason>"},
+    {"index": 1, "fit_score": <1-10>, "reasoning": "<brief reason>"},
+    ...
+  ]
+}
+
+OPPORTUNITIES:
+${oppTexts}`
+        }
+      ]
+    });
+
+    const content = response.content[0].text.trim();
+    let scores = {};
+
+    try {
+      const result = JSON.parse(content);
+      result.scores?.forEach(s => {
+        scores[s.index] = s;
+      });
+    } catch (_) {
+      return opportunities; // Fallback if parsing fails
+    }
+
+    return opportunities.map((opp, idx) => ({
+      ...opp,
+      fit_score: scores[idx]?.fit_score || null,
+      fit_reasoning: scores[idx]?.reasoning || ''
+    }));
+  } catch (err) {
+    console.error('Claude evaluation error:', err);
+    return opportunities; // Fallback on error
+  }
 }
 
 function createClient() {
@@ -261,7 +320,9 @@ router.get('/:uid/parse', async (req, res) => {
   }
   if (!email) { req.flash('error', 'Email not found.'); return res.redirect('/email-inbox'); }
 
-  const opportunities = parseDigestEmail(email.body);
+  let opportunities = parseDigestEmail(email.body);
+  opportunities = await evaluateOpportunitiesWithClaude(opportunities);
+  opportunities.sort((a, b) => (b.fit_score || 0) - (a.fit_score || 0));
 
   res.render('email_inbox/parse', {
     title: 'Import Opportunities from Email',

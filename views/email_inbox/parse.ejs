@@ -15,8 +15,14 @@
   </div>
 <% } else { %>
   <p class="page-desc">
-    Found <strong><%= opportunities.length %></strong> opportunities in this email. All are checked by default — uncheck any you don't want to import, then click Save.
+    Found <strong><%= opportunities.length %></strong> opportunities in this email. Claude AI has scored each for fit to your business — sorted high to low. All are checked by default — uncheck any you don't want to import, then click Save.
   </p>
+  <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">
+    <strong>Fit Scores:</strong>
+    <span class="badge badge--high">7-10</span> Strong match ·
+    <span class="badge badge--medium">5-6</span> Possible fit ·
+    <span class="badge badge--low">1-4</span> Low priority
+  </div>
 
   <form action="/email-inbox/<%= email.uid %>/parse-save" method="POST">
     <div class="parse-toolbar">
@@ -30,7 +36,7 @@
 
     <div class="parse-list">
       <% opportunities.forEach(function(opp, i) { %>
-        <div class="parse-card" id="parse-card-<%= i %>">
+        <div class="parse-card" id="parse-card-<%= i %>" data-score="<%= opp.fit_score || 0 %>">
           <div class="parse-card-header">
             <label class="parse-checkbox-label">
               <input type="checkbox" name="opps[<%= i %>][selected]" value="1"
@@ -38,6 +44,14 @@
                      onchange="document.getElementById('parse-card-<%= i %>').classList.toggle('parse-card--unchecked', !this.checked)">
               <span class="parse-num">#<%= i + 1 %></span>
             </label>
+            <% if (opp.fit_score !== null) { %>
+              <span class="fit-score badge badge--<%= opp.fit_score >= 7 ? 'high' : opp.fit_score >= 5 ? 'medium' : 'low' %>" title="Claude AI fit score">
+                <%= opp.fit_score %>/10 fit
+              </span>
+              <% if (opp.fit_reasoning) { %>
+                <span class="fit-reasoning" style="font-size:.8rem;color:var(--text-muted);margin-left:.5rem;">(<%= opp.fit_reasoning %>)</span>
+              <% } %>
+            <% } %>
             <input type="text" name="opps[<%= i %>][title]" value="<%= opp.title %>"
                    class="parse-title-input" placeholder="Opportunity title">
           </div>
