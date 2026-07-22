@@ -60,4 +60,60 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect(`/funders/${req.params.id}`);
 });
 
+// CSV import
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+router.post('/import-csv', upload.single('csv_file'), async (req, res) => {
+  const { parse } = require('csv-parse/sync');
+  const csvText = (req.file && req.file.buffer.length > 0)
+    ? req.file.buffer.toString('utf8').trim()
+    : (req.body.csv_data || '').trim();
+
+  if (!csvText) {
+    req.flash('error', 'No CSV data provided — upload a file or paste CSV text.');
+    return res.redirect('/funders#import');
+  }
+
+  let records;
+  try {
+    records = parse(csvText, { columns: true, skip_empty_lines: true, trim: true, relax_column_count: true });
+  } catch (err) {
+    req.flash('error', 'Could not parse CSV: ' + err.message);
+    return res.redirect('/funders#import');
+  }
+
+  if (!records.length) {
+    req.flash('error', 'CSV contained no data rows.');
+    return res.redirect('/funders#import');
+  }
+
+  let added = 0, skipped = 0, errors = 0;
+  for (const row of records) {
+    const name = (row.name || row.Name || '').trim();
+    if (!name) { skipped++; continue; }
+
+    const funder_type              = (row.funder_type              || row['Funder Type']              || row.type || row.Type || 'Foundation').trim();
+    const website                  = (row.website                  || row.Website                  || '').trim() || null;
+    const eligible_institution_types = (row.eligible_institution_types || row['Eligible Institution Types'] || row.eligible || '').trim() || null;
+    const notes                    = (row.notes                    || row.Notes                    || '').trim() || null;
+
+    try {
+      const [existing] = await db.query('SELECT id FROM funders WHERE name = ? LIMIT 1', [name]);
+      if (existing.length > 0) { skipped++; continue; }
+      await db.query(`
+        INSERT INTO funders (name, funder_type, website, eligible_institution_types, notes)
+        VALUES (?,?,?,?,?)
+      `, [name, funder_type, website, eligible_institution_types, notes]);
+      added++;
+    } catch (_) {
+      errors++;
+    }
+  }
+
+  const msg = `Funders imported: ${added} added, ${skipped} skipped (already exist or blank)${errors ? ', ' + errors + ' errors' : ''}.`;
+  req.flash('success', msg);
+  res.redirect('/funders');
+});
+
 module.exports = router;

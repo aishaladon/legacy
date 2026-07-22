@@ -68,4 +68,68 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect(`/contacts/${req.params.id}`);
 });
 
+// CSV import
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+router.post('/import-csv', upload.single('csv_file'), async (req, res) => {
+  const { parse } = require('csv-parse/sync');
+  const csvText = (req.file && req.file.buffer.length > 0)
+    ? req.file.buffer.toString('utf8').trim()
+    : (req.body.csv_data || '').trim();
+
+  if (!csvText) {
+    req.flash('error', 'No CSV data provided — upload a file or paste CSV text.');
+    return res.redirect('/contacts#import');
+  }
+
+  let records;
+  try {
+    records = parse(csvText, { columns: true, skip_empty_lines: true, trim: true, relax_column_count: true });
+  } catch (err) {
+    req.flash('error', 'Could not parse CSV: ' + err.message);
+    return res.redirect('/contacts#import');
+  }
+
+  if (!records.length) {
+    req.flash('error', 'CSV contained no data rows.');
+    return res.redirect('/contacts#import');
+  }
+
+  // Cache institution name → id lookups
+  const [instRows] = await db.query('SELECT id, name FROM institutions');
+  const instMap = {};
+  instRows.forEach(r => { instMap[r.name.trim().toLowerCase()] = r.id; });
+
+  let added = 0, skipped = 0, errors = 0;
+  for (const row of records) {
+    const first_name = (row.first_name || row['First Name'] || row.first || '').trim();
+    const last_name  = (row.last_name  || row['Last Name']  || row.last  || '').trim();
+    if (!first_name && !last_name) { skipped++; continue; }
+
+    const title    = (row.title    || row.Title    || '').trim() || null;
+    const email    = (row.email    || row.Email    || '').trim() || null;
+    const phone    = (row.phone    || row.Phone    || '').trim() || null;
+    const linkedin = (row.linkedin || row.LinkedIn || '').trim() || null;
+    const notes    = (row.notes    || row.Notes    || '').trim() || null;
+
+    const instName = (row.institution || row.Institution || row.institution_name || row['Institution Name'] || '').trim();
+    const institution_id = instName ? (instMap[instName.toLowerCase()] || null) : null;
+
+    try {
+      await db.query(`
+        INSERT INTO contacts (first_name, last_name, title, email, phone, linkedin, institution_id, notes)
+        VALUES (?,?,?,?,?,?,?,?)
+      `, [first_name, last_name, title, email, phone, linkedin, institution_id, notes]);
+      added++;
+    } catch (_) {
+      errors++;
+    }
+  }
+
+  const msg = `Contacts imported: ${added} added, ${skipped} skipped (blank name)${errors ? ', ' + errors + ' errors' : ''}.`;
+  req.flash('success', msg);
+  res.redirect('/contacts');
+});
+
 module.exports = router;
