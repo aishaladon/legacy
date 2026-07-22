@@ -1,0 +1,141 @@
+<div class="page-header">
+  <h2>ArchiveGig Job Evaluation</h2>
+  <a href="/email-inbox" class="btn-link">Back to Inbox</a>
+</div>
+
+<p class="page-desc">Claude AI will evaluate this job posting for fit to your skills, experience, and career goals.</p>
+
+<section class="card">
+  <h3>Job Posting</h3>
+  <div style="margin-bottom:1.5rem;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Title</div>
+        <div style="font-size:1.1rem;font-weight:600;"><%= job.title %></div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Organization</div>
+        <div style="font-size:1.1rem;font-weight:600;"><%= job.organization %></div>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Location</div>
+      <div style="font-size:1rem;"><%= job.location %></div>
+    </div>
+    <% if (job.dateStr) { %>
+      <div style="font-size:.8rem;color:var(--text-muted);">Posted: <%= job.dateStr %></div>
+    <% } %>
+  </div>
+
+  <details style="margin-bottom:1rem;">
+    <summary style="cursor:pointer;font-weight:600;">View full job description</summary>
+    <pre style="font-size:.85rem;background:var(--bg-subtle,#f5f5f5);padding:1rem;border-radius:4px;margin-top:.5rem;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word;"><%= job.body %></pre>
+  </details>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+    <button id="evaluateBtn" class="btn btn-primary">Evaluate with AI</button>
+    <a href="/email-inbox" class="btn btn-secondary">Skip</a>
+  </div>
+</section>
+
+<div id="loadingSpinner" style="display:none;text-align:center;margin:2rem 0;">
+  <div style="display:inline-block;border:3px solid var(--bg-subtle);border-top:3px solid var(--text-primary);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;"></div>
+  <p style="margin-top:.5rem;color:var(--text-muted);">Claude is evaluating…</p>
+</div>
+
+<div id="results" style="display:none;">
+  <section class="card" style="margin-top:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+      <h3>Evaluation Results</h3>
+      <button onclick="document.getElementById('results').style.display='none'" class="btn-link">Close</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+      <div style="padding:1rem;background:var(--bg-subtle,#f5f5f5);border-radius:4px;">
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Fit Score</div>
+        <div style="font-size:2.5rem;font-weight:bold;color:var(--text-primary);"><span id="fitScore">—</span>/10</div>
+      </div>
+      <div style="padding:1rem;background:var(--bg-subtle,#f5f5f5);border-radius:4px;">
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Recommendation</div>
+        <div style="font-size:1.2rem;font-weight:600;color:var(--text-primary);"><span id="recommendation">—</span></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="margin-bottom:.5rem;">Why This Score?</h4>
+      <p id="reasoning" style="color:var(--text-muted);line-height:1.6;margin:0;"></p>
+    </div>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <button id="addBtn" class="btn btn-primary">Add to My Opportunities</button>
+      <button onclick="document.getElementById('results').style.display='none'" class="btn btn-secondary">Back to Job</button>
+    </div>
+  </section>
+</div>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  document.getElementById('evaluateBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    try {
+      const res = await fetch('/email-inbox/<%= email.uid %>/evaluate-archivesgig-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: '<%= job.title %>',
+          location: '<%= job.location %>',
+          organization: '<%= job.organization %>',
+          body: '<%= job.body.replace(/'/g, "\\'") %>'
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Evaluation failed');
+      }
+
+      const data = await res.json();
+      document.getElementById('fitScore').textContent = data.fit_score;
+      document.getElementById('reasoning').textContent = data.reasoning;
+      document.getElementById('recommendation').textContent = data.recommendation;
+
+      window.lastEvaluation = data;
+      document.getElementById('loadingSpinner').style.display = 'none';
+      document.getElementById('results').style.display = 'block';
+    } catch (err) {
+      document.getElementById('loadingSpinner').style.display = 'none';
+      alert('Error: ' + err.message);
+    }
+  });
+
+  document.getElementById('addBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!window.lastEvaluation) return;
+
+    try {
+      const res = await fetch('/email-inbox/<%= email.uid %>/save-archivesgig', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          title: '<%= job.title %>',
+          location: '<%= job.location %>',
+          organization: '<%= job.organization %>',
+          fit_score: window.lastEvaluation.fit_score
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to add job');
+      window.location.href = '/opportunities';
+    } catch (err) {
+      alert('Error adding job: ' + err.message);
+    }
+  });
+</script>

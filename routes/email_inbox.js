@@ -31,11 +31,13 @@ const OPPORTUNITY_KEYWORDS = [
 const OPPORTUNITY_DOMAINS = [
   'govexpert.info', 'mybidmatch.com', 'sam.gov', 'grants.gov', 'sba.gov',
   'fpds.gov', 'usaspending.gov', 'governmentservicesexchange.com',
-  'govwin.com', 'deltek.com', 'bgov.com'
+  'govwin.com', 'deltek.com', 'bgov.com', 'archivesgig.com', 'archivesgig.wordpress.com'
 ];
 
 const DIGEST_DOMAINS = ['mybidmatch.com', 'govexpert.info', 'grants.gov', 'sam.gov'];
 const DIGEST_SUBJECT_KEYWORDS = ['daily opportunities', 'bid match', 'daily digest', 'opportunity alert', 'weekly roundup', 'opportunity update'];
+const ARCHIVESGIG_DOMAINS = ['archivesgig.com', 'archivesgig.wordpress.com'];
+const ARCHIVESGIG_KEYWORDS = ['archivesgig', 'archives gig', 'library', 'archive', 'intern', 'records'];
 
 function isOpportunityEmail(subject, from) {
   const s = (subject || '').toLowerCase();
@@ -53,6 +55,44 @@ function isDigestEmail(subject, fromAddress, body) {
   // Detect by presence of 3+ numbered list items in body
   const numbered = ((body || '').match(/^\s*\d+[\.\)]\s/gm) || []);
   return numbered.length >= 3;
+}
+
+function isArchivesgigEmail(subject, fromAddress, body) {
+  const s = (subject || '').toLowerCase();
+  const f = (fromAddress || '').toLowerCase();
+  const b = (body || '').toLowerCase();
+  if (ARCHIVESGIG_DOMAINS.some(d => f.includes(d))) return true;
+  if (s.includes('archivesgig') || b.includes('archivesgig')) return true;
+  return false;
+}
+
+// Parse a single ArchiveGig job email
+function parseArchivesgigEmail(subject, body) {
+  // Subject typically: "Location: Job Title, Organization"
+  // Body has "By Author on Date"
+
+  // Extract location from subject (before colon)
+  const locationMatch = subject.match(/^([^:]+):\s*(.+)$/);
+  const location = locationMatch ? locationMatch[1].trim() : '';
+  const titleAndOrg = locationMatch ? locationMatch[2].trim() : subject;
+
+  // Try to split title and organization (usually separated by comma)
+  const parts = titleAndOrg.split(',');
+  const title = parts[0]?.trim() || titleAndOrg;
+  const organization = parts.slice(1).join(',').trim() || '';
+
+  // Extract date from body (By Author on Date)
+  const dateMatch = body.match(/by\s+[\w\s]+\s+on\s+(\w+\s+\d{1,2},?\s+\d{4})/i);
+  const dateStr = dateMatch ? dateMatch[1] : '';
+
+  return {
+    title,
+    location,
+    organization,
+    dateStr,
+    body,
+    opportunityType: 'Job'
+  };
 }
 
 // Parse a digest email body into individual opportunity objects
@@ -298,6 +338,17 @@ router.get('/:uid/convert', async (req, res) => {
   if (!email) { req.flash('error', 'Email not found.'); return res.redirect('/email-inbox'); }
 
   const digest = isDigestEmail(email.subject, email.fromAddress, email.body);
+  const archivesgig = isArchivesgigEmail(email.subject, email.fromAddress, email.body);
+
+  if (archivesgig) {
+    const job = parseArchivesgigEmail(email.subject, email.body);
+    return res.render('email_inbox/convert-archivesgig', {
+      title: 'Evaluate Job with AI',
+      email,
+      job
+    });
+  }
+
   const bodyPreview = email.body.length > 3000
     ? email.body.slice(0, 3000) + '\n\n[...email truncated...]'
     : email.body;
@@ -415,6 +466,101 @@ router.post('/:uid/save', async (req, res) => {
     res.redirect(`/opportunities/${result.insertId}`);
   } catch (err) {
     req.flash('error', 'Could not save opportunity: ' + err.message);
+    res.redirect('/email-inbox');
+  }
+});
+
+// ── Evaluate ArchiveGig job with Claude ─────────────────
+router.post('/:uid/evaluate-archivesgig-api', async (req, res) => {
+  const { title, location, organization, body } = req.body;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Claude API key not configured.' });
+  }
+
+  try {
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: `You are evaluating archival and library job postings for Legacy Planning & Preservation Ltd.
+
+Evaluate this job posting and respond ONLY with valid JSON (no markdown):
+
+{
+  "fit_score": <1-10>,
+  "reasoning": "<2-3 sentence explanation>",
+  "recommendation": "<Apply or Pass>"
+}
+
+JOB POSTING:
+Title: ${title}
+Location: ${location}
+Organization: ${organization}
+
+Full Description:
+${body}`
+        }
+      ]
+    });
+
+    const content = response.content[0].text.trim();
+    let evaluation;
+
+    try {
+      evaluation = JSON.parse(content);
+    } catch (e) {
+      return res.status(400).json({ error: 'Could not parse Claude response.' });
+    }
+
+    res.json(evaluation);
+  } catch (err) {
+    console.error('Claude API error:', err);
+    res.status(500).json({ error: 'Evaluation failed. Please try again.' });
+  }
+});
+
+// ── Save ArchiveGig job ──────────────────────────────────
+router.post('/:uid/save-archivesgig', async (req, res) => {
+  const { uid } = req.params;
+  const { title, location, organization, fit_score } = req.body;
+
+  try {
+    const [result] = await db.query(`
+      INSERT INTO opportunities
+        (title, opportunity_type, region, source, description, status)
+      VALUES (?,?,?,?,?,?)
+    `, [
+      title,
+      'Job',
+      location || null,
+      organization || 'ArchiveGig',
+      `Organization: ${organization}\nPosted on ArchiveGig`,
+      'New'
+    ]);
+
+    if (fit_score) {
+      await db.query('UPDATE opportunities SET alignment_score = ? WHERE id = ?', [fit_score, result.insertId]);
+    }
+
+    await db.query(
+      'INSERT INTO activity_log (record_type, record_id, action, description) VALUES (?,?,?,?)',
+      ['opportunity', result.insertId, 'created', `ArchiveGig job: ${title}`]
+    );
+
+    await db.query(
+      `INSERT INTO email_actions (uid, action, opportunity_id) VALUES (?, 'converted', ?)
+       ON DUPLICATE KEY UPDATE action='converted', opportunity_id=VALUES(opportunity_id), acted_at=NOW()`,
+      [uid, result.insertId]
+    );
+
+    req.flash('success', 'Job saved to Opportunities.');
+    res.redirect(`/opportunities/${result.insertId}`);
+  } catch (err) {
+    req.flash('error', 'Could not save job: ' + err.message);
     res.redirect('/email-inbox');
   }
 });
