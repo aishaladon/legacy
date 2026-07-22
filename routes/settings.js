@@ -139,15 +139,12 @@ router.post('/seed-aa-museums', async (req, res) => {
   res.redirect('/institutions');
 });
 
-// CSV import: paste or upload a CSV of institutions
-router.post('/import-institutions-csv', async (req, res) => {
-  const { parse } = require('csv-parse/sync');
-  const csvText = (req.body.csv_data || '').trim();
-  if (!csvText) {
-    req.flash('error', 'No CSV data provided.');
-    return res.redirect('/settings#import');
-  }
+// CSV import: file upload or paste
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
+async function processCSV(csvText, req, res) {
+  const { parse } = require('csv-parse/sync');
   let records;
   try {
     records = parse(csvText, {
@@ -171,12 +168,12 @@ router.post('/import-institutions-csv', async (req, res) => {
     const name = (row.name || row.Name || '').trim();
     if (!name) { skipped++; continue; }
 
-    const institution_type     = (row.institution_type     || row['Institution Type']     || 'Museum').trim();
-    const relationship_status  = (row.relationship_status  || row['Relationship Status']  || 'Target').trim();
-    const city                 = (row.city   || row.City   || '').trim() || null;
-    const state                = (row.state  || row.State  || '').trim() || null;
-    const website              = (row.website || row.Website || '').trim() || null;
-    const notes                = (row.notes  || row.Notes  || '').trim() || null;
+    const institution_type    = (row.institution_type    || row['Institution Type']    || 'Museum').trim();
+    const relationship_status = (row.relationship_status || row['Relationship Status'] || 'Target').trim();
+    const city    = (row.city    || row.City    || '').trim() || null;
+    const state   = (row.state   || row.State   || '').trim() || null;
+    const website = (row.website || row.Website || '').trim() || null;
+    const notes   = (row.notes   || row.Notes   || '').trim() || null;
 
     try {
       const [existing] = await db.query('SELECT id FROM institutions WHERE name = ? LIMIT 1', [name]);
@@ -194,6 +191,20 @@ router.post('/import-institutions-csv', async (req, res) => {
   const msg = `CSV import complete: ${added} added, ${skipped} skipped (already exist or blank)${errors ? ', ' + errors + ' errors' : ''}.`;
   req.flash('success', msg);
   res.redirect('/institutions');
+}
+
+router.post('/import-institutions-csv', upload.single('csv_file'), async (req, res) => {
+  let csvText = '';
+  if (req.file && req.file.buffer.length > 0) {
+    csvText = req.file.buffer.toString('utf8').trim();
+  } else {
+    csvText = (req.body.csv_data || '').trim();
+  }
+  if (!csvText) {
+    req.flash('error', 'No CSV data provided — upload a file or paste CSV text.');
+    return res.redirect('/settings#import');
+  }
+  return processCSV(csvText, req, res);
 });
 
 module.exports = router;
