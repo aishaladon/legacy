@@ -119,4 +119,81 @@ router.post('/seed-institutions', async (req, res) => {
   res.redirect('/institutions');
 });
 
+// One-time seed: loads African American museums and cultural institutions
+router.post('/seed-aa-museums', async (req, res) => {
+  const { africanAmericanMuseums } = require('../database/seeds/african_american_museums');
+  let added = 0, skipped = 0;
+  for (const inst of africanAmericanMuseums) {
+    if (!inst.name || !inst.name.trim()) { skipped++; continue; }
+    const [existing] = await db.query('SELECT id FROM institutions WHERE name = ? LIMIT 1', [inst.name]);
+    if (existing.length > 0) { skipped++; continue; }
+    await db.query(`
+      INSERT INTO institutions (name, institution_type, relationship_status, city, state, website, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [inst.name, inst.institution_type || 'Museum', inst.relationship_status || 'Target',
+        inst.city || null, inst.state || null,
+        inst.website || null, inst.notes || null]);
+    added++;
+  }
+  req.flash('success', `African American museums loaded: ${added} added, ${skipped} already existed or skipped.`);
+  res.redirect('/institutions');
+});
+
+// CSV import: paste or upload a CSV of institutions
+router.post('/import-institutions-csv', async (req, res) => {
+  const { parse } = require('csv-parse/sync');
+  const csvText = (req.body.csv_data || '').trim();
+  if (!csvText) {
+    req.flash('error', 'No CSV data provided.');
+    return res.redirect('/settings#import');
+  }
+
+  let records;
+  try {
+    records = parse(csvText, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+      relax_column_count: true,
+    });
+  } catch (err) {
+    req.flash('error', 'Could not parse CSV: ' + err.message);
+    return res.redirect('/settings#import');
+  }
+
+  if (!records.length) {
+    req.flash('error', 'CSV contained no data rows.');
+    return res.redirect('/settings#import');
+  }
+
+  let added = 0, skipped = 0, errors = 0;
+  for (const row of records) {
+    const name = (row.name || row.Name || '').trim();
+    if (!name) { skipped++; continue; }
+
+    const institution_type     = (row.institution_type     || row['Institution Type']     || 'Museum').trim();
+    const relationship_status  = (row.relationship_status  || row['Relationship Status']  || 'Target').trim();
+    const city                 = (row.city   || row.City   || '').trim() || null;
+    const state                = (row.state  || row.State  || '').trim() || null;
+    const website              = (row.website || row.Website || '').trim() || null;
+    const notes                = (row.notes  || row.Notes  || '').trim() || null;
+
+    try {
+      const [existing] = await db.query('SELECT id FROM institutions WHERE name = ? LIMIT 1', [name]);
+      if (existing.length > 0) { skipped++; continue; }
+      await db.query(`
+        INSERT INTO institutions (name, institution_type, relationship_status, city, state, website, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [name, institution_type, relationship_status, city, state, website, notes]);
+      added++;
+    } catch (_) {
+      errors++;
+    }
+  }
+
+  const msg = `CSV import complete: ${added} added, ${skipped} skipped (already exist or blank)${errors ? ', ' + errors + ' errors' : ''}.`;
+  req.flash('success', msg);
+  res.redirect('/institutions');
+});
+
 module.exports = router;
