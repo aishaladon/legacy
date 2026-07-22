@@ -8,6 +8,7 @@
     "init": "node init_db.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.3",
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
     "csv-parse": "^7.0.1",

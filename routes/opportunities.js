@@ -35,6 +35,69 @@ router.get('/new', async (req, res) => {
   res.render('opportunities/form', { title: 'Add Opportunity', opportunity: null, institutions });
 });
 
+router.get('/evaluate', (req, res) => {
+  res.render('opportunities/evaluate', { title: 'Evaluate Opportunity with AI' });
+});
+
+router.post('/evaluate-api', async (req, res) => {
+  const { text } = req.body;
+  if (!text || text.trim().length === 0) {
+    return res.status(400).json({ error: 'Please provide opportunity details.' });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Claude API key not configured. Contact your administrator.' });
+  }
+
+  try {
+    const Anthropic = require('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey });
+
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: `You are an expert business development evaluator for Legacy Planning & Preservation Ltd., a company that pursues government contracts and grants.
+
+Evaluate this opportunity and respond ONLY with valid JSON (no markdown, no code blocks, just raw JSON):
+
+{
+  "fit_score": <1-10>,
+  "reasoning": "<2-3 sentence explanation of the score>",
+  "opportunity_type": "<Contract or Grant>",
+  "region": "<region if mentioned, otherwise null>",
+  "tags": ["<tag1>", "<tag2>", "<tag3>"],
+  "recommendation": "<Add to System or Skip>"
+}
+
+OPPORTUNITY TEXT:
+${text}`
+        }
+      ]
+    });
+
+    const content = response.content[0].text.trim();
+    let evaluation;
+
+    try {
+      evaluation = JSON.parse(content);
+    } catch (e) {
+      return res.status(400).json({ error: 'Could not parse Claude response. Please try again.' });
+    }
+
+    res.json(evaluation);
+  } catch (err) {
+    console.error('Claude API error:', err);
+    if (err.status === 401) {
+      return res.status(500).json({ error: 'Invalid Claude API key.' });
+    }
+    res.status(500).json({ error: 'Evaluation failed. Please try again.' });
+  }
+});
+
 router.post('/', async (req, res) => {
   const {
     title, opportunity_type, source, source_url, posted_date, due_date,
