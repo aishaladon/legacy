@@ -7,6 +7,7 @@
     <form action="/opportunities/<%= opp.id %>/star" method="POST" style="display:inline">
       <button type="submit" class="btn btn-secondary"><%= opp.is_starred ? '&#9733; Unstar' : '&#9734; Star' %></button>
     </form>
+    <a href="/opportunities/<%= opp.id %>/draft-proposal" class="btn btn-secondary" title="Use AI to draft an RFP response">✍️ Draft Proposal</a>
     <a href="/opportunities/<%= opp.id %>/edit" class="btn btn-secondary">Edit</a>
     <% if (!pipeline) { %>
       <a href="/pipeline/add/<%= opp.id %>" class="btn btn-primary">Add to Pipeline</a>

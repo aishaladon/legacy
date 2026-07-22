@@ -1,0 +1,113 @@
+<div class="page-header">
+  <h2>Draft RFP Response</h2>
+  <a href="/opportunities/<%= opp.id %>" class="btn btn-secondary">← Back</a>
+</div>
+
+<p class="page-desc">Claude will draft a professional RFP response for this opportunity based on your company information and the opportunity requirements. Review and edit before submitting.</p>
+
+<section class="card">
+  <h3>Opportunity</h3>
+  <div style="margin-bottom:1.5rem;">
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Title</div>
+      <div style="font-size:1.1rem;font-weight:600;"><%= opp.title %></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Type</div>
+        <div><%= opp.opportunity_type %></div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Due Date</div>
+        <div><%= opp.due_date ? new Date(opp.due_date).toLocaleDateString() : '—' %></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+    <button id="draftBtn" class="btn btn-primary">Generate Draft with AI</button>
+    <a href="/opportunities/<%= opp.id %>" class="btn btn-secondary">Cancel</a>
+  </div>
+</section>
+
+<div id="loadingSpinner" style="display:none;text-align:center;margin:2rem 0;">
+  <div style="display:inline-block;border:3px solid var(--bg-subtle);border-top:3px solid var(--text-primary);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;"></div>
+  <p style="margin-top:.5rem;color:var(--text-muted);">Claude is drafting your response…</p>
+</div>
+
+<div id="draftSection" style="display:none;margin-top:2rem;">
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h3>Draft RFP Response</h3>
+      <span style="font-size:.85rem;color:var(--text-muted);">AI-generated • Review & customize before use</span>
+    </div>
+
+    <textarea id="draftText" style="width:100%;font-family:monospace;font-size:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:4px;resize:vertical;height:400px;margin-bottom:1rem;"></textarea>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <form id="downloadForm" style="display:inline;">
+        <input type="hidden" name="title" value="<%= opp.title %>">
+        <input type="hidden" id="draftInput" name="draft" value="">
+        <button type="submit" class="btn btn-primary" formaction="/opportunities/<%= opp.id %>/download-proposal" formmethod="POST">📄 Download as Word</button>
+      </form>
+      <button id="copyBtn" class="btn btn-secondary">📋 Copy to Clipboard</button>
+      <button onclick="document.getElementById('draftSection').style.display='none'" class="btn-link">Close</button>
+    </div>
+
+    <p style="font-size:.85rem;color:var(--text-muted);margin-top:1rem;">
+      💡 <strong>Tip:</strong> Edit the draft above, then download as Word to share with your team or submit with the opportunity.
+    </p>
+  </section>
+</div>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  document.getElementById('draftBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('draftSection').style.display = 'none';
+
+    try {
+      const res = await fetch('/opportunities/<%= opp.id %>/draft-proposal-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Draft generation failed');
+      }
+
+      const data = await res.json();
+      document.getElementById('draftText').value = data.draft;
+      document.getElementById('draftInput').value = data.draft;
+
+      document.getElementById('loadingSpinner').style.display = 'none';
+      document.getElementById('draftSection').style.display = 'block';
+    } catch (err) {
+      document.getElementById('loadingSpinner').style.display = 'none';
+      alert('Error: ' + err.message);
+    }
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    const text = document.getElementById('draftText').value;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = e.target;
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  });
+
+  document.getElementById('downloadForm').addEventListener('submit', (e) => {
+    document.getElementById('draftInput').value = document.getElementById('draftText').value;
+  });
+</script>

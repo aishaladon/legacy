@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const Anthropic = require('@anthropic-ai/sdk');
+const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 
 router.use(requireLogin);
 
@@ -37,6 +39,119 @@ router.get('/new', async (req, res) => {
 
 router.get('/evaluate', (req, res) => {
   res.render('opportunities/evaluate', { title: 'Evaluate Opportunity with AI' });
+});
+
+router.get('/:id/draft-proposal', async (req, res) => {
+  const [[opp]] = await db.query('SELECT * FROM opportunities WHERE id = ?', [req.params.id]);
+  if (!opp) { req.flash('error', 'Opportunity not found.'); return res.redirect('/opportunities'); }
+
+  res.render('opportunities/draft-proposal', { title: 'Draft RFP Response', opp });
+});
+
+router.post('/:id/draft-proposal-api', async (req, res) => {
+  const [[opp]] = await db.query('SELECT * FROM opportunities WHERE id = ?', [req.params.id]);
+  if (!opp) return res.status(404).json({ error: 'Opportunity not found.' });
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'Claude API key not configured.' });
+
+  // Get company info from settings
+  const [settings] = await db.query('SELECT setting_name, value FROM company_settings');
+  const companyInfo = {};
+  settings.forEach(s => { companyInfo[s.setting_name] = s.value; });
+
+  try {
+    const client = new Anthropic({ apiKey });
+
+    const prompt = `You are drafting a professional RFP response for a government contracting opportunity.
+
+COMPANY INFO:
+Name: ${companyInfo.company_name || 'Legacy Planning & Preservation Ltd.'}
+Mission: ${companyInfo.company_mission || ''}
+Capabilities: ${companyInfo.company_capabilities || ''}
+Background: ${companyInfo.company_background || ''}
+
+OPPORTUNITY:
+Title: ${opp.title}
+Type: ${opp.opportunity_type}
+Description: ${opp.description || ''}
+Requirements: ${opp.requirements || '(not specified)'}
+
+Draft a professional RFP response that:
+1. Shows understanding of the opportunity and requirements
+2. Demonstrates how our company capabilities align with the needs
+3. Is compelling and professional
+4. Includes sections: Executive Summary, Approach/Methodology, Company Qualifications, Team, Timeline, and Pricing Strategy (if applicable)
+5. Use business-appropriate tone, no markdown formatting
+
+Generate the response as plain text with clear section headers.`;
+
+    const response = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 3000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const draft = response.content[0].text;
+    res.json({ draft });
+  } catch (err) {
+    console.error('Claude API error:', err);
+    res.status(500).json({ error: 'Draft generation failed. Please try again.' });
+  }
+});
+
+router.post('/:id/download-proposal', async (req, res) => {
+  const { title, draft } = req.body;
+
+  try {
+    const sections = [];
+    const lines = draft.split('\n');
+
+    lines.forEach(line => {
+      if (line.trim()) {
+        // Check if line looks like a heading (all caps, short)
+        if (line.match(/^[A-Z][A-Z\s]+:?$/) && line.length < 60) {
+          sections.push(new Paragraph({
+            text: line.trim(),
+            heading: HeadingLevel.HEADING_1,
+            thematicBreak: false
+          }));
+        } else {
+          sections.push(new Paragraph({
+            text: line,
+            spacing: { line: 360 }
+          }));
+        }
+      } else {
+        sections.push(new Paragraph('')); // Empty line for spacing
+      }
+    });
+
+    const doc = new Document({
+      sections: [{
+        children: [
+          new Paragraph({
+            text: title || 'RFP Response',
+            heading: HeadingLevel.HEADING_1,
+            spacing: { after: 400 }
+          }),
+          new Paragraph({
+            text: `Generated on ${new Date().toLocaleDateString()}`,
+            spacing: { after: 600 }
+          }),
+          ...sections
+        ]
+      }]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="RFP_Response_${req.params.id}.docx"`);
+    res.send(buffer);
+  } catch (err) {
+    console.error('Document generation error:', err);
+    res.status(500).json({ error: 'Could not generate document.' });
+  }
 });
 
 router.post('/evaluate-api', async (req, res) => {
