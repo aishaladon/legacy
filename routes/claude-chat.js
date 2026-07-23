@@ -56,9 +56,13 @@ router.post('/claude-chat', requireLogin, async (req, res) => {
   try {
     const client = new Anthropic({ apiKey });
 
-    const [settings] = await db.query('SELECT setting_name, value FROM company_settings');
-    const companyInfo = {};
-    settings.forEach(s => { companyInfo[s.setting_name] = s.value; });
+    let companyInfo = {};
+    try {
+      const [settings] = await db.query('SELECT setting_name, value FROM company_settings');
+      settings.forEach(s => { companyInfo[s.setting_name] = s.value; });
+    } catch (dbErr) {
+      // company_settings table doesn't exist, use defaults
+    }
 
     const systemPrompt = `You are a government contracting expert helping Legacy Planning & Preservation Ltd. evaluate opportunities and draft proposals.
 
