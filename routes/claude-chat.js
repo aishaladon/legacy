@@ -4,8 +4,6 @@ const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 
-router.use(requireLogin);
-
 router.get('/api/claude-test', async (req, res) => {
   try {
     const [[apiKeyRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
@@ -42,7 +40,7 @@ router.get('/api/claude-test', async (req, res) => {
   }
 });
 
-router.post('/claude-chat', async (req, res) => {
+router.post('/claude-chat', requireLogin, async (req, res) => {
   const { message } = req.body;
   if (!message || message.trim().length === 0) {
     return res.status(400).json({ error: 'Message is required.' });
