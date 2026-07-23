@@ -58,10 +58,10 @@ router.post('/claude-chat', requireLogin, async (req, res) => {
 
     let companyInfo = {};
     try {
-      const [settings] = await db.query('SELECT setting_name, value FROM company_settings');
-      settings.forEach(s => { companyInfo[s.setting_name] = s.value; });
+      const [settings] = await db.query("SELECT name, value FROM user_settings WHERE name IN ('company_name', 'company_mission', 'company_naics_codes', 'company_capabilities', 'company_background')");
+      settings.forEach(s => { companyInfo[s.name] = s.value; });
     } catch (dbErr) {
-      // company_settings table doesn't exist, use defaults
+      // company settings not found, use defaults
     }
 
     const systemPrompt = `You are a government contracting expert helping Legacy Planning & Preservation Ltd. evaluate opportunities and draft proposals.
