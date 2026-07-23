@@ -35,6 +35,20 @@
       <span>Legacy GovCon &mdash; Legacy P&amp;P Ltd.</span>
     </footer>
   </div>
+  <div id="claudeChat" class="claude-chat-panel">
+    <div class="claude-chat-header">
+      <span>Claude Assistant</span>
+      <button id="claudeChatToggle" class="claude-chat-toggle">&times;</button>
+    </div>
+    <div id="claudeChatMessages" class="claude-chat-messages"></div>
+    <div class="claude-chat-input-area">
+      <textarea id="claudeInput" placeholder="Ask Claude about this opportunity, copy/paste a bid, or get research..."></textarea>
+      <button id="claudeSend" class="btn btn-primary">Send</button>
+    </div>
+  </div>
+  <button id="claudeOpen" class="claude-chat-fab">Claude</button>
+
   <script src="/js/main.js"></script>
+  <script src="/js/claude-chat.js"></script>
 </body>
 </html>

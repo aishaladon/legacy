@@ -1,0 +1,59 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../config/database');
+const { requireLogin } = require('../middleware/auth');
+const Anthropic = require('@anthropic-ai/sdk');
+
+router.use(requireLogin);
+
+router.post('/claude-chat', async (req, res) => {
+  const { message } = req.body;
+  if (!message || message.trim().length === 0) {
+    return res.status(400).json({ error: 'Message is required.' });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Claude API key not configured.' });
+  }
+
+  try {
+    const client = new Anthropic({ apiKey });
+
+    const [settings] = await db.query('SELECT setting_name, value FROM company_settings');
+    const companyInfo = {};
+    settings.forEach(s => { companyInfo[s.setting_name] = s.value; });
+
+    const systemPrompt = `You are a government contracting expert helping Legacy Planning & Preservation Ltd. evaluate opportunities and draft proposals.
+
+COMPANY INFO:
+Name: ${companyInfo.company_name || 'Legacy Planning & Preservation Ltd.'}
+Mission: ${companyInfo.company_mission || '(not specified)'}
+NAICS Codes: ${companyInfo.company_naics_codes || '(not specified)'}
+Capability Statement: ${companyInfo.company_capabilities || '(not specified)'}
+Background: ${companyInfo.company_background || '(not specified)'}
+
+When a user:
+1. Pastes an opportunity or RFP → Evaluate fit against NAICS codes and capabilities. Rate 1-10. Explain why. List any red flags.
+2. Asks for a proposal outline → Create a structured proposal outline based on the opportunity requirements and company capabilities.
+3. Asks for research → Help research government agencies, contacts, or similar opportunities.
+4. Asks questions → Answer using company context to help them pursue government contracts and grants.
+
+Be concise, professional, and action-oriented. Focus on helping them win contracts.`;
+
+    const response = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: message }]
+    });
+
+    const responseText = response.content[0].text;
+    res.json({ response: responseText });
+  } catch (err) {
+    console.error('Claude API error:', err);
+    res.status(500).json({ error: 'Chat failed. Please try again.' });
+  }
+});
+
+module.exports = router;
