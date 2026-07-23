@@ -33,7 +33,7 @@ const claudeChat = (() => {
     sendBtn.disabled = true;
 
     try {
-      const res = await fetch('/api/claude-chat', {
+      const res = await fetch('/claude-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text })
