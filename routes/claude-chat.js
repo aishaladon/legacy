@@ -53,8 +53,22 @@ Be concise, professional, and action-oriented. Focus on helping them win contrac
     const responseText = response.content[0].text;
     res.json({ response: responseText });
   } catch (err) {
-    console.error('Claude API error:', err);
-    res.status(500).json({ error: 'Chat failed. Please try again.' });
+    console.error('Claude API error:', err.message, err.status, err.error);
+
+    let errorMsg = 'Chat failed. ';
+    if (err.status === 401) {
+      errorMsg = 'Invalid Claude API key — check it in Settings → API Keys.';
+    } else if (err.status === 429) {
+      errorMsg = 'Rate limited — too many requests. Wait a moment and try again.';
+    } else if (err.status === 400) {
+      errorMsg = 'Bad request — API key may be invalid or malformed.';
+    } else if (err.message && err.message.includes('fetch')) {
+      errorMsg = 'Network error — cannot reach Claude API. Check your connection.';
+    } else {
+      errorMsg = 'Chat failed: ' + (err.message || 'Unknown error');
+    }
+
+    res.status(500).json({ error: errorMsg });
   }
 });
 
