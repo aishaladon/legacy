@@ -213,7 +213,11 @@ router.post('/import-institutions-csv', upload.single('csv_file'), async (req, r
 router.post('/api-keys', async (req, res) => {
   const { claude_api_key } = req.body;
   if (claude_api_key && claude_api_key.trim()) {
-    await db.query("UPDATE user_settings SET value = ? WHERE name = 'claude_api_key'", [claude_api_key.trim()]);
+    await db.query(`
+      INSERT INTO user_settings (name, value, setting_type)
+      VALUES ('claude_api_key', ?, 'API')
+      ON DUPLICATE KEY UPDATE value = ?
+    `, [claude_api_key.trim(), claude_api_key.trim()]);
     req.flash('success', 'Claude API key saved.');
   } else {
     req.flash('error', 'API key cannot be empty.');
