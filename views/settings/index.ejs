@@ -49,6 +49,29 @@
   </form>
 </section>
 
+<section class="card" id="api-keys" style="margin-top:1.5rem">
+  <h3>API Keys</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1rem;">Store your API keys here. They're used by Claude Assistant and other integrations. Never share these keys.</p>
+
+  <form action="/settings/api-keys" method="POST">
+    <div class="form-group">
+      <label for="claude_api_key">Claude API Key</label>
+      <input type="password" id="claude_api_key" name="claude_api_key" placeholder="sk-ant-..." value="<%= claudeApiKey || '' %>" style="font-family:monospace;font-size:.9rem;">
+      <div style="font-size:.8rem;color:var(--text-muted);margin-top:.3rem;">
+        Get your API key from <a href="https://console.anthropic.com/account/keys" target="_blank" rel="noopener">console.anthropic.com/account/keys</a>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save API Key</button>
+    </div>
+  </form>
+  <% if (claudeApiKey) { %>
+    <div style="margin-top:1rem;padding:.75rem;background:#f0f7ff;border-left:3px solid #0066cc;border-radius:4px;font-size:.85rem;">
+      ✓ Claude API key is set and ready to use.
+    </div>
+  <% } %>
+</section>
+
 <section class="card" id="keywords" style="margin-top:1.5rem">
   <div class="card-header">
     <h3>Keywords (<%= keywords.length %>)</h3>

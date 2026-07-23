@@ -13,10 +13,13 @@ router.get('/', async (req, res) => {
 
   const [[samRow]]    = await db.query("SELECT value FROM user_settings WHERE name='auto_sam_enabled'");
   const [[grantsRow]] = await db.query("SELECT value FROM user_settings WHERE name='auto_grants_enabled'");
+  const [[claudeRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
+
   const autoEnabled = {
     sam:    samRow    ? samRow.value    === '1' : false,
     grants: grantsRow ? grantsRow.value === '1' : false
   };
+  const claudeApiKey = claudeRow ? claudeRow.value : null;
 
   let autoLogs = [];
   try {
@@ -25,7 +28,7 @@ router.get('/', async (req, res) => {
     );
   } catch (_) {}
 
-  res.render('settings/index', { title: 'Settings', settings, naics, keywords, sources, autoEnabled, autoLogs });
+  res.render('settings/index', { title: 'Settings', settings, naics, keywords, sources, autoEnabled, autoLogs, claudeApiKey });
 });
 
 router.post('/general', async (req, res) => {
@@ -205,6 +208,17 @@ router.post('/import-institutions-csv', upload.single('csv_file'), async (req, r
     return res.redirect('/settings#import');
   }
   return processCSV(csvText, req, res);
+});
+
+router.post('/api-keys', async (req, res) => {
+  const { claude_api_key } = req.body;
+  if (claude_api_key && claude_api_key.trim()) {
+    await db.query("UPDATE user_settings SET value = ? WHERE name = 'claude_api_key'", [claude_api_key.trim()]);
+    req.flash('success', 'Claude API key saved.');
+  } else {
+    req.flash('error', 'API key cannot be empty.');
+  }
+  res.redirect('/settings#api-keys');
 });
 
 module.exports = router;

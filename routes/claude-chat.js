@@ -12,9 +12,11 @@ router.post('/claude-chat', async (req, res) => {
     return res.status(400).json({ error: 'Message is required.' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const [[apiKeyRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
+  const apiKey = apiKeyRow ? apiKeyRow.value : null;
+
   if (!apiKey) {
-    return res.status(500).json({ error: 'Claude API key not configured.' });
+    return res.status(500).json({ error: 'Claude API key not set. Go to Settings → API Keys to add it.' });
   }
 
   try {
