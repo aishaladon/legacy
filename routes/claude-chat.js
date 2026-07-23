@@ -6,6 +6,42 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 router.use(requireLogin);
 
+router.get('/api/claude-test', async (req, res) => {
+  try {
+    const [[apiKeyRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
+    const apiKey = apiKeyRow ? apiKeyRow.value : null;
+
+    if (!apiKey) {
+      return res.json({ status: 'error', message: 'No API key found in database' });
+    }
+
+    const keyStart = apiKey.substring(0, 10);
+    const keyEnd = apiKey.substring(apiKey.length - 4);
+    const masked = `${keyStart}...${keyEnd} (length: ${apiKey.length})`;
+
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: 'Say hello' }]
+    });
+
+    res.json({
+      status: 'success',
+      message: 'Claude API is working!',
+      apiKey: masked,
+      response: response.content[0].text
+    });
+  } catch (err) {
+    res.json({
+      status: 'error',
+      message: err.message,
+      error: err.error || err,
+      status_code: err.status
+    });
+  }
+});
+
 router.post('/claude-chat', async (req, res) => {
   const { message } = req.body;
   if (!message || message.trim().length === 0) {
