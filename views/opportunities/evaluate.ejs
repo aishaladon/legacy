@@ -62,13 +62,13 @@
       <strong>Claude's Recommendation:</strong> <span id="recommendation" style="font-weight:600;"></span>
     </div>
 
-    <% if (opportunities && opportunities.length) { %>
+    <% if (institutions && institutions.length) { %>
       <div style="margin-bottom:1rem;">
         <label for="prefillInstitution" style="font-weight:600;font-size:.9rem;">Link to Institution (optional)</label>
         <select id="prefillInstitution" style="width:100%;margin-top:.25rem;">
           <option value="">— No institution —</option>
-          <% opportunities.forEach(o => { %>
-            <option value="<%= o.institution_id %>"><%= o.institution_name || 'Unknown' %></option>
+          <% institutions.forEach(i => { %>
+            <option value="<%= i.id %>"><%= i.name %></option>
           <% }); %>
         </select>
       </div>

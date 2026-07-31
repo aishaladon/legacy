@@ -5,6 +5,7 @@ const { simpleParser } = require('mailparser');
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
+const { getClaudeApiKey } = require('../utils/claudeApiKey');
 
 router.use(requireLogin);
 
@@ -163,7 +164,7 @@ function parseDigestEmail(body) {
 
 // Evaluate opportunities with Claude
 async function evaluateOpportunitiesWithClaude(opportunities) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = await getClaudeApiKey();
   if (!apiKey) return opportunities; // Skip if no API key
 
   try {
@@ -473,9 +474,9 @@ router.post('/:uid/save', async (req, res) => {
 // ── Evaluate ArchiveGig job with Claude ─────────────────
 router.post('/:uid/evaluate-archivesgig-api', async (req, res) => {
   const { title, location, organization, body } = req.body;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = await getClaudeApiKey();
   if (!apiKey) {
-    return res.status(500).json({ error: 'Claude API key not configured.' });
+    return res.status(500).json({ error: 'Claude API key not set. Go to Settings → API Keys to add it.' });
   }
 
   try {
@@ -519,7 +520,13 @@ ${body}`
     res.json(evaluation);
   } catch (err) {
     console.error('Claude API error:', err);
-    res.status(500).json({ error: 'Evaluation failed. Please try again.' });
+    let errorMsg = 'Evaluation failed. Please try again.';
+    if (err.status === 401) {
+      errorMsg = 'Invalid Claude API key — check it in Settings → API Keys.';
+    } else if (err.status === 429) {
+      errorMsg = 'Rate limited — too many requests. Wait a moment and try again.';
+    }
+    res.status(500).json({ error: errorMsg });
   }
 });
 

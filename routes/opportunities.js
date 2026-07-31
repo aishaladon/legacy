@@ -4,6 +4,7 @@ const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
+const { getClaudeApiKey } = require('../utils/claudeApiKey');
 
 router.use(requireLogin);
 
@@ -37,8 +38,9 @@ router.get('/new', async (req, res) => {
   res.render('opportunities/form', { title: 'Add Opportunity', opportunity: null, institutions });
 });
 
-router.get('/evaluate', (req, res) => {
-  res.render('opportunities/evaluate', { title: 'Evaluate Opportunity with AI' });
+router.get('/evaluate', async (req, res) => {
+  const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
+  res.render('opportunities/evaluate', { title: 'Evaluate Opportunity with AI', institutions });
 });
 
 router.get('/:id/draft-proposal', async (req, res) => {
@@ -52,13 +54,17 @@ router.post('/:id/draft-proposal-api', async (req, res) => {
   const [[opp]] = await db.query('SELECT * FROM opportunities WHERE id = ?', [req.params.id]);
   if (!opp) return res.status(404).json({ error: 'Opportunity not found.' });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Claude API key not configured.' });
+  const apiKey = await getClaudeApiKey();
+  if (!apiKey) return res.status(500).json({ error: 'Claude API key not set. Go to Settings → API Keys to add it.' });
 
   // Get company info from settings
-  const [settings] = await db.query('SELECT setting_name, value FROM company_settings');
-  const companyInfo = {};
-  settings.forEach(s => { companyInfo[s.setting_name] = s.value; });
+  let companyInfo = {};
+  try {
+    const [settings] = await db.query("SELECT name, value FROM user_settings WHERE name IN ('company_name', 'company_mission', 'company_naics_codes', 'company_capabilities', 'company_background')");
+    settings.forEach(s => { companyInfo[s.name] = s.value; });
+  } catch (dbErr) {
+    // company settings not found, use defaults
+  }
 
   try {
     const client = new Anthropic({ apiKey });
@@ -96,7 +102,13 @@ Generate the response as plain text with clear section headers.`;
     res.json({ draft });
   } catch (err) {
     console.error('Claude API error:', err);
-    res.status(500).json({ error: 'Draft generation failed. Please try again.' });
+    let errorMsg = 'Draft generation failed. Please try again.';
+    if (err.status === 401) {
+      errorMsg = 'Invalid Claude API key — check it in Settings → API Keys.';
+    } else if (err.status === 429) {
+      errorMsg = 'Rate limited — too many requests. Wait a moment and try again.';
+    }
+    res.status(500).json({ error: errorMsg });
   }
 });
 
@@ -160,9 +172,9 @@ router.post('/evaluate-api', async (req, res) => {
     return res.status(400).json({ error: 'Please provide opportunity details.' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = await getClaudeApiKey();
   if (!apiKey) {
-    return res.status(500).json({ error: 'Claude API key not configured. Contact your administrator.' });
+    return res.status(500).json({ error: 'Claude API key not set. Go to Settings → API Keys to add it.' });
   }
 
   try {
