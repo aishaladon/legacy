@@ -93,11 +93,12 @@ async function runSamDigest() {
     );
     return { status: 'success', newCount };
   } catch (err) {
+    const detail = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     await db.query(
       'INSERT INTO automation_log (run_type, status, message) VALUES (?,?,?)',
-      ['sam_digest', 'error', err.message]
+      ['sam_digest', 'error', detail]
     );
-    return { status: 'error', message: err.message };
+    return { status: 'error', message: detail };
   }
 }
 
@@ -158,11 +159,12 @@ async function runGrantsPull() {
     );
     return { status: 'success', newCount };
   } catch (err) {
+    const detail = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     await db.query(
       'INSERT INTO automation_log (run_type, status, message) VALUES (?,?,?)',
-      ['grants_pull', 'error', err.message]
+      ['grants_pull', 'error', detail]
     );
-    return { status: 'error', message: err.message };
+    return { status: 'error', message: detail };
   }
 }
 

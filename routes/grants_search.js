@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
         grantsUrl:   `https://www.grants.gov/search-results-detail/${o.id}`
       }));
     } catch (err) {
-      error = err.message;
+      error = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     }
   }
 

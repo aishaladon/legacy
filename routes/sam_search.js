@@ -80,7 +80,7 @@ router.get('/', async (req, res) => {
         samUrl: o.uiLink || `https://sam.gov/opp/${o.noticeId}/view`
       }));
     } catch (err) {
-      error = err.message;
+      error = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     }
   }
 

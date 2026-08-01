@@ -82,7 +82,7 @@ router.get('/', async (req, res) => {
         city:        r['Place of Performance City Name'] || ''
       }));
     } catch (err) {
-      error = err.message;
+      error = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     }
   }
 
