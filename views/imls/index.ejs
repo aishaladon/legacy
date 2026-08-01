@@ -63,8 +63,8 @@
 
     <div class="sam-results-header">
       <span>
-        <strong><%= (meta.total || 0).toLocaleString() %></strong> IMLS awards found
-        — showing page <%= page %> of <%= Math.ceil((meta.total || 0) / 25) %>
+        <strong><%= results.length %></strong> IMLS awards found
+        — showing page <%= page %><%= meta.hasNext ? ' (more results available)' : '' %>
         <span class="usas-total-value">
           <% const pageTotal = results.reduce((s,r) => s + (r.amount || 0), 0); %>
           &nbsp;|&nbsp; Page total: <strong>$<%= pageTotal.toLocaleString('en-US',{maximumFractionDigits:0}) %></strong>

@@ -3,6 +3,7 @@ const router = express.Router();
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+const { dedupeFunders } = require('../database/migrations/dedupe_funders');
 
 const SETUP_KEY = process.env.SETUP_KEY || 'legacy-setup-2026';
 
@@ -49,6 +50,9 @@ router.get('/setup', async (req, res) => {
         }
       }
     }
+
+    const removed = await dedupeFunders(conn);
+    log.push(removed > 0 ? `Removed ${removed} duplicate funder row(s).` : 'No duplicate funders found.');
 
     await conn.end();
     log.push('Database initialized successfully!');

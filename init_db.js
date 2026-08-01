@@ -2,6 +2,7 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+const { dedupeFunders } = require('./database/migrations/dedupe_funders');
 
 async function init() {
   const conn = await mysql.createConnection({
@@ -40,6 +41,9 @@ async function init() {
       }
     }
   }
+
+  const removed = await dedupeFunders(conn);
+  if (removed > 0) console.log(`Removed ${removed} duplicate funder row(s).`);
 
   await conn.end();
   console.log('Database initialized successfully.');

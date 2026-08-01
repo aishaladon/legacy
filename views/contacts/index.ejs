@@ -43,7 +43,7 @@
             <td><a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a></td>
             <td><%= c.title || '—' %></td>
             <td><%= c.institution_name || '—' %></td>
-            <td><%= c.email ? '<a href="mailto:' + c.email + '">' + c.email + '</a>' : '—' %></td>
+            <td><% if (c.email) { %><a href="mailto:<%= c.email %>"><%= c.email %></a><% } else { %>—<% } %></td>
             <td><%= c.phone || '—' %></td>
           </tr>
         <% }); %>

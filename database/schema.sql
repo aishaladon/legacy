@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS data_sources (
 
 CREATE TABLE IF NOT EXISTS funders (
   id                       INT AUTO_INCREMENT PRIMARY KEY,
-  name                     VARCHAR(200) NOT NULL,
+  name                     VARCHAR(200) NOT NULL UNIQUE,
   funder_type              ENUM('Federal','State','Foundation','Corporate','Other') NOT NULL DEFAULT 'Foundation',
   website                  VARCHAR(500) DEFAULT NULL,
   eligible_institution_types TEXT       DEFAULT NULL,
