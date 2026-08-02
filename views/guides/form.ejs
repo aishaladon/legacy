@@ -12,7 +12,7 @@
     <div class="form-group">
       <label>Opportunity Type</label>
       <select name="opportunity_type">
-        <% ['Government Contract','Grant','RFP','NOFO','Other'].forEach(function(t) { %>
+        <% ['Government Contract','Grant','Subcontract','RFP','NOFO','Other'].forEach(function(t) { %>
           <option value="<%= t %>" <%= (guide && guide.opportunity_type === t) ? 'selected' : '' %>><%= t %></option>
         <% }); %>
       </select>

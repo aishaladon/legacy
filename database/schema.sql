@@ -195,12 +195,13 @@ CREATE TABLE IF NOT EXISTS award_history (
 CREATE TABLE IF NOT EXISTS bid_writing_guides (
   id              INT AUTO_INCREMENT PRIMARY KEY,
   title           VARCHAR(300) NOT NULL,
-  opportunity_type ENUM('Government Contract','Grant','RFP','NOFO','Other') NOT NULL DEFAULT 'Other',
+  opportunity_type ENUM('Government Contract','Grant','Subcontract','RFP','NOFO','Other') NOT NULL DEFAULT 'Other',
   content         LONGTEXT     NOT NULL,
   is_template     TINYINT(1)   NOT NULL DEFAULT 0,
   sort_order      INT          NOT NULL DEFAULT 0,
   created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_guides_title (title)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS capability_statements (

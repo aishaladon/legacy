@@ -3,6 +3,9 @@ const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 const { dedupeFunders } = require('./database/migrations/dedupe_funders');
+const { upgradeBidWritingGuides } = require('./database/migrations/upgrade_bid_writing_guides');
+const { seedBidWritingGuides } = require('./database/seeds/bid_writing_guides');
+const { updateNaicsCodes } = require('./database/migrations/update_naics_codes');
 
 async function init() {
   const conn = await mysql.createConnection({
@@ -44,6 +47,13 @@ async function init() {
 
   const removed = await dedupeFunders(conn);
   if (removed > 0) console.log(`Removed ${removed} duplicate funder row(s).`);
+
+  await upgradeBidWritingGuides(conn);
+  const guidesAdded = await seedBidWritingGuides(conn);
+  console.log(`Bid Writing Guides: ${guidesAdded} added.`);
+
+  const naicsRemoved = await updateNaicsCodes(conn);
+  if (naicsRemoved > 0) console.log(`Removed ${naicsRemoved} outdated NAICS code(s).`);
 
   await conn.end();
   console.log('Database initialized successfully.');
