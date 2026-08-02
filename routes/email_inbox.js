@@ -48,7 +48,33 @@ function isOpportunityEmail(subject, from) {
   return false;
 }
 
-const BULLET_ITEM_RE = /^(?:[•\-\*]\s*)?[A-Z]{1,3}\s*--\s*.+\([^()]*\)\s*$/;
+// MyBidMatch-style bullet notices: "D -- Altair Units Enterprise Suite (DEPT OF DEFENSE)"
+// State/local notices use a single dash instead of a double dash:
+// "R - RFP for Records Digitization and Cataloguing Services (New Hampshire ...)"
+const BULLET_START_RE = /^(?:[•\-\*]\s*)?[A-Z]{1,3}\d{0,4}\s*-{1,2}\s*/;
+const BULLET_ITEM_RE = /^(?:[•\-\*]\s*)?[A-Z]{1,3}\d{0,4}\s*-{1,2}\s*.+\([^()]*\)\s*$/;
+
+// Long agency names sometimes wrap onto a continuation line in the plain-text
+// body — join any line that doesn't start a new bullet onto the previous one
+// so the whole notice (including its trailing "(Agency)") ends up on one line.
+function joinWrappedBulletLines(body) {
+  const rawLines = (body || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const merged = [];
+  for (const line of rawLines) {
+    const prev = merged[merged.length - 1];
+    // Only continue the previous line if it started a bullet AND hasn't
+    // reached its closing paren yet — otherwise trailing boilerplate after
+    // the last bullet (e.g. "Click this link... to view all articles.")
+    // gets glued onto it and breaks the closing-paren match.
+    const prevIsOpenBullet = prev && BULLET_START_RE.test(prev) && !/\)\s*$/.test(prev);
+    if (prevIsOpenBullet) {
+      merged[merged.length - 1] += ' ' + line;
+    } else {
+      merged.push(line);
+    }
+  }
+  return merged;
+}
 
 function isDigestEmail(subject, fromAddress, body) {
   const s = (subject || '').toLowerCase();
@@ -59,7 +85,7 @@ function isDigestEmail(subject, fromAddress, body) {
   const numbered = ((body || '').match(/^\s*\d+[\.\)]\s/gm) || []);
   if (numbered.length >= 3) return true;
   // Or 3+ bullet-coded notices (MyBidMatch-style: "B -- Title (Agency)")
-  const bulleted = ((body || '').match(new RegExp(BULLET_ITEM_RE.source, 'gm')) || []);
+  const bulleted = joinWrappedBulletLines(body).filter(l => BULLET_ITEM_RE.test(l));
   return bulleted.length >= 3;
 }
 
@@ -176,24 +202,40 @@ function parseDigestEmail(body) {
   return results;
 }
 
+// MyBidMatch emails include a link to the subscriber's persistent bid
+// listing (mybidmatch.outreachsystems.com/go?sub=...), which lists every
+// matched bid for the last 30 days and links through to each bid's full
+// abstract. That per-notice detail isn't in the plain-text body, so this is
+// the closest real, clickable "more info" link we can attach to each parsed
+// opportunity — prefer it, fall back to the first URL in the body otherwise.
+function extractDigestLink(body) {
+  const text = body || '';
+  const preferred = text.match(/https?:\/\/[^\s\)\]>,"']*(?:mybidmatch|outreachsystems|govexpert)[^\s\)\]>,"']*/i);
+  if (preferred) return preferred[0].replace(/[.,;'")\]]+$/, '');
+  const anyUrl = text.match(/https?:\/\/[^\s\)\]>,"']+/);
+  return anyUrl ? anyUrl[0].replace(/[.,;'")\]]+$/, '') : '';
+}
+
 // Parse MyBidMatch-style digest emails, where each notice is one line:
 // "B -- B--Notice of Intent to Sole Source (INTERIOR, DEPARTMENT OF THE, ...)"
 // — a leading category code, "--", the title, then agency hierarchy in
 // trailing parentheses. This is a completely different shape than the
 // numbered-list digests parseDigestEmail handles, so it needs its own pass.
 function parseBulletDigestEmail(body) {
-  const lines = (body || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const digestUrl = extractDigestLink(body);
+  const lines = joinWrappedBulletLines(body);
+  const seen = new Set();
   const results = [];
 
   lines.forEach((line, idx) => {
     if (!BULLET_ITEM_RE.test(line)) return;
 
-    const m = line.match(/^(?:[•\-\*]\s*)?[A-Z]{1,3}\s*--\s*(.+)$/);
+    const m = line.match(/^(?:[•\-\*]\s*)?[A-Z]{1,3}\s*-{1,2}\s*(.+)$/);
     if (!m) return;
 
     // Titles usually repeat the leading code (sometimes with digits, e.g.
     // "R606--RFQ: ...") right before the real title — strip that too.
-    const rest = m[1].replace(/^[A-Z]{1,3}\d{0,4}--\s*/, '').trim();
+    const rest = m[1].replace(/^[A-Z]{1,3}\d{0,4}\s*-{1,2}\s*/, '').trim();
 
     let title = rest;
     let agency = '';
@@ -205,11 +247,16 @@ function parseBulletDigestEmail(body) {
 
     if (!title || title.length < 4) return;
 
+    // Digests sometimes repeat the same notice (seen in real MyBidMatch mail).
+    const dedupeKey = title.toLowerCase();
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+
     results.push({
       index: idx,
       title,
       dueDate: '',
-      sourceUrl: '',
+      sourceUrl: digestUrl,
       opportunityType: 'Government Contract',
       agency,
       naics: '',
@@ -386,24 +433,43 @@ router.get('/', async (req, res) => {
 
       if (toPreview.length > 0) {
         const bodies = {};
-        const uidList = toPreview.map(m => m.uid).join(',');
-        for await (const msg of client.fetch(uidList, { source: true, uid: true }, { uid: true })) {
-          const parsed = await simpleParser(msg.source);
-          bodies[String(msg.uid)] = parsed.text || '';
+        // Fetch each body individually (same single-UID call shape as the
+        // working Convert page) rather than one bulk comma-joined-UID fetch —
+        // the bulk fetch was silently returning zero results, blanking every
+        // preview with no error surfaced.
+        for (const m of toPreview) {
+          try {
+            for await (const msg of client.fetch(m.uid, { source: true, uid: true }, { uid: true })) {
+              const parsed = await simpleParser(msg.source);
+              bodies[m.uid] = parsed.text || parsed.html || '';
+            }
+          } catch (previewErr) {
+            console.error(`Email preview fetch failed for uid ${m.uid}:`, previewErr.message);
+          }
         }
 
         messages = messages.map(m => {
           const body = bodies[m.uid];
-          if (body === undefined) return m;
+          if (body === undefined) return { ...m, previewError: true };
 
           if (isDigestEmail(m.subject, m.fromAddress, body)) {
             let items = parseDigestEmail(body);
             if (items.length === 0) items = parseBulletDigestEmail(body);
-            return { ...m, previewCount: items.length, previewTitles: items.slice(0, 2).map(i => i.title) };
+            return {
+              ...m,
+              previewCount: items.length,
+              previewTitles: items.slice(0, 2).map(i => i.title),
+              previewUrl: items[0]?.sourceUrl || extractDigestLink(body) || null
+            };
           }
 
+          const urlMatch = body.match(/https?:\/\/[^\s\)\]>,"]+/);
           const cleaned = body.replace(/\s+/g, ' ').trim();
-          return { ...m, previewText: cleaned.length > 200 ? cleaned.slice(0, 200) + '…' : cleaned };
+          return {
+            ...m,
+            previewText: cleaned.length > 200 ? cleaned.slice(0, 200) + '…' : cleaned,
+            previewUrl: urlMatch ? urlMatch[0].replace(/[.,;'"]+$/, '') : null
+          };
         });
       }
     }
@@ -450,7 +516,9 @@ router.get('/:uid/convert', async (req, res) => {
   res.render('email_inbox/convert', {
     title: 'Convert Email to Opportunity',
     email: { ...email, body: bodyPreview },
-    isDigest: digest
+    isDigest: digest,
+    digestUrl: digest ? extractDigestLink(email.body) : '',
+    sourceUrl: extractDigestLink(email.body)
   });
 });
 

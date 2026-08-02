@@ -9,6 +9,9 @@
   <div>
     <strong>This looks like a digest with multiple opportunities.</strong>
     Want to import them as separate records instead?
+    <% if (digestUrl) { %>
+      <br><a href="<%= digestUrl %>" target="_blank" rel="noopener noreferrer">Open full bid list on source site &#8599;</a>
+    <% } %>
   </div>
   <a href="/email-inbox/<%= email.uid %>/parse" class="btn btn-primary btn-sm">Parse &amp; Import All</a>
 </div>
@@ -62,7 +65,7 @@
     </div>
     <div class="form-group form-group--wide">
       <label>Source URL</label>
-      <input type="url" name="source_url" placeholder="https://">
+      <input type="url" name="source_url" value="<%= sourceUrl || '' %>" placeholder="https://">
     </div>
   </div>
 

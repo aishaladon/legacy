@@ -74,6 +74,9 @@
             <div class="form-group form-group--wide">
               <label>Source URL</label>
               <input type="url" name="opps[<%= i %>][source_url]" value="<%= opp.sourceUrl %>" placeholder="https://">
+              <% if (opp.sourceUrl) { %>
+                <a href="<%= opp.sourceUrl %>" target="_blank" rel="noopener noreferrer" style="font-size:.8rem;">Open link &#8599;</a>
+              <% } %>
             </div>
 
             <div class="form-group form-group--wide">

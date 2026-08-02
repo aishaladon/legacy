@@ -66,16 +66,28 @@
             </td>
             <td class="inbox-from"><%= msg.from %></td>
             <td class="inbox-subject">
-              <div class="inbox-subject-line"><%= msg.subject %></div>
+              <div class="inbox-subject-line">
+                <a href="/email-inbox/<%= msg.uid %>/convert"><%= msg.subject %></a>
+              </div>
               <% if (msg.previewCount !== undefined) { %>
                 <div class="inbox-preview">
                   <strong><%= msg.previewCount %></strong> opportunit<%= msg.previewCount === 1 ? 'y' : 'ies' %> found
                   <% if (msg.previewTitles && msg.previewTitles.length) { %>
                     — e.g. &ldquo;<%= msg.previewTitles.join('&rdquo;, &ldquo;') %>&rdquo;
                   <% } %>
+                  <% if (msg.previewUrl) { %>
+                    — <a href="<%= msg.previewUrl %>" target="_blank" rel="noopener noreferrer">View full list &rarr;</a>
+                  <% } %>
                 </div>
               <% } else if (msg.previewText) { %>
-                <div class="inbox-preview"><%= msg.previewText %></div>
+                <div class="inbox-preview">
+                  <%= msg.previewText %>
+                  <% if (msg.previewUrl) { %>
+                    — <a href="<%= msg.previewUrl %>" target="_blank" rel="noopener noreferrer">Read more &rarr;</a>
+                  <% } %>
+                </div>
+              <% } else if (msg.previewError) { %>
+                <div class="inbox-preview inbox-preview--error">Preview unavailable — click the subject to view the full email.</div>
               <% } %>
             </td>
             <td class="inbox-date">
