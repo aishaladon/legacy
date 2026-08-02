@@ -19,7 +19,7 @@
 </details>
 
 <form class="filter-bar" method="GET" action="/opportunities">
-  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title…" class="filter-input">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title, description, agency, or NAICS…" class="filter-input">
   <select name="type" class="filter-select">
     <option value="">All Types</option>
     <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>

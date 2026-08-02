@@ -12,7 +12,13 @@ router.get('/', async (req, res) => {
 
   if (status) { where.push('o.status = ?'); params.push(status); }
   if (set_aside) { where.push('gc.set_aside = ?'); params.push(set_aside); }
-  if (q) { where.push('(o.title LIKE ? OR gc.solicitation_number LIKE ?)'); params.push(`%${q}%`, `%${q}%`); }
+  if (q) {
+    // Search title, solicitation #, agency, and NAICS code — a title-only
+    // search made "no results" the common outcome for a term that's
+    // genuinely on the record but not literally in the title.
+    where.push('(o.title LIKE ? OR o.description LIKE ? OR gc.solicitation_number LIKE ? OR gc.agency LIKE ? OR gc.sub_agency LIKE ? OR gc.naics_code LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+  }
 
   const [contracts] = await db.query(`
     SELECT o.id, o.title, o.due_date, o.amount_min, o.amount_max, o.status,

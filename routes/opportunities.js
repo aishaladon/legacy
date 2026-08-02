@@ -16,17 +16,19 @@ router.get('/', async (req, res) => {
   if (type) { where.push('o.opportunity_type = ?'); params.push(type); }
   if (status) { where.push('o.status = ?'); params.push(status); }
   if (q) {
-    // Search title, description, and source — a title-only search made
-    // "no results" the common outcome for a term that's genuinely on the
-    // record (e.g. an agency name, keyword) but just not in the title.
-    where.push('(o.title LIKE ? OR o.description LIKE ? OR o.source LIKE ?)');
-    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    // Search title, description, source, and (for government contracts)
+    // agency and NAICS code — a title-only search made "no results" the
+    // common outcome for a term that's genuinely on the record but just
+    // not literally in the title.
+    where.push('(o.title LIKE ? OR o.description LIKE ? OR o.source LIKE ? OR gc.agency LIKE ? OR gc.naics_code LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
   }
 
   const [opportunities] = await db.query(`
-    SELECT o.*, i.name AS institution_name
+    SELECT o.*, i.name AS institution_name, gc.naics_code, gc.agency AS gc_agency
     FROM opportunities o
     LEFT JOIN institutions i ON o.institution_id = i.id
+    LEFT JOIN government_contracts gc ON gc.opportunity_id = o.id
     WHERE ${where.join(' AND ')}
     ORDER BY o.is_starred DESC, o.due_date ASC, o.created_at DESC
     LIMIT 100

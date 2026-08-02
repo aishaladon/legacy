@@ -18,7 +18,7 @@
 </details>
 
 <form class="filter-bar" method="GET" action="/government">
-  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title or solicitation #…" class="filter-input">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title, agency, solicitation #, or NAICS…" class="filter-input">
   <select name="status" class="filter-select">
     <option value="">All Statuses</option>
     <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>

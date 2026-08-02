@@ -19,7 +19,7 @@
 </details>
 
 <form class="filter-bar" method="GET" action="/grants">
-  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title…" class="filter-input">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title, description, or funder…" class="filter-input">
   <select name="funder_id" class="filter-select">
     <option value="">All Funders</option>
     <% funders.forEach(function(f) { %>
