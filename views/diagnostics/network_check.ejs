@@ -1,0 +1,36 @@
+<div class="page-header">
+  <h2>Network Diagnostics</h2>
+  <p class="page-desc">Tests whether this server can make outbound connections to the internet and to each government data source, separate from any search query or API key. Reload this page any time to re-run the checks.</p>
+</div>
+
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th>Target</th><th>URL</th><th>Result</th><th>Time</th></tr>
+    </thead>
+    <tbody>
+      <% results.forEach(function(r) { %>
+        <tr>
+          <td><%= r.label %></td>
+          <td><code><%= r.url %></code></td>
+          <td>
+            <% if (r.ok) { %>
+              <span class="badge badge--sent">Reachable</span>
+            <% } else { %>
+              <span class="badge badge--failed">Failed</span><br>
+              <small><%= r.error %></small>
+            <% } %>
+          </td>
+          <td><%= r.ms %>ms</td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">
+  If <strong>General internet (Google)</strong> fails too, this server cannot make outbound
+  connections at all — that's a Hostinger hosting/firewall setting, not something in the app.
+  If Google succeeds but the government API rows fail, those specific hosts are being blocked
+  or are unreachable while general internet access works.
+</p>

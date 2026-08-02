@@ -55,6 +55,7 @@ app.use('/guides', require('./routes/guides'));
 app.use('/settings', require('./routes/settings'));
 app.use('/digest-log', require('./routes/digest_log'));
 app.use('/email-inbox', require('./routes/email_inbox'));
+app.use('/diagnostics', require('./routes/diagnostics'));
 app.use('/', require('./routes/claude-chat'));
 
 require('./services/scheduler');
