@@ -18,7 +18,10 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const [[digest]] = await db.query('SELECT * FROM daily_digests WHERE id = ?', [req.params.id]);
   if (!digest) { req.flash('error', 'Not found.'); return res.redirect('/digest-log'); }
-  res.render('digest_log/detail', { title: `Digest — ${digest.sent_at}`, digest });
+  const sentDate = digest.sent_at
+    ? new Date(digest.sent_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Unknown date';
+  res.render('digest_log/detail', { title: `Digest — ${sentDate}`, digest });
 });
 
 module.exports = router;

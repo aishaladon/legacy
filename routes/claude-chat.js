@@ -4,6 +4,7 @@ const multer = require('multer');
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
+const { extractResponseText } = require('../utils/claudeResponseText');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -37,7 +38,7 @@ router.get('/api/claude-test', async (req, res) => {
       status: 'success',
       message: 'Claude API is working!',
       apiKey: masked,
-      response: response.content[0].text
+      response: extractResponseText(response)
     });
   } catch (err) {
     res.json({
@@ -224,7 +225,7 @@ Be concise, professional, and action-oriented. Focus on helping them win contrac
       messages: [...history, { role: 'user', content: userContent }]
     });
 
-    const responseText = response.content[0].text;
+    const responseText = extractResponseText(response);
     res.json({ response: responseText });
   } catch (err) {
     console.error('Claude API error:', err.message, err.status, err.error);

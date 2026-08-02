@@ -5,6 +5,7 @@ const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
+const { extractResponseText } = require('../utils/claudeResponseText');
 
 router.use(requireLogin);
 
@@ -106,7 +107,7 @@ Generate the response as plain text with clear section headers.`;
       messages: [{ role: 'user', content: prompt }]
     });
 
-    const draft = response.content[0].text;
+    const draft = extractResponseText(response);
     res.json({ draft });
   } catch (err) {
     console.error('Claude API error:', err);
@@ -214,7 +215,7 @@ ${text}`
       ]
     });
 
-    const content = response.content[0].text.trim();
+    const content = extractResponseText(response).trim();
     let evaluation;
 
     try {

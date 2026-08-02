@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS data_sources (
   check_interval INT          NOT NULL DEFAULT 24,
   last_checked   DATETIME     DEFAULT NULL,
   notes          TEXT         DEFAULT NULL,
-  created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_data_sources_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS funders (

@@ -73,7 +73,7 @@
                 <div class="inbox-preview">
                   <strong><%= msg.previewCount %></strong> opportunit<%= msg.previewCount === 1 ? 'y' : 'ies' %> found
                   <% if (msg.previewTitles && msg.previewTitles.length) { %>
-                    — e.g. &ldquo;<%= msg.previewTitles.join('&rdquo;, &ldquo;') %>&rdquo;
+                    — e.g. &ldquo;<%= msg.previewTitles.join('”, “') %>&rdquo;
                   <% } %>
                   <% if (msg.previewUrl) { %>
                     — <a href="<%= msg.previewUrl %>" target="_blank" rel="noopener noreferrer">View full list &rarr;</a>

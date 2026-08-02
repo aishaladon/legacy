@@ -7,6 +7,7 @@ const { dedupeFunders } = require('../database/migrations/dedupe_funders');
 const { upgradeBidWritingGuides } = require('../database/migrations/upgrade_bid_writing_guides');
 const { seedBidWritingGuides } = require('../database/seeds/bid_writing_guides');
 const { updateNaicsCodes } = require('../database/migrations/update_naics_codes');
+const { dedupeDataSources } = require('../database/migrations/dedupe_data_sources');
 
 const SETUP_KEY = process.env.SETUP_KEY || 'legacy-setup-2026';
 
@@ -56,6 +57,9 @@ router.get('/setup', async (req, res) => {
 
     const removed = await dedupeFunders(conn);
     log.push(removed > 0 ? `Removed ${removed} duplicate funder row(s).` : 'No duplicate funders found.');
+
+    const dataSourcesRemoved = await dedupeDataSources(conn);
+    log.push(dataSourcesRemoved > 0 ? `Removed ${dataSourcesRemoved} duplicate data source row(s).` : 'No duplicate data sources found.');
 
     await upgradeBidWritingGuides(conn);
     const guidesAdded = await seedBidWritingGuides(conn);

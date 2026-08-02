@@ -6,6 +6,7 @@ const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
+const { extractResponseText } = require('../utils/claudeResponseText');
 
 router.use(requireLogin);
 
@@ -303,7 +304,7 @@ ${oppTexts}`
       ]
     });
 
-    const content = response.content[0].text.trim();
+    const content = extractResponseText(response).trim();
     let scores = {};
 
     try {
@@ -672,7 +673,7 @@ ${body}`
       ]
     });
 
-    const content = response.content[0].text.trim();
+    const content = extractResponseText(response).trim();
     let evaluation;
 
     try {
