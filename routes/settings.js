@@ -13,11 +13,13 @@ router.get('/', async (req, res) => {
 
   const [[samRow]]    = await db.query("SELECT value FROM user_settings WHERE name='auto_sam_enabled'");
   const [[grantsRow]] = await db.query("SELECT value FROM user_settings WHERE name='auto_grants_enabled'");
+  const [[digestRow]] = await db.query("SELECT value FROM user_settings WHERE name='auto_digest_enabled'");
   const [[claudeRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
 
   const autoEnabled = {
     sam:    samRow    ? samRow.value    === '1' : false,
-    grants: grantsRow ? grantsRow.value === '1' : false
+    grants: grantsRow ? grantsRow.value === '1' : false,
+    digest: digestRow ? digestRow.value === '1' : false
   };
   const claudeApiKey = claudeRow ? claudeRow.value : null;
 
@@ -69,8 +71,10 @@ router.post('/sources/:id/toggle', async (req, res) => {
 router.post('/automations', async (req, res) => {
   const sam    = req.body.auto_sam_enabled    === '1' ? '1' : '0';
   const grants = req.body.auto_grants_enabled === '1' ? '1' : '0';
+  const digest = req.body.auto_digest_enabled === '1' ? '1' : '0';
   await db.query("UPDATE user_settings SET value=? WHERE name='auto_sam_enabled'",    [sam]);
   await db.query("UPDATE user_settings SET value=? WHERE name='auto_grants_enabled'", [grants]);
+  await db.query("UPDATE user_settings SET value=? WHERE name='auto_digest_enabled'", [digest]);
   req.flash('success', 'Automation settings saved.');
   res.redirect('/settings#automations');
 });
@@ -101,6 +105,20 @@ router.post('/run-grants', async (req, res) => {
   req.flash('success', result && result.newCount != null
     ? `Grants.gov pull complete — ${result.newCount} new opportunities added.`
     : 'Grants.gov pull ran. Check Opportunities for new items.');
+  res.redirect('/settings#automations');
+});
+
+// Manual run — Daily Digest
+router.post('/run-digest', async (req, res) => {
+  const { sendDailyDigest } = require('../services/digestMailer');
+  const result = await sendDailyDigest();
+  if (result.status === 'success') {
+    req.flash('success', `Digest sent — ${result.count} opportunit${result.count === 1 ? 'y' : 'ies'} included. See Digest Log for details.`);
+  } else if (result.status === 'skipped') {
+    req.flash('error', `Digest not sent: ${result.message}`);
+  } else {
+    req.flash('error', `Digest send failed: ${result.message}`);
+  }
   res.redirect('/settings#automations');
 });
 

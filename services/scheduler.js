@@ -19,7 +19,8 @@ db.query(`
   INSERT IGNORE INTO user_settings (name, value, setting_type, description)
   VALUES
     ('auto_sam_enabled',    '0', 'Toggle', 'Enable daily SAM.gov opportunity digest'),
-    ('auto_grants_enabled', '0', 'Toggle', 'Enable daily Grants.gov deadline pull')
+    ('auto_grants_enabled', '0', 'Toggle', 'Enable daily Grants.gov deadline pull'),
+    ('auto_digest_enabled', '0', 'Toggle', 'Enable the daily opportunity digest email')
 `).catch(() => {});
 
 // ── SAM.gov Digest ────────────────────────────────────────────────────────────
@@ -168,10 +169,39 @@ async function runGrantsPull() {
   }
 }
 
+// ── Daily Opportunity Digest ───────────────────────────────────────────────────
+// Delivery time is user-configurable (Settings → digest_delivery_time), so
+// this can't use a fixed cron expression like the pulls above — instead it
+// checks every 5 minutes whether the configured HH:MM has arrived (in the
+// configured timezone) and whether a digest has already gone out today.
+async function maybeRunDigest() {
+  const [[enabledRow]] = await db.query("SELECT value FROM user_settings WHERE name='auto_digest_enabled'");
+  if (!enabledRow || enabledRow.value !== '1') return;
+
+  const [[timeRow]] = await db.query("SELECT value FROM user_settings WHERE name='digest_delivery_time'");
+  const [[tzRow]] = await db.query("SELECT value FROM user_settings WHERE name='timezone'");
+  const deliveryHour = ((timeRow && timeRow.value) || '07:00').slice(0, 2);
+  const tz = (tzRow && tzRow.value) || 'America/Los_Angeles';
+
+  const nowHour = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', hour12: false });
+  if (nowHour.slice(0, 2) !== deliveryHour) return;
+
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+  const [[already]] = await db.query(
+    "SELECT id FROM daily_digests WHERE status='Sent' AND DATE(sent_at) = ?", [todayStr]
+  );
+  if (already) return;
+
+  const { sendDailyDigest } = require('./digestMailer');
+  await sendDailyDigest();
+}
+
 // ── Schedule: daily 7:00 AM server time ──────────────────────────────────────
 cron.schedule('0 7 * * *', () => {
   runSamDigest();
   runGrantsPull();
 });
 
-module.exports = { runSamDigest, runGrantsPull };
+cron.schedule('*/5 * * * *', maybeRunDigest);
+
+module.exports = { runSamDigest, runGrantsPull, maybeRunDigest };

@@ -178,6 +178,21 @@
           <span class="toggle-slider"></span>
         </label>
       </div>
+      <div class="auto-toggle-row" style="margin-top:1rem;">
+        <div>
+          <strong>Daily Opportunity Digest</strong>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:.2rem;">
+            Emails a summary of opportunities added to govcon in the last 24 hours, filtered by your Minimum Contract Amount and Minimum Alignment Score settings above.
+            Sent to <strong><%= settings.find(s => s.name === 'digest_email_address') && settings.find(s => s.name === 'digest_email_address').value || '(not set — see General Settings)' %></strong>
+            around <strong><%= settings.find(s => s.name === 'digest_delivery_time') && settings.find(s => s.name === 'digest_delivery_time').value || '07:00' %></strong>.
+            Requires <code>SMTP_HOST</code>, <code>SMTP_USERNAME</code>, and <code>SMTP_PASSWORD</code> set in Hostinger environment variables.
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" name="auto_digest_enabled" value="1" <%= autoEnabled.digest ? 'checked' : '' %>>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
     <div class="form-actions" style="margin-top:1rem;">
       <button type="submit" class="btn btn-primary">Save Automation Settings</button>
@@ -191,6 +206,10 @@
     <form action="/settings/run-grants" method="POST">
       <button type="submit" class="btn btn-secondary">Run Grants.gov Now</button>
     </form>
+    <form action="/settings/run-digest" method="POST">
+      <button type="submit" class="btn btn-secondary">Send Digest Now</button>
+    </form>
+    <a href="/digest-log" class="btn btn-secondary">View Digest Log</a>
   </div>
 
   <% if (autoLogs.length > 0) { %>

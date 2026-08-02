@@ -105,6 +105,10 @@ Unlike a typical Python deployment, this app's daily automation runs
 - Pull new SAM.gov opportunities daily at 7:00 AM server time (if
   `SAM_API_KEY` is set and the toggle is enabled in Settings → Automations)
 - Pull new Grants.gov opportunities daily at 7:00 AM server time (if enabled)
+- Email a Daily Opportunity Digest at the time set in Settings → General →
+  "Time to send digest" (if `SMTP_HOST`/`SMTP_USERNAME`/`SMTP_PASSWORD` are
+  set and the toggle is enabled in Settings → Automations) — logged to the
+  Digest Log page (`/digest-log`) every time it runs, sent or not
 
 You do **not** need to configure an OS-level crontab for this. The only
 recommended crontab entry is an optional database backup — see
