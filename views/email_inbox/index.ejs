@@ -65,7 +65,19 @@
               <% if (isConverted) { %><span class="inbox-converted-dot" title="Converted">&#10003;</span><% } %>
             </td>
             <td class="inbox-from"><%= msg.from %></td>
-            <td class="inbox-subject"><%= msg.subject %></td>
+            <td class="inbox-subject">
+              <div class="inbox-subject-line"><%= msg.subject %></div>
+              <% if (msg.previewCount !== undefined) { %>
+                <div class="inbox-preview">
+                  <strong><%= msg.previewCount %></strong> opportunit<%= msg.previewCount === 1 ? 'y' : 'ies' %> found
+                  <% if (msg.previewTitles && msg.previewTitles.length) { %>
+                    — e.g. &ldquo;<%= msg.previewTitles.join('&rdquo;, &ldquo;') %>&rdquo;
+                  <% } %>
+                </div>
+              <% } else if (msg.previewText) { %>
+                <div class="inbox-preview"><%= msg.previewText %></div>
+              <% } %>
+            </td>
             <td class="inbox-date">
               <% if (msg.date) { %>
                 <%= new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
@@ -89,5 +101,8 @@
       </tbody>
     </table>
   </div>
-  <p class="inbox-note">Showing <%= messages.length %> email(s). Newest first.</p>
+  <p class="inbox-note">
+    Showing <%= messages.length %> email(s). Newest first.
+    <% if (previewTruncated) { %> Content previews are limited to the most recent 40 opportunity emails.<% } %>
+  </p>
 <% } %>

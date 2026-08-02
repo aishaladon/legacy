@@ -48,14 +48,28 @@ function isOpportunityEmail(subject, from) {
   return false;
 }
 
+const BULLET_ITEM_RE = /^(?:[•\-\*]\s*)?[A-Z]{1,3}\s*--\s*.+\([^()]*\)\s*$/;
+
 function isDigestEmail(subject, fromAddress, body) {
   const s = (subject || '').toLowerCase();
   const f = (fromAddress || '').toLowerCase();
   if (DIGEST_DOMAINS.some(d => f.includes(d))) return true;
   if (DIGEST_SUBJECT_KEYWORDS.some(k => s.includes(k))) return true;
-  // Detect by presence of 3+ numbered list items in body
+  // Detect by presence of 3+ numbered list items in body (e.g. "1. Title")
   const numbered = ((body || '').match(/^\s*\d+[\.\)]\s/gm) || []);
-  return numbered.length >= 3;
+  if (numbered.length >= 3) return true;
+  // Or 3+ bullet-coded notices (MyBidMatch-style: "B -- Title (Agency)")
+  const bulleted = ((body || '').match(new RegExp(BULLET_ITEM_RE.source, 'gm')) || []);
+  return bulleted.length >= 3;
+}
+
+// Only treat an ArchivesGig email as a single job posting when the subject
+// actually has the "Location: Title, Organization" shape — ArchivesGig also
+// sends general newsletter posts (e.g. training program roundups) that don't
+// fit that template and would otherwise render with empty fields.
+function isArchivesgigJobShaped(subject) {
+  const m = (subject || '').match(/^([^:]+):\s*(.+)$/);
+  return !!(m && m[2].includes(','));
 }
 
 function isArchivesgigEmail(subject, fromAddress, body) {
@@ -156,6 +170,51 @@ function parseDigestEmail(body) {
       naics,
       preview: lines.slice(1, 5).join(' | '),
       body: blockText.length > 800 ? blockText.slice(0, 800) + '...' : blockText
+    });
+  });
+
+  return results;
+}
+
+// Parse MyBidMatch-style digest emails, where each notice is one line:
+// "B -- B--Notice of Intent to Sole Source (INTERIOR, DEPARTMENT OF THE, ...)"
+// — a leading category code, "--", the title, then agency hierarchy in
+// trailing parentheses. This is a completely different shape than the
+// numbered-list digests parseDigestEmail handles, so it needs its own pass.
+function parseBulletDigestEmail(body) {
+  const lines = (body || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const results = [];
+
+  lines.forEach((line, idx) => {
+    if (!BULLET_ITEM_RE.test(line)) return;
+
+    const m = line.match(/^(?:[•\-\*]\s*)?[A-Z]{1,3}\s*--\s*(.+)$/);
+    if (!m) return;
+
+    // Titles usually repeat the leading code (sometimes with digits, e.g.
+    // "R606--RFQ: ...") right before the real title — strip that too.
+    const rest = m[1].replace(/^[A-Z]{1,3}\d{0,4}--\s*/, '').trim();
+
+    let title = rest;
+    let agency = '';
+    const parenMatch = rest.match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+    if (parenMatch) {
+      title = parenMatch[1].trim();
+      agency = parenMatch[2].split(',').slice(0, 2).map(s => s.trim()).join(', ');
+    }
+
+    if (!title || title.length < 4) return;
+
+    results.push({
+      index: idx,
+      title,
+      dueDate: '',
+      sourceUrl: '',
+      opportunityType: 'Government Contract',
+      agency,
+      naics: '',
+      preview: agency || line,
+      body: line
     });
   });
 
@@ -273,6 +332,7 @@ router.get('/', async (req, res) => {
   const client = createClient();
   let messages = [];
   let error = null;
+  let previewTruncated = false;
 
   try {
     await client.connect();
@@ -314,6 +374,38 @@ router.get('/', async (req, res) => {
         .map(m => ({ ...m, action: actedMap[m.uid] || null }))
         .filter(m => showAll || !m.action || m.action.action !== 'archived')
         .reverse();
+
+      // Pull actual content from the body of each opportunity email so the
+      // list shows what the opportunity is, not just a subject line —
+      // digest emails get an extracted item count, everything else gets a
+      // plain-text excerpt. Capped to bound how many bodies get fetched.
+      const PREVIEW_LIMIT = 40;
+      const previewCandidates = messages.filter(m => isOpportunityEmail(m.subject, m.from));
+      const toPreview = previewCandidates.slice(0, PREVIEW_LIMIT);
+      previewTruncated = previewCandidates.length > PREVIEW_LIMIT;
+
+      if (toPreview.length > 0) {
+        const bodies = {};
+        const uidList = toPreview.map(m => m.uid).join(',');
+        for await (const msg of client.fetch(uidList, { source: true, uid: true }, { uid: true })) {
+          const parsed = await simpleParser(msg.source);
+          bodies[String(msg.uid)] = parsed.text || '';
+        }
+
+        messages = messages.map(m => {
+          const body = bodies[m.uid];
+          if (body === undefined) return m;
+
+          if (isDigestEmail(m.subject, m.fromAddress, body)) {
+            let items = parseDigestEmail(body);
+            if (items.length === 0) items = parseBulletDigestEmail(body);
+            return { ...m, previewCount: items.length, previewTitles: items.slice(0, 2).map(i => i.title) };
+          }
+
+          const cleaned = body.replace(/\s+/g, ' ').trim();
+          return { ...m, previewText: cleaned.length > 200 ? cleaned.slice(0, 200) + '…' : cleaned };
+        });
+      }
     }
 
     await client.logout();
@@ -324,7 +416,7 @@ router.get('/', async (req, res) => {
 
   if (!error) lastEmailSync = new Date();
 
-  res.render('email_inbox/index', { title: 'Email Inbox', messages, error, showAll, lastEmailSync });
+  res.render('email_inbox/index', { title: 'Email Inbox', messages, error, showAll, lastEmailSync, previewTruncated });
 });
 
 // ── Single convert view ──────────────────────────────────
@@ -339,7 +431,8 @@ router.get('/:uid/convert', async (req, res) => {
   if (!email) { req.flash('error', 'Email not found.'); return res.redirect('/email-inbox'); }
 
   const digest = isDigestEmail(email.subject, email.fromAddress, email.body);
-  const archivesgig = isArchivesgigEmail(email.subject, email.fromAddress, email.body);
+  const archivesgig = isArchivesgigEmail(email.subject, email.fromAddress, email.body)
+    && isArchivesgigJobShaped(email.subject);
 
   if (archivesgig) {
     const job = parseArchivesgigEmail(email.subject, email.body);
@@ -373,6 +466,9 @@ router.get('/:uid/parse', async (req, res) => {
   if (!email) { req.flash('error', 'Email not found.'); return res.redirect('/email-inbox'); }
 
   let opportunities = parseDigestEmail(email.body);
+  if (opportunities.length === 0) {
+    opportunities = parseBulletDigestEmail(email.body);
+  }
   opportunities = await evaluateOpportunitiesWithClaude(opportunities);
   opportunities.sort((a, b) => (b.fit_score || 0) - (a.fit_score || 0));
 

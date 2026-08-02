@@ -412,10 +412,13 @@ a:hover { text-decoration: underline; }
   display: inline-block; width: 8px; height: 8px;
   border-radius: 50%; background: var(--accent);
 }
-.inbox-table .inbox-from  { width: 26%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.inbox-table .inbox-subject { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.inbox-table .inbox-date  { width: 9rem; white-space: nowrap; color: var(--text-muted); font-size: .85rem; }
-.inbox-table .inbox-action{ width: 7rem; text-align: right; }
+.inbox-table .inbox-from  { width: 26%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; padding-top: .75rem; }
+.inbox-table .inbox-subject { vertical-align: top; padding-top: .75rem; }
+.inbox-subject-line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inbox-preview { white-space: normal; font-size: .8rem; color: var(--text-muted); margin-top: .25rem; line-height: 1.4; }
+.inbox-table .inbox-date  { width: 9rem; white-space: nowrap; color: var(--text-muted); font-size: .85rem; vertical-align: top; padding-top: .75rem; }
+.inbox-table .inbox-action{ width: 7rem; text-align: right; vertical-align: top; padding-top: .75rem; }
+.inbox-table .inbox-dot-cell { vertical-align: top; padding-top: .9rem; }
 .inbox-unread td { font-weight: 600; }
 .inbox-converted { opacity: .65; }
 .inbox-converted td { text-decoration: none; }
