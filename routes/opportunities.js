@@ -15,7 +15,13 @@ router.get('/', async (req, res) => {
 
   if (type) { where.push('o.opportunity_type = ?'); params.push(type); }
   if (status) { where.push('o.status = ?'); params.push(status); }
-  if (q) { where.push('o.title LIKE ?'); params.push(`%${q}%`); }
+  if (q) {
+    // Search title, description, and source — a title-only search made
+    // "no results" the common outcome for a term that's genuinely on the
+    // record (e.g. an agency name, keyword) but just not in the title.
+    where.push('(o.title LIKE ? OR o.description LIKE ? OR o.source LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+  }
 
   const [opportunities] = await db.query(`
     SELECT o.*, i.name AS institution_name
@@ -93,7 +99,7 @@ Draft a professional RFP response that:
 Generate the response as plain text with clear section headers.`;
 
     const response = await client.messages.create({
-      model: 'claude-opus-4-8',
+      model: 'claude-opus-5',
       max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }]
     });

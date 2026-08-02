@@ -38,10 +38,19 @@
   <div id="claudeChat" class="claude-chat-panel">
     <div class="claude-chat-header">
       <span>Claude Assistant</span>
-      <button id="claudeChatToggle" class="claude-chat-toggle">&times;</button>
+      <div class="claude-chat-header-actions">
+        <button id="claudeChatClear" class="claude-chat-toggle" title="Clear conversation" type="button">&#8635;</button>
+        <button id="claudeChatToggle" class="claude-chat-toggle" title="Close" type="button">&times;</button>
+      </div>
     </div>
     <div id="claudeChatMessages" class="claude-chat-messages"></div>
+    <div id="claudeAttachmentChip" class="claude-attachment-chip" style="display:none;">
+      <span id="claudeAttachmentName"></span>
+      <button id="claudeAttachmentRemove" type="button" title="Remove attachment">&times;</button>
+    </div>
     <div class="claude-chat-input-area">
+      <input type="file" id="claudeFileInput" accept=".txt,.pdf" style="display:none;">
+      <button id="claudeAttachBtn" class="btn btn-secondary" type="button" title="Attach a .txt or .pdf file">&#128206;</button>
       <textarea id="claudeInput" placeholder="Ask Claude about this opportunity, copy/paste a bid, or get research..."></textarea>
       <button id="claudeSend" class="btn btn-primary">Send</button>
     </div>

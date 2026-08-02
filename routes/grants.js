@@ -12,7 +12,13 @@ router.get('/', async (req, res) => {
 
   if (status) { where.push('o.status = ?'); params.push(status); }
   if (funder_id) { where.push('go.funder_id = ?'); params.push(funder_id); }
-  if (q) { where.push('o.title LIKE ?'); params.push(`%${q}%`); }
+  if (q) {
+    // Search title, description, funder name, and program name — a
+    // title-only search made "no results" the common outcome for a term
+    // that's genuinely on the record (e.g. the funder) but not in the title.
+    where.push('(o.title LIKE ? OR o.description LIKE ? OR f.name LIKE ? OR go.program_name LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+  }
 
   const [grants] = await db.query(`
     SELECT o.id, o.title, o.due_date, o.amount_min, o.amount_max, o.status,

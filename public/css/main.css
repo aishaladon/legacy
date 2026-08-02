@@ -662,6 +662,12 @@ a:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 
+.claude-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
 .claude-chat-toggle {
   background: none;
   border: none;
@@ -674,6 +680,35 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.claude-attachment-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin: 0 1rem;
+  padding: .4rem .6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: .8rem;
+  color: var(--text);
+}
+
+.claude-attachment-chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+#claudeAttachBtn {
+  flex-shrink: 0;
+  padding: 0.75rem;
+  align-self: flex-end;
 }
 
 .claude-chat-messages {
