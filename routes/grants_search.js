@@ -34,10 +34,15 @@ router.get('/', async (req, res) => {
 
   if (searched) {
     try {
+      // The API silently returns zero hits for a comma-separated multi-status
+      // value (e.g. "posted,forecasted") — confirmed against the live API it
+      // requires pipe-separated instead ("posted|forecasted"). The UI's
+      // filter values stay comma-separated (readable in the query string);
+      // translate here at the API boundary.
       const body = {
         keyword: q || '',
         oppNum: cfda || '',
-        oppStatuses: oppStatus || 'posted,forecasted',
+        oppStatuses: (oppStatus || 'posted,forecasted').replace(/,/g, '|'),
         rows,
         startRecordNum: startRecord,
         sortBy: 'openDate|desc'
@@ -58,9 +63,14 @@ router.get('/', async (req, res) => {
       }
 
       const data = await resp.json();
-      total = data.data?.hitCount || 0;
+      // The API returns hitCount/oppHits at the top level (not nested under
+      // a "data" key), and cfdaList is an array of plain CFDA number
+      // strings (e.g. ["19.040"]), not objects — confirmed against the live
+      // API, since the previous mapping read a shape that doesn't exist and
+      // silently returned zero results for every search.
+      total = data.hitCount || 0;
 
-      results = (data.data?.opportunities || []).map(o => ({
+      results = (data.oppHits || []).map(o => ({
         id:          o.id || '',
         number:      o.number || '',
         title:       o.title || '(untitled)',
@@ -71,8 +81,8 @@ router.get('/', async (req, res) => {
         status:      o.oppStatus || '',
         awardMin:    o.awardFloor   ? parseInt(o.awardFloor)   : null,
         awardMax:    o.awardCeiling ? parseInt(o.awardCeiling) : null,
-        cfda:        (o.cfdaList || []).map(c => c.cfdaNumber).join(', '),
-        cfdaTitle:   (o.cfdaList || [])[0]?.programTitle || '',
+        cfda:        (o.cfdaList || []).join(', '),
+        cfdaTitle:   '',
         grantsUrl:   `https://www.grants.gov/search-results-detail/${o.id}`
       }));
     } catch (err) {
