@@ -69,6 +69,7 @@ a:hover { text-decoration: underline; }
   display: flex; align-items: center; gap: .65rem;
   padding: 1rem 1.1rem .75rem;
   border-bottom: 1px solid rgba(255,255,255,.1);
+  text-decoration: none;
 }
 .brand-mark {
   display: inline-flex; align-items: center; justify-content: center;
