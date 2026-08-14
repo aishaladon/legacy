@@ -33,15 +33,17 @@ router.get('/', async (req, res) => {
   const pageSize = 25;
 
   const apiKey = process.env.SAM_API_KEY;
+  const relayUrl = process.env.SAM_RELAY_URL;
+  const relaySecret = process.env.SAM_RELAY_SECRET;
+  const hasKey = !!(relayUrl || apiKey);
 
-  if (apiKey && searched) {
+  if (hasKey && searched) {
     try {
       const daysBack = parseInt(days) || 90;
       const now = new Date();
       const from = new Date(now.getTime() - daysBack * 86400000);
 
       const params = new URLSearchParams({
-        api_key: apiKey,
         limit: String(pageSize),
         offset: String(pageOffset),
         postedFrom: formatDateParam(from),
@@ -52,11 +54,25 @@ router.get('/', async (req, res) => {
       if (naics) params.set('naicsCode', naics);
       if (set_aside) params.set('typeOfSetAside', set_aside);
 
-      const url = `https://api.sam.gov/opportunities/v2/search?${params.toString()}`;
-      const resp = await fetch(url, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(15000)
-      });
+      let resp;
+      if (relayUrl) {
+        // Hostinger can't reach api.sam.gov directly (blocked outbound), so
+        // route through a Cloudflare Worker relay that injects the real key
+        // server-side and forwards SAM.gov's response back unchanged.
+        resp = await fetch(`${relayUrl.replace(/\/$/, '')}?${params.toString()}`, {
+          headers: {
+            Accept: 'application/json',
+            ...(relaySecret ? { 'x-relay-secret': relaySecret } : {})
+          },
+          signal: AbortSignal.timeout(20000)
+        });
+      } else {
+        params.set('api_key', apiKey);
+        resp = await fetch(`https://api.sam.gov/opportunities/v2/search?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(15000)
+        });
+      }
 
       if (!resp.ok) {
         const txt = await resp.text();
@@ -89,7 +105,7 @@ router.get('/', async (req, res) => {
     results,
     error,
     total,
-    hasKey: !!apiKey,
+    hasKey,
     searched,
     filters: { q: q || '', naics: naics || '', set_aside: set_aside || '', days: days || '90' },
     setAsides: SET_ASIDE_LABELS,
