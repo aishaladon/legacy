@@ -16,6 +16,7 @@
           <td>
             <% if (r.ok) { %>
               <span class="badge badge--sent">Reachable</span>
+              <% if (r.status !== undefined) { %><small> (HTTP <%= r.status %>)</small><% } %>
             <% } else { %>
               <span class="badge badge--failed">Failed</span><br>
               <small><%= r.error %></small>
