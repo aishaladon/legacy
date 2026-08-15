@@ -638,17 +638,26 @@ a:hover { text-decoration: underline; }
 .claude-chat-panel {
   position: fixed;
   bottom: 0;
+  left: 0;
   right: 0;
   width: 100%;
-  max-width: 400px;
-  height: 500px;
+  height: min(70vh, 600px);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   box-shadow: 0 -2px 8px rgba(0,0,0,.12);
   z-index: 1000;
+}
+
+.claude-chat-panel .claude-chat-messages,
+.claude-chat-panel .claude-attachment-chip,
+.claude-chat-panel .claude-chat-input-area {
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 
 .claude-chat-header {
