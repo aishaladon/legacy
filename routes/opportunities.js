@@ -6,6 +6,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
 const { extractResponseText } = require('../utils/claudeResponseText');
+const { scoreOpportunity } = require('../services/alignmentScorer');
 
 router.use(requireLogin);
 
@@ -240,6 +241,11 @@ router.post('/', async (req, res) => {
     amount_min, amount_max, description, region, status, is_starred, institution_id
   } = req.body;
 
+  if (!title || !title.trim()) {
+    req.flash('error', 'Title is required.');
+    return res.redirect('/opportunities/new');
+  }
+
   const [result] = await db.query(`
     INSERT INTO opportunities
       (title, opportunity_type, source, source_url, posted_date, due_date,
@@ -257,6 +263,8 @@ router.post('/', async (req, res) => {
     'INSERT INTO activity_log (record_type, record_id, action, description) VALUES (?,?,?,?)',
     ['opportunity', result.insertId, 'created', `Created: ${title}`]
   );
+
+  await scoreOpportunity(result.insertId).catch(() => {});
 
   req.flash('success', 'Opportunity added.');
   res.redirect(`/opportunities/${result.insertId}`);
@@ -305,6 +313,11 @@ router.post('/:id/edit', async (req, res) => {
     amount_min, amount_max, description, region, status, is_starred, institution_id
   } = req.body;
 
+  if (!title || !title.trim()) {
+    req.flash('error', 'Title is required.');
+    return res.redirect(`/opportunities/${req.params.id}/edit`);
+  }
+
   await db.query(`
     UPDATE opportunities SET
       title=?, opportunity_type=?, source=?, source_url=?, posted_date=?,
@@ -319,6 +332,8 @@ router.post('/:id/edit', async (req, res) => {
     status, is_starred ? 1 : 0, institution_id || null,
     req.params.id
   ]);
+
+  await scoreOpportunity(req.params.id).catch(() => {});
 
   req.flash('success', 'Opportunity updated.');
   res.redirect(`/opportunities/${req.params.id}`);

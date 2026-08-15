@@ -40,11 +40,11 @@
   <div class="form-row">
     <div class="form-group">
       <label>Start Date</label>
-      <input type="date" name="start_date" value="<%= project && project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '' %>">
+      <input type="date" name="start_date" value="<%= project && project.start_date && !isNaN(new Date(project.start_date)) ? new Date(project.start_date).toISOString().split('T')[0] : '' %>">
     </div>
     <div class="form-group">
       <label>End Date</label>
-      <input type="date" name="end_date" value="<%= project && project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '' %>">
+      <input type="date" name="end_date" value="<%= project && project.end_date && !isNaN(new Date(project.end_date)) ? new Date(project.end_date).toISOString().split('T')[0] : '' %>">
     </div>
     <div class="form-group">
       <label>Contract Value ($)</label>

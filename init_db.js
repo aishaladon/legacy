@@ -7,6 +7,7 @@ const { upgradeBidWritingGuides } = require('./database/migrations/upgrade_bid_w
 const { seedBidWritingGuides } = require('./database/seeds/bid_writing_guides');
 const { updateNaicsCodes } = require('./database/migrations/update_naics_codes');
 const { dedupeDataSources } = require('./database/migrations/dedupe_data_sources');
+const { scoreAllUnscored } = require('./services/alignmentScorer');
 
 async function init() {
   const conn = await mysql.createConnection({
@@ -58,6 +59,9 @@ async function init() {
 
   const naicsRemoved = await updateNaicsCodes(conn);
   if (naicsRemoved > 0) console.log(`Removed ${naicsRemoved} outdated NAICS code(s).`);
+
+  const scored = await scoreAllUnscored();
+  if (scored > 0) console.log(`Alignment score computed for ${scored} previously-unscored opportunit${scored === 1 ? 'y' : 'ies'}.`);
 
   await conn.end();
   console.log('Database initialized successfully.');

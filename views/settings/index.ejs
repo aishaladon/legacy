@@ -209,6 +209,9 @@
     <form action="/settings/run-digest" method="POST">
       <button type="submit" class="btn btn-secondary">Send Digest Now</button>
     </form>
+    <form action="/settings/rescore" method="POST">
+      <button type="submit" class="btn btn-secondary">Recalculate Scores</button>
+    </form>
     <a href="/digest-log" class="btn btn-secondary">View Digest Log</a>
   </div>
 
@@ -232,7 +235,7 @@
       </table>
     </div>
   <% } else { %>
-    <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No automation runs yet. Click "Run Now" to test, or enable the toggles to start the daily schedule.</p>
+    <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No SAM.gov or Grants.gov pull runs yet. Click "Run Now" to test, or enable the toggles above to start the daily schedule. (Digest email attempts are logged separately — see <a href="/digest-log">Digest Log</a>.)</p>
   <% } %>
 </section>
 

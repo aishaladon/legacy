@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const { scoreOpportunity } = require('../services/alignmentScorer');
 
 router.use(requireLogin);
 
@@ -16,6 +17,36 @@ function decodeHtmlEntities(str) {
     .replace(/&#x([0-9a-fA-F]+);/g, (m, code) => String.fromCharCode(parseInt(code, 16)))
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+// Grants.gov's dates render fine on the search results page (new Date()
+// parses "MM/DD/YYYY" leniently), but that same raw string was being
+// inserted straight into a MySQL DATE column, which only accepts
+// YYYY-MM-DD — producing an unparseable stored value that rendered as
+// "Invalid Date" everywhere, including the <input type="date"> on Edit,
+// which 500'd trying to render it. Convert explicitly before storing.
+function toMySQLDate(value) {
+  if (!value) return null;
+  const v = String(value).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v; // already ISO
+
+  let m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
+  if (m) return `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+
+  m = v.match(/^(\d{2})(\d{2})(\d{4})$/); // MMDDYYYY
+  if (m) return `${m[3]}-${m[1]}-${m[2]}`;
+
+  return null;
+}
+
+// Funder names collide between the seeded "NEH — National Endowment for
+// the Humanities" style and Grants.gov's plain "National Endowment for
+// the Humanities" — exact-match lookup treated them as different funders
+// and created a duplicate every time. Strip the "ABBREV — " prefix before
+// comparing.
+function normalizeFunderName(name) {
+  return String(name || '').replace(/^.*?—\s*/, '').trim().toLowerCase();
 }
 
 const ELIGIBILITY_LABELS = {
@@ -126,12 +157,26 @@ router.post('/save', async (req, res) => {
   try {
     await conn.beginTransaction();
 
+    // Grants.gov result URLs are stable per-listing — use as the dedup key
+    // so clicking Save twice on the same result doesn't create a second
+    // record (there's no notice-id-style field on this table to key off).
+    if (grants_url) {
+      const [dup] = await conn.query('SELECT id FROM opportunities WHERE source_url = ? LIMIT 1', [grants_url]);
+      if (dup.length > 0) {
+        await conn.rollback();
+        req.flash('info', `${title} is already saved.`);
+        return res.redirect(`/opportunities/${dup[0].id}`);
+      }
+    }
+
     // Look up or create funder from agency name
     let funderId = null;
     if (agency) {
-      const [existing] = await conn.query('SELECT id FROM funders WHERE name = ? LIMIT 1', [agency]);
-      if (existing.length > 0) {
-        funderId = existing[0].id;
+      const normalized = normalizeFunderName(agency);
+      const [allFunders] = await conn.query('SELECT id, name FROM funders');
+      const match = allFunders.find(f => normalizeFunderName(f.name) === normalized);
+      if (match) {
+        funderId = match.id;
       } else {
         const [fr] = await conn.query(
           "INSERT INTO funders (name, funder_type) VALUES (?, 'Federal')",
@@ -148,7 +193,7 @@ router.post('/save', async (req, res) => {
       VALUES (?,?,?,?,?,?,?,?,?)
     `, [
       title, 'Grant', 'Grants.gov', grants_url || null,
-      open_date || null, close_date || null,
+      toMySQLDate(open_date), toMySQLDate(close_date),
       award_min || null, award_max || null, 'New'
     ]);
 
@@ -163,6 +208,7 @@ router.post('/save', async (req, res) => {
     );
 
     await conn.commit();
+    await scoreOpportunity(r.insertId).catch(() => {});
     req.flash('success', `Grant saved: ${title}`);
     res.redirect(`/opportunities/${r.insertId}`);
   } catch (err) {

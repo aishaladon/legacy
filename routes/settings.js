@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const { rescoreAll } = require('../services/alignmentScorer');
 
 router.use(requireLogin);
 
@@ -119,6 +120,13 @@ router.post('/run-digest', async (req, res) => {
   } else {
     req.flash('error', `Digest send failed: ${result.message}`);
   }
+  res.redirect('/settings#automations');
+});
+
+// Manual run — Recalculate alignment scores for every opportunity
+router.post('/rescore', async (req, res) => {
+  const count = await rescoreAll();
+  req.flash('success', `Alignment scores recalculated for ${count} opportunit${count === 1 ? 'y' : 'ies'}.`);
   res.redirect('/settings#automations');
 });
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const { scoreOpportunity } = require('../services/alignmentScorer');
 
 router.use(requireLogin);
 
@@ -48,16 +49,21 @@ router.get('/new', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const {
+    title, source_url, posted_date, due_date, amount_min, amount_max,
+    description, region, status,
+    funder_id, grant_number, program_name, eligible_applicants,
+    match_required, match_percentage, application_portal
+  } = req.body;
+
+  if (!title || !title.trim()) {
+    req.flash('error', 'Title is required.');
+    return res.redirect('/grants/new');
+  }
+
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
-
-    const {
-      title, source_url, posted_date, due_date, amount_min, amount_max,
-      description, region, status,
-      funder_id, grant_number, program_name, eligible_applicants,
-      match_required, match_percentage, application_portal
-    } = req.body;
 
     const [r] = await conn.query(`
       INSERT INTO opportunities
@@ -78,7 +84,13 @@ router.post('/', async (req, res) => {
         eligible_applicants || null, match_required ? 1 : 0,
         match_percentage || null, application_portal || null]);
 
+    await conn.query(
+      'INSERT INTO activity_log (record_type, record_id, action, description) VALUES (?,?,?,?)',
+      ['opportunity', r.insertId, 'created', `Created: ${title}`]
+    );
+
     await conn.commit();
+    await scoreOpportunity(r.insertId).catch(() => {});
     req.flash('success', 'Grant opportunity added.');
     res.redirect(`/opportunities/${r.insertId}`);
   } catch (err) {

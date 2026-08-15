@@ -8,6 +8,7 @@ const { upgradeBidWritingGuides } = require('../database/migrations/upgrade_bid_
 const { seedBidWritingGuides } = require('../database/seeds/bid_writing_guides');
 const { updateNaicsCodes } = require('../database/migrations/update_naics_codes');
 const { dedupeDataSources } = require('../database/migrations/dedupe_data_sources');
+const { scoreAllUnscored } = require('../services/alignmentScorer');
 
 const SETUP_KEY = process.env.SETUP_KEY || 'legacy-setup-2026';
 
@@ -67,6 +68,9 @@ router.get('/setup', async (req, res) => {
 
     const naicsRemoved = await updateNaicsCodes(conn);
     log.push(naicsRemoved > 0 ? `Removed ${naicsRemoved} outdated NAICS code(s).` : 'NAICS codes already current.');
+
+    const scored = await scoreAllUnscored();
+    log.push(scored > 0 ? `Alignment score computed for ${scored} previously-unscored opportunit${scored === 1 ? 'y' : 'ies'}.` : 'All opportunities already scored.');
 
     await conn.end();
     log.push('Database initialized successfully!');

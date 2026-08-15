@@ -497,7 +497,15 @@ router.get('/:uid/convert', async (req, res) => {
   }
   if (!email) { req.flash('error', 'Email not found.'); return res.redirect('/email-inbox'); }
 
-  const digest = isDigestEmail(email.subject, email.fromAddress, email.body);
+  // Only offer the "Parse & Import All" banner when it would actually find
+  // something — some emails match the digest heuristics (domain/keywords)
+  // but genuinely contain no separately-listed opportunities.
+  let digest = false;
+  if (isDigestEmail(email.subject, email.fromAddress, email.body)) {
+    let items = parseDigestEmail(email.body);
+    if (items.length === 0) items = parseBulletDigestEmail(email.body);
+    digest = items.length > 0;
+  }
   const archivesgig = isArchivesgigEmail(email.subject, email.fromAddress, email.body)
     && isArchivesgigJobShaped(email.subject);
 

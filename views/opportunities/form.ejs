@@ -60,11 +60,11 @@
   <div class="form-row">
     <div class="form-group">
       <label>Posted Date</label>
-      <input type="date" name="posted_date" value="<%= opportunity && opportunity.posted_date ? new Date(opportunity.posted_date).toISOString().split('T')[0] : '' %>">
+      <input type="date" name="posted_date" value="<%= opportunity && opportunity.posted_date && !isNaN(new Date(opportunity.posted_date)) ? new Date(opportunity.posted_date).toISOString().split('T')[0] : '' %>">
     </div>
     <div class="form-group">
       <label>Due Date</label>
-      <input type="date" name="due_date" value="<%= opportunity && opportunity.due_date ? new Date(opportunity.due_date).toISOString().split('T')[0] : '' %>">
+      <input type="date" name="due_date" value="<%= opportunity && opportunity.due_date && !isNaN(new Date(opportunity.due_date)) ? new Date(opportunity.due_date).toISOString().split('T')[0] : '' %>">
     </div>
     <div class="form-group">
       <label>Amount Min ($)</label>

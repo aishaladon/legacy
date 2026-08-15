@@ -54,11 +54,11 @@
   <div class="form-row">
     <div class="form-group">
       <label>Period Start</label>
-      <input type="date" name="period_start" value="<%= award && award.period_start ? new Date(award.period_start).toISOString().split('T')[0] : '' %>">
+      <input type="date" name="period_start" value="<%= award && award.period_start && !isNaN(new Date(award.period_start)) ? new Date(award.period_start).toISOString().split('T')[0] : '' %>">
     </div>
     <div class="form-group">
       <label>Period End</label>
-      <input type="date" name="period_end" value="<%= award && award.period_end ? new Date(award.period_end).toISOString().split('T')[0] : '' %>">
+      <input type="date" name="period_end" value="<%= award && award.period_end && !isNaN(new Date(award.period_end)) ? new Date(award.period_end).toISOString().split('T')[0] : '' %>">
     </div>
     <div class="form-group form-group--wide">
       <label>Source URL</label>

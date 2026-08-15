@@ -26,7 +26,9 @@ db.query(`
 // ── SAM.gov Digest ────────────────────────────────────────────────────────────
 async function runSamDigest() {
   const apiKey = process.env.SAM_API_KEY;
-  if (!apiKey) {
+  const relayUrl = process.env.SAM_RELAY_URL;
+  const relaySecret = process.env.SAM_RELAY_SECRET;
+  if (!apiKey && !relayUrl) {
     await db.query(
       'INSERT INTO automation_log (run_type, status, message) VALUES (?,?,?)',
       ['sam_digest', 'skipped', 'SAM_API_KEY not configured in environment variables']
@@ -39,17 +41,26 @@ async function runSamDigest() {
 
   try {
     const [keywordRows] = await db.query('SELECT keyword FROM keywords ORDER BY priority, keyword');
-    const q = keywordRows.map(r => r.keyword).slice(0, 6).join(' OR ') || 'historic preservation';
+    // SAM.gov's opportunities API uses "title" for keyword search, not "q" —
+    // "q" is silently ignored (same bug fixed in the SAM.gov Search page).
+    const titleKeywords = keywordRows.map(r => r.keyword).slice(0, 6).join(' OR ') || 'historic preservation';
 
     const today = new Date();
     const yesterday = new Date(today - 24 * 60 * 60 * 1000);
     const fmt = d => `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`;
 
-    const url = `https://api.sam.gov/opportunities/v2/search?api_key=${apiKey}` +
-      `&q=${encodeURIComponent(q)}&postedFrom=${fmt(yesterday)}&postedTo=${fmt(today)}` +
-      `&ptype=o,k,s,p&limit=100`;
+    const params = `title=${encodeURIComponent(titleKeywords)}&postedFrom=${fmt(yesterday)}&postedTo=${fmt(today)}&ptype=o,k,s,p&limit=100`;
 
-    const resp = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    // Hostinger can't reach api.sam.gov directly (blocked outbound) — route
+    // through the same Cloudflare Worker relay the SAM.gov Search page uses.
+    const resp = relayUrl
+      ? await fetch(`${relayUrl.replace(/\/$/, '')}?${params}`, {
+          headers: relaySecret ? { 'x-relay-secret': relaySecret } : {},
+          signal: AbortSignal.timeout(30000)
+        })
+      : await fetch(`https://api.sam.gov/opportunities/v2/search?api_key=${apiKey}&${params}`, {
+          signal: AbortSignal.timeout(30000)
+        });
     if (!resp.ok) {
       const txt = await resp.text();
       throw new Error(`SAM API ${resp.status}: ${txt.slice(0, 200)}`);
@@ -92,6 +103,7 @@ async function runSamDigest() {
       'INSERT INTO automation_log (run_type, status, items_found, items_new, message) VALUES (?,?,?,?,?)',
       ['sam_digest', 'success', items.length, newCount, msg]
     );
+    await db.query("UPDATE data_sources SET last_checked = NOW() WHERE name = 'SAM.gov'").catch(() => {});
     return { status: 'success', newCount };
   } catch (err) {
     const detail = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
@@ -99,6 +111,7 @@ async function runSamDigest() {
       'INSERT INTO automation_log (run_type, status, message) VALUES (?,?,?)',
       ['sam_digest', 'error', detail]
     );
+    await db.query("UPDATE data_sources SET last_checked = NOW() WHERE name = 'SAM.gov'").catch(() => {});
     return { status: 'error', message: detail };
   }
 }

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const { scoreOpportunity } = require('../services/alignmentScorer');
 
 router.use(requireLogin);
 
@@ -155,6 +156,7 @@ router.post('/save', async (req, res) => {
     );
 
     await conn.commit();
+    await scoreOpportunity(r.insertId).catch(() => {});
     req.flash('success', `Saved: ${title}`);
     res.redirect(`/opportunities/${r.insertId}`);
   } catch (err) {
