@@ -1,10 +1,7 @@
 const claudeChat = (() => {
-  const panel = document.getElementById('claudeChat');
   const messagesDiv = document.getElementById('claudeChatMessages');
   const input = document.getElementById('claudeInput');
   const sendBtn = document.getElementById('claudeSend');
-  const openBtn = document.getElementById('claudeOpen');
-  const toggleBtn = document.getElementById('claudeChatToggle');
   const clearBtn = document.getElementById('claudeChatClear');
   const attachBtn = document.getElementById('claudeAttachBtn');
   const fileInput = document.getElementById('claudeFileInput');
@@ -16,12 +13,10 @@ const claudeChat = (() => {
   // classic multi-page app (full reload on every link click), so anything
   // kept only in page memory is lost the instant you navigate away.
   const STORAGE_KEY = 'legacyClaudeChatHistory';
-  const OPEN_KEY = 'legacyClaudeChatOpen';
   const MAX_STORED_MESSAGES = 60;
 
   let history = [];
   let pendingFile = null;
-  let isOpen = false;
   let isLoading = false;
 
   const loadHistory = () => {
@@ -62,15 +57,6 @@ const claudeChat = (() => {
       saveHistory();
     }
   };
-
-  const setOpen = (open) => {
-    isOpen = open;
-    panel.style.display = isOpen ? 'flex' : 'none';
-    openBtn.style.display = isOpen ? 'none' : 'block';
-    try { localStorage.setItem(OPEN_KEY, isOpen ? '1' : '0'); } catch (_) {}
-  };
-
-  const toggle = () => setOpen(!isOpen);
 
   const setAttachment = (file) => {
     pendingFile = file;
@@ -124,8 +110,6 @@ const claudeChat = (() => {
     setAttachment(null);
   };
 
-  openBtn.addEventListener('click', toggle);
-  toggleBtn.addEventListener('click', toggle);
   sendBtn.addEventListener('click', send);
   clearBtn.addEventListener('click', clearConversation);
   attachBtn.addEventListener('click', () => fileInput.click());
@@ -142,7 +126,4 @@ const claudeChat = (() => {
 
   loadHistory();
   renderHistory();
-  let wasOpen = false;
-  try { wasOpen = localStorage.getItem(OPEN_KEY) === '1'; } catch (_) {}
-  setOpen(wasOpen);
 })();
