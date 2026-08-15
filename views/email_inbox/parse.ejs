@@ -44,7 +44,7 @@
                      onchange="document.getElementById('parse-card-<%= i %>').classList.toggle('parse-card--unchecked', !this.checked)">
               <span class="parse-num">#<%= i + 1 %></span>
             </label>
-            <% if (opp.fit_score !== null) { %>
+            <% if (opp.fit_score != null) { %>
               <span class="fit-score badge badge--<%= opp.fit_score >= 7 ? 'high' : opp.fit_score >= 5 ? 'medium' : 'low' %>" title="Claude AI fit score">
                 <%= opp.fit_score %>/10 fit
               </span>

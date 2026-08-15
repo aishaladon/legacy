@@ -7,7 +7,7 @@
   <dl class="detail-list">
     <dt>Title / Role</dt><dd><%= contact.title || '—' %></dd>
     <dt>Institution</dt><dd><%= contact.institution_name || '—' %></dd>
-    <dt>Email</dt><dd><%= contact.email ? contact.email : '—' %></dd>
+    <dt>Email</dt><dd><% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%= contact.email %></a><% } else { %>—<% } %></dd>
     <dt>Phone</dt><dd><%= contact.phone || '—' %></dd>
     <dt>LinkedIn</dt><dd><% if (contact.linkedin) { %><a href="<%= contact.linkedin %>" target="_blank" rel="noopener"><%= contact.linkedin %></a><% } else { %>—<% } %></dd>
   </dl>

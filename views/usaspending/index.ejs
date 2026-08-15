@@ -102,8 +102,8 @@
             <div class="usas-description"><%= r.description.slice(0, 200) %><%= r.description.length > 200 ? '…' : '' %></div>
           <% } %>
           <div class="sam-card-dates">
-            <% if (r.startDate) { %><span>Start: <%= new Date(r.startDate).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %></span><% } %>
-            <% if (r.endDate) { %><span>End: <%= new Date(r.endDate).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %></span><% } %>
+            <% if (r.startDate) { %><span>Start: <%= new Date(r.startDate).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %></span><% } %>
+            <% if (r.endDate) { %><span>End: <%= new Date(r.endDate).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %></span><% } %>
           </div>
           <div class="sam-card-actions">
             <form action="/usaspending/save-institution" method="POST" style="display:inline;">

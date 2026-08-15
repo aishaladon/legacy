@@ -282,7 +282,7 @@ async function evaluateOpportunitiesWithClaude(opportunities) {
 
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
+      max_tokens: 8000,
       messages: [
         {
           role: 'user',

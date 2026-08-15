@@ -5,6 +5,19 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
+// Grants.gov's titles sometimes come through with literal HTML entities
+// (e.g. "&amp;", "&nbsp;") already baked into the text, which the view then
+// escapes again on output — decode here so it only gets escaped once.
+const HTML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+function decodeHtmlEntities(str) {
+  return String(str || '')
+    .replace(/&(amp|lt|gt|quot|apos|nbsp);/g, (m, name) => HTML_ENTITIES[name])
+    .replace(/&#(\d+);/g, (m, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (m, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 const ELIGIBILITY_LABELS = {
   '00': 'State Governments',
   '01': 'County Governments',
@@ -41,7 +54,7 @@ router.get('/', async (req, res) => {
       // translate here at the API boundary.
       const body = {
         keyword: q || '',
-        oppNum: cfda || '',
+        cfda: cfda || '',
         oppStatuses: (oppStatus || 'posted,forecasted').replace(/,/g, '|'),
         rows,
         startRecordNum: startRecord,
@@ -73,7 +86,7 @@ router.get('/', async (req, res) => {
       results = (data.oppHits || []).map(o => ({
         id:          o.id || '',
         number:      o.number || '',
-        title:       o.title || '(untitled)',
+        title:       o.title ? decodeHtmlEntities(o.title) : '(untitled)',
         agency:      o.agency || '',
         agencyCode:  o.agencyCode || '',
         openDate:    o.openDate || '',
@@ -140,7 +153,7 @@ router.post('/save', async (req, res) => {
     ]);
 
     await conn.query(`
-      INSERT INTO grant_opportunities (opportunity_id, funder_id, program_name, cfda_number)
+      INSERT INTO grant_opportunities (opportunity_id, funder_id, program_name, grant_number)
       VALUES (?,?,?,?)
     `, [r.insertId, funderId, cfda_title || null, cfda || null]);
 

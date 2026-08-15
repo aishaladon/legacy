@@ -13,9 +13,9 @@
     <dt>Contract Value</dt><dd><%= project.contract_value ? '$' + Number(project.contract_value).toLocaleString() : '—' %></dd>
     <dt>Contract Number</dt><dd><%= project.contract_number || '—' %></dd>
     <dt>Period</dt><dd>
-      <%= project.start_date ? new Date(project.start_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %>
+      <%= project.start_date ? new Date(project.start_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %>
       →
-      <%= project.end_date ? new Date(project.end_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %>
+      <%= project.end_date ? new Date(project.end_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %>
     </dd>
     <dt>Co-PI / Partners</dt><dd><%= project.co_pi || '—' %></dd>
   </dl>

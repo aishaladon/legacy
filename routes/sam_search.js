@@ -50,8 +50,11 @@ router.get('/', async (req, res) => {
         postedTo: formatDateParam(now)
       });
 
-      if (q) params.set('q', q);
-      if (naics) params.set('naicsCode', naics);
+      // SAM.gov's opportunities API uses "title" for keyword search (not "q")
+      // and "ncode" for NAICS (not "naicsCode") — both were silently ignored
+      // before, which is why every search returned the same unfiltered set.
+      if (q) params.set('title', q);
+      if (naics) params.set('ncode', naics);
       if (set_aside) params.set('typeOfSetAside', set_aside);
 
       let resp;

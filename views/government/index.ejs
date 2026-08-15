@@ -63,7 +63,7 @@
             <td><%= c.solicitation_number || '—' %></td>
             <td><%= c.naics_code || '—' %></td>
             <td><%= c.set_aside || '—' %></td>
-            <td><%= c.due_date ? new Date(c.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></td>
+            <td><%= c.due_date ? new Date(c.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
             <td><% if (c.amount_max) { %>$<%= Number(c.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else { %>—<% } %></td>
             <td><%= c.alignment_score ? Number(c.alignment_score).toFixed(1) : '—' %></td>
             <td><span class="badge badge--<%= c.status.toLowerCase().replace(' ','-') %>"><%= c.status %></span></td>

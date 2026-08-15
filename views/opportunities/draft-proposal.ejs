@@ -19,7 +19,7 @@
       </div>
       <div>
         <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Due Date</div>
-        <div><%= opp.due_date ? new Date(opp.due_date).toLocaleDateString() : '—' %></div>
+        <div><%= opp.due_date ? new Date(opp.due_date).toLocaleDateString('en-US',{timeZone:'UTC'}) : '—' %></div>
       </div>
     </div>
   </div>

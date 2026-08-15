@@ -73,7 +73,7 @@
               <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
               <td><%= o.opportunity_type %></td>
               <td><span class="badge badge--<%= o.status.toLowerCase().replace(/\s+/g,'-') %>"><%= o.status %></span></td>
-              <td><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></td>
+              <td><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
               <td>
                 <% if (o.amount_min || o.amount_max) { %>
                   <% if (o.amount_max) { %>Up to $<%= Number(o.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else { %>$<%= Number(o.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+<% } %>
@@ -106,9 +106,9 @@
               <td><%= p.project_type %></td>
               <td><span class="badge badge--<%= p.status.toLowerCase() %>"><%= p.status %></span></td>
               <td>
-                <% if (p.start_date) { %><%= new Date(p.start_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %><% } %>
+                <% if (p.start_date) { %><%= new Date(p.start_date).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %><% } %>
                 <% if (p.start_date && p.end_date) { %> – <% } %>
-                <% if (p.end_date) { %><%= new Date(p.end_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %><% } %>
+                <% if (p.end_date) { %><%= new Date(p.end_date).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %><% } %>
                 <% if (!p.start_date && !p.end_date) { %>—<% } %>
               </td>
               <td><%= p.contract_value ? '$' + Number(p.contract_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
@@ -134,7 +134,7 @@
             <td><%= a.title %></td>
             <td><%= a.award_type %></td>
             <td><%= a.amount ? '$' + Number(a.amount).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
-            <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—' %></td>
+            <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) : '—' %></td>
           </tr>
         <% }); %>
       </tbody>

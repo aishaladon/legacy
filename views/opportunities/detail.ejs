@@ -23,8 +23,8 @@
       <dt>Status</dt><dd><span class="badge badge--<%= opp.status.toLowerCase().replace(' ','-') %>"><%= opp.status %></span></dd>
       <dt>Region</dt><dd><%= opp.region || '—' %></dd>
       <dt>Source</dt><dd><%= opp.source || '—' %><% if (opp.source_url) { %> <a href="<%= opp.source_url %>" target="_blank" rel="noopener">&#8599;</a><% } %></dd>
-      <dt>Posted</dt><dd><%= opp.posted_date ? new Date(opp.posted_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—' %></dd>
-      <dt>Due</dt><dd class="<%= opp.due_date && new Date(opp.due_date) < new Date(Date.now()+14*86400000) ? 'due-date--urgent' : '' %>"><%= opp.due_date ? new Date(opp.due_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—' %></dd>
+      <dt>Posted</dt><dd><%= opp.posted_date ? new Date(opp.posted_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></dd>
+      <dt>Due</dt><dd class="<%= opp.due_date && new Date(opp.due_date) < new Date(Date.now()+14*86400000) ? 'due-date--urgent' : '' %>"><%= opp.due_date ? new Date(opp.due_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></dd>
       <dt>Amount</dt><dd>
         <% if (opp.amount_min && opp.amount_max) { %>
           $<%= Number(opp.amount_min).toLocaleString() %> – $<%= Number(opp.amount_max).toLocaleString() %>
@@ -78,7 +78,7 @@
       <dt>Probability</dt><dd><%= pipeline.probability != null ? pipeline.probability + '%' : '—' %></dd>
       <dt>Expected Value</dt><dd><%= pipeline.expected_value ? '$' + Number(pipeline.expected_value).toLocaleString() : '—' %></dd>
       <dt>Next Action</dt><dd><%= pipeline.next_action || '—' %></dd>
-      <dt>Next Action Date</dt><dd><%= pipeline.next_action_date ? new Date(pipeline.next_action_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></dd>
+      <dt>Next Action Date</dt><dd><%= pipeline.next_action_date ? new Date(pipeline.next_action_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></dd>
     </dl>
     <a href="/pipeline/<%= pipeline.id %>/edit" class="btn btn-secondary" style="margin-top:0.75rem">Update Stage</a>
   </section>

@@ -59,8 +59,8 @@
             <td><%= item.probability != null ? item.probability + '%' : '—' %></td>
             <td><%= item.expected_value ? '$' + Number(item.expected_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
             <td><%= item.next_action || '—' %></td>
-            <td><%= item.next_action_date ? new Date(item.next_action_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—' %></td>
-            <td><%= item.due_date ? new Date(item.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—' %></td>
+            <td><%= item.next_action_date ? new Date(item.next_action_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><%= item.due_date ? new Date(item.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></td>
             <td><a href="/pipeline/<%= item.id %>/edit" class="btn-link">Edit</a></td>
           </tr>
         <% }); %>

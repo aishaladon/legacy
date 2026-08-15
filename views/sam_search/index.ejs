@@ -69,7 +69,7 @@
   </div>
 <% } else if (searched && results !== null) { %>
 
-  <% if (results.length === 0) { %>
+  <% if (total === 0) { %>
     <p class="empty-state">No results found. Try broader keywords or a longer date range.</p>
   <% } else { %>
     <div class="sam-results-header">
@@ -84,6 +84,9 @@
       </div>
     </div>
 
+    <% if (results.length === 0) { %>
+      <p class="empty-state">SAM.gov reported <%= total.toLocaleString() %> total results but returned none for this page — this can happen with some filter combinations on their end. Try <strong>Prev</strong> above, or start a new search.</p>
+    <% } else { %>
     <div class="sam-results">
       <% results.forEach(function(r) { %>
         <div class="sam-card">
@@ -98,10 +101,10 @@
             <% if (r.type) { %><span class="sam-meta-item"><%= r.type %></span><% } %>
           </div>
           <div class="sam-card-dates">
-            <% if (r.postedDate) { %><span>Posted: <%= new Date(r.postedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %></span><% } %>
+            <% if (r.postedDate) { %><span>Posted: <%= new Date(r.postedDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) %></span><% } %>
             <% if (r.dueDate) { %>
               <span class="sam-due <%= new Date(r.dueDate) < new Date(Date.now() + 14*86400000) ? 'sam-due--urgent' : '' %>">
-                Due: <%= new Date(r.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
+                Due: <%= new Date(r.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) %>
               </span>
             <% } %>
           </div>
@@ -124,6 +127,7 @@
         </div>
       <% }); %>
     </div>
+    <% } %>
 
     <% if (total > pageSize) { %>
     <div class="sam-pagination sam-pagination--bottom">

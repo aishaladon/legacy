@@ -44,7 +44,7 @@
           <li class="item-row">
             <a href="/opportunities/<%= o.id %>" class="item-title"><%= o.title %></a>
             <span class="badge badge--<%= o.opportunity_type.toLowerCase().replace(' ','') %>"><%= o.opportunity_type %></span>
-            <span class="due-date due-date--urgent"><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—' %></span>
+            <span class="due-date due-date--urgent"><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></span>
           </li>
         <% }); %>
       </ul>

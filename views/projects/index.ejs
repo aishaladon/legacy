@@ -51,8 +51,8 @@
             <td><span class="badge badge--<%= p.project_type.toLowerCase().replace(' ','-') %>"><%= p.project_type %></span></td>
             <td><%= p.institution_name || '—' %></td>
             <td><%= p.contract_value ? '$' + Number(p.contract_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
-            <td><%= p.start_date ? new Date(p.start_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—' %></td>
-            <td><%= p.end_date ? new Date(p.end_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—' %></td>
+            <td><%= p.start_date ? new Date(p.start_date).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><%= p.end_date ? new Date(p.end_date).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) : '—' %></td>
             <td><span class="badge badge--<%= p.status.toLowerCase().replace(' ','-') %>"><%= p.status %></span></td>
           </tr>
         <% }); %>

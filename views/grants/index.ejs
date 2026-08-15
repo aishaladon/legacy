@@ -61,7 +61,7 @@
             <td><a href="/opportunities/<%= g.id %>"><%= g.title %></a></td>
             <td><%= g.funder_name || '—' %></td>
             <td><%= g.program_name || '—' %></td>
-            <td><%= g.due_date ? new Date(g.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—' %></td>
+            <td><%= g.due_date ? new Date(g.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
             <td><% if (g.amount_max) { %>$<%= Number(g.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else if (g.amount_min) { %>$<%= Number(g.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+<% } else { %>—<% } %></td>
             <td><%= g.match_required ? 'Yes' : 'No' %></td>
             <td><%= g.alignment_score ? Number(g.alignment_score).toFixed(1) : '—' %></td>
