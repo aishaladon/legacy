@@ -18,7 +18,8 @@
   --topbar-h:    52px;
   --radius:      6px;
   --shadow:      0 1px 3px rgba(0,0,0,.08);
-  --claude-bar-h: min(45vh, 420px);
+  --claude-bar-h: 150px;
+  --claude-bar-h-expanded: min(45vh, 420px);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -637,18 +638,35 @@ a:hover { text-decoration: underline; }
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 /* ── Claude Chat Panel ────────────────────────────────── */
+/* Collapsed by default (no conversation yet) — just tall enough for the
+   header + input row, like a slim footer bar. Grows to show the message
+   history only once there's a conversation (.has-messages). */
 .claude-chat-panel {
   position: fixed;
   bottom: 0;
   left: var(--sidebar-w);
   right: 0;
-  height: var(--claude-bar-h);
+  height: auto;
+  min-height: var(--claude-bar-h);
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   box-shadow: 0 -2px 8px rgba(0,0,0,.12);
   z-index: 200;
+  transition: height .15s ease;
+}
+
+.claude-chat-panel.has-messages {
+  height: var(--claude-bar-h-expanded);
+}
+
+.claude-chat-messages {
+  display: none;
+}
+
+.claude-chat-panel.has-messages .claude-chat-messages {
+  display: flex;
 }
 
 .claude-chat-panel .claude-chat-messages,
@@ -798,7 +816,7 @@ a:hover { text-decoration: underline; }
 /* Mobile: Bottom sheet style */
 @media (max-width: 640px) {
   :root {
-    --claude-bar-h: 60vh;
+    --claude-bar-h-expanded: 60vh;
   }
 
   .claude-chat-panel {

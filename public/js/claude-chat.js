@@ -1,4 +1,5 @@
 const claudeChat = (() => {
+  const panel = document.getElementById('claudeChat');
   const messagesDiv = document.getElementById('claudeChatMessages');
   const input = document.getElementById('claudeInput');
   const sendBtn = document.getElementById('claudeSend');
@@ -42,12 +43,19 @@ const claudeChat = (() => {
     history.forEach(m => renderMessage(m.content, m.role === 'user' ? 'user' : 'claude'));
   };
 
+  // The bar stays collapsed to just the input row until there's actually
+  // something to show, then grows to reveal the conversation.
+  const updateExpandedState = () => {
+    panel.classList.toggle('has-messages', messagesDiv.children.length > 0);
+  };
+
   const renderMessage = (text, sender) => {
     const msg = document.createElement('div');
     msg.className = `claude-message claude-message-${sender}`;
     msg.textContent = text;
     messagesDiv.appendChild(msg);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    updateExpandedState();
   };
 
   const addMessage = (text, sender, role) => {
@@ -108,6 +116,7 @@ const claudeChat = (() => {
     saveHistory();
     messagesDiv.innerHTML = '';
     setAttachment(null);
+    updateExpandedState();
   };
 
   sendBtn.addEventListener('click', send);
