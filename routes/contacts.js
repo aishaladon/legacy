@@ -64,8 +64,19 @@ router.get('/:id', async (req, res) => {
     [req.params.id]
   );
 
+  // Projects aren't linked to a contact directly — they're linked to the
+  // contact's institution, so pull that institution's projects here too
+  // (mirrors what the Project detail page does for Contacts).
+  let projects = [];
+  if (contact.institution_id) {
+    [projects] = await db.query(
+      'SELECT id, title, project_type, status, start_date, end_date, contract_value FROM projects WHERE institution_id = ? ORDER BY start_date DESC',
+      [contact.institution_id]
+    );
+  }
+
   res.render('contacts/detail', {
-    title: `${contact.first_name} ${contact.last_name}`, contact, communications, commTypes: COMM_TYPES
+    title: `${contact.first_name} ${contact.last_name}`, contact, communications, commTypes: COMM_TYPES, projects
   });
 });
 

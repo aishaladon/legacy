@@ -18,6 +18,28 @@
   </form>
 </section>
 
+<% if (contact.institution_id) { %>
+<section class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>Projects at <%= contact.institution_name %> (<%= projects.length %>)</h3>
+    <a href="/projects/new" class="btn-link">+ Add</a>
+  </div>
+  <% if (projects.length === 0) { %>
+    <p class="empty-state">No projects linked to <%= contact.institution_name %> yet.</p>
+  <% } else { %>
+    <ul class="item-list">
+      <% projects.forEach(function(p) { %>
+        <li class="item-row">
+          <a href="/projects/<%= p.id %>" class="item-title"><%= p.title %></a>
+          <span class="badge badge--<%= p.status.toLowerCase().replace(' ','-') %>"><%= p.status %></span>
+          <span class="muted"><%= p.contract_value ? '$' + Number(p.contract_value).toLocaleString() : '' %></span>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>
+<% } %>
+
 <!-- Communication log (emails, calls, meetings) with this contact -->
 <section class="card" style="margin-top:1rem" id="communications">
   <div class="card-header">
