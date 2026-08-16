@@ -28,6 +28,12 @@
     </div>
   </div>
   <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Street Address</label>
+      <input type="text" name="address" value="<%= institution ? (institution.address || '') : '' %>" placeholder="123 Main St">
+    </div>
+  </div>
+  <div class="form-row">
     <div class="form-group">
       <label>City</label>
       <input type="text" name="city" value="<%= institution ? (institution.city || '') : '' %>">
@@ -37,8 +43,18 @@
       <input type="text" name="state" value="<%= institution ? (institution.state || '') : '' %>" placeholder="CA">
     </div>
     <div class="form-group">
+      <label>Zip</label>
+      <input type="text" name="zip_code" value="<%= institution ? (institution.zip_code || '') : '' %>">
+    </div>
+    <div class="form-group">
       <label>Region</label>
       <input type="text" name="region" value="<%= institution ? (institution.region || '') : '' %>" placeholder="California, Northeast…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" name="phone" value="<%= institution ? (institution.phone || '') : '' %>" placeholder="(555) 000-0000">
     </div>
     <div class="form-group form-group--wide">
       <label>Website</label>

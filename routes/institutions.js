@@ -18,6 +18,11 @@ db.query(`
     ENUM('Target','Prospect','Partner','Client','Vendor') DEFAULT 'Target'
 `).catch(() => {});
 
+// Street address, zip, and phone for existing installs
+db.query("ALTER TABLE institutions ADD COLUMN IF NOT EXISTS address VARCHAR(255) DEFAULT NULL AFTER relationship_status").catch(() => {});
+db.query("ALTER TABLE institutions ADD COLUMN IF NOT EXISTS zip_code VARCHAR(20) DEFAULT NULL AFTER state").catch(() => {});
+db.query("ALTER TABLE institutions ADD COLUMN IF NOT EXISTS phone VARCHAR(30) DEFAULT NULL AFTER region").catch(() => {});
+
 const STATUSES = ['Target', 'Prospect', 'Partner', 'Client', 'Vendor'];
 
 // Save or update the primary contact for an institution
@@ -88,15 +93,20 @@ router.get('/new', (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { name, institution_type, relationship_status, city, state, region, website, notes } = req.body;
+  const {
+    name, institution_type, relationship_status, address, city, state,
+    zip_code, region, phone, website, notes
+  } = req.body;
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
     const [r] = await conn.query(`
-      INSERT INTO institutions (name, institution_type, relationship_status, city, state, region, website, notes)
-      VALUES (?,?,?,?,?,?,?,?)
+      INSERT INTO institutions
+        (name, institution_type, relationship_status, address, city, state, zip_code, region, phone, website, notes)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?)
     `, [name, institution_type || null, relationship_status || 'Target',
-        city || null, state || null, region || null, website || null, notes || null]);
+        address || null, city || null, state || null, zip_code || null,
+        region || null, phone || null, website || null, notes || null]);
     await savePrimaryContact(conn, r.insertId, req.body);
     await conn.commit();
     req.flash('success', 'Institution added.');
@@ -262,16 +272,20 @@ router.get('/:id/edit', async (req, res) => {
 });
 
 router.post('/:id/edit', async (req, res) => {
-  const { name, institution_type, relationship_status, city, state, region, website, notes } = req.body;
+  const {
+    name, institution_type, relationship_status, address, city, state,
+    zip_code, region, phone, website, notes
+  } = req.body;
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
     await conn.query(`
       UPDATE institutions SET name=?, institution_type=?, relationship_status=?,
-        city=?, state=?, region=?, website=?, notes=?
+        address=?, city=?, state=?, zip_code=?, region=?, phone=?, website=?, notes=?
       WHERE id=?
     `, [name, institution_type || null, relationship_status || 'Target',
-        city || null, state || null, region || null, website || null, notes || null,
+        address || null, city || null, state || null, zip_code || null,
+        region || null, phone || null, website || null, notes || null,
         req.params.id]);
     await savePrimaryContact(conn, req.params.id, req.body);
     await conn.commit();

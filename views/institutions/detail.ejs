@@ -15,9 +15,14 @@
     <dl class="detail-list">
       <dt>Status</dt><dd><span class="inst-status inst-status--<%= (institution.relationship_status || 'Target').toLowerCase() %>"><%= institution.relationship_status || 'Target' %></span></dd>
       <dt>Type</dt><dd><%= institution.institution_type || '—' %></dd>
-      <dt>City</dt><dd><%= institution.city || '—' %></dd>
-      <dt>State</dt><dd><%= institution.state || '—' %></dd>
+      <dt>Address</dt><dd>
+        <% if (institution.address || institution.city || institution.state || institution.zip_code) { %>
+          <% if (institution.address) { %><%= institution.address %><br><% } %>
+          <%= [institution.city, institution.state].filter(Boolean).join(', ') %> <%= institution.zip_code || '' %>
+        <% } else { %>—<% } %>
+      </dd>
       <dt>Region</dt><dd><%= institution.region || '—' %></dd>
+      <dt>Phone</dt><dd><% if (institution.phone) { %><a href="tel:<%= institution.phone %>"><%= institution.phone %></a><% } else { %>—<% } %></dd>
       <dt>Website</dt><dd><% if (institution.website) { %><a href="<%= institution.website %>" target="_blank" rel="noopener"><%= institution.website %></a><% } else { %>—<% } %></dd>
     </dl>
     <% if (contacts.length > 0) { %>
