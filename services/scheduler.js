@@ -209,6 +209,37 @@ async function maybeRunDigest() {
   await sendDailyDigest();
 }
 
+// ── Database Backup ─────────────────────────────────────────────────────────
+// Runs around 3 AM local time (spread away from the 7 AM pulls/digest) —
+// daily every day, or weekly on Sundays only, per Settings → Backup Frequency.
+// Checks automation_log rather than a dedicated table since a backup attempt
+// is just another automation run, same as the SAM.gov/Grants.gov pulls.
+async function maybeRunBackup() {
+  const [[freqRow]] = await db.query("SELECT value FROM user_settings WHERE name='backup_frequency'");
+  const frequency = ((freqRow && freqRow.value) || '').toLowerCase().trim();
+  if (!frequency || frequency === 'never' || frequency === 'off') return;
+
+  const [[tzRow]] = await db.query("SELECT value FROM user_settings WHERE name='timezone'");
+  const tz = (tzRow && tzRow.value) || 'America/Los_Angeles';
+
+  const nowHour = new Date().toLocaleString('en-US', { timeZone: tz, hour: '2-digit', hour12: false });
+  if (nowHour.slice(0, 2) !== '03') return;
+
+  if (frequency === 'weekly') {
+    const weekday = new Date().toLocaleString('en-US', { timeZone: tz, weekday: 'short' });
+    if (weekday !== 'Sun') return;
+  }
+
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+  const [[already]] = await db.query(
+    "SELECT id FROM automation_log WHERE run_type='backup' AND status='success' AND DATE(ran_at) = ?", [todayStr]
+  );
+  if (already) return;
+
+  const { runBackup } = require('./backupService');
+  await runBackup();
+}
+
 // ── Schedule: daily 7:00 AM server time ──────────────────────────────────────
 cron.schedule('0 7 * * *', () => {
   runSamDigest();
@@ -216,5 +247,6 @@ cron.schedule('0 7 * * *', () => {
 });
 
 cron.schedule('*/5 * * * *', maybeRunDigest);
+cron.schedule('*/5 * * * *', maybeRunBackup);
 
-module.exports = { runSamDigest, runGrantsPull, maybeRunDigest };
+module.exports = { runSamDigest, runGrantsPull, maybeRunDigest, maybeRunBackup };

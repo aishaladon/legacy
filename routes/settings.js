@@ -10,6 +10,7 @@ const { rescoreAll } = require('../services/alignmentScorer');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
 const { extractResponseText } = require('../utils/claudeResponseText');
 const { extractTextFromFile } = require('../utils/fileText');
+const { generateSqlBackup, buildZipBuffer, runBackup } = require('../services/backupService');
 
 router.use(requireLogin);
 
@@ -70,10 +71,31 @@ router.get('/', async (req, res) => {
   });
 });
 
+const PROFILE_FIELD_META = {
+  company_business_name:     'Business name',
+  company_owner_name:        "Owner's name",
+  company_years_in_business: 'Years in business',
+  company_website:           'Company website — included in outreach email drafts',
+  company_cage:               'CAGE code — used in bid prep',
+  company_uei:                'UEI — used in SAM.gov queries and bid prep',
+  company_certifications:     'Active certifications'
+};
+
+// Upsert, not a plain UPDATE — these setting rows may not exist yet on an
+// install that hasn't re-run /setup since this field was added, and a bare
+// UPDATE against a missing row silently affects zero rows (no error, but
+// nothing gets saved either) — confirmed live with the logo path setting.
+async function upsertSetting(name, value, settingType, description) {
+  await db.query(
+    'INSERT INTO user_settings (name, value, setting_type, description) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE value = VALUES(value)',
+    [name, value, settingType, description]
+  );
+}
+
 router.post('/company-profile', async (req, res) => {
   for (const [key, val] of Object.entries(req.body)) {
-    if (!key.startsWith('company_')) continue;
-    await db.query('UPDATE user_settings SET value = ? WHERE name = ?', [val || null, key]);
+    if (!PROFILE_FIELD_META[key]) continue;
+    await upsertSetting(key, val || null, 'Profile', PROFILE_FIELD_META[key]);
   }
   req.flash('success', 'Company profile saved.');
   res.redirect('/settings#profile');
@@ -93,7 +115,7 @@ router.post('/logo', imageUpload.single('logo'), async (req, res) => {
   const filename = `company-logo.${ext}`;
   fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer);
 
-  await db.query("UPDATE user_settings SET value = ? WHERE name = 'company_logo_path'", [`/uploads/${filename}`]);
+  await upsertSetting('company_logo_path', `/uploads/${filename}`, 'Internal', 'Company logo file path — set via upload, not directly editable');
   req.flash('success', 'Logo uploaded.');
   res.redirect('/settings#profile');
 });
@@ -197,7 +219,10 @@ router.post('/capability-review/apply', async (req, res) => {
 
 router.post('/general', async (req, res) => {
   for (const [key, val] of Object.entries(req.body)) {
-    await db.query('UPDATE user_settings SET value = ? WHERE name = ?', [val || null, key]);
+    await db.query(
+      'INSERT INTO user_settings (name, value) VALUES (?,?) ON DUPLICATE KEY UPDATE value = VALUES(value)',
+      [key, val || null]
+    );
   }
   req.flash('success', 'Settings saved.');
   res.redirect('/settings');
@@ -289,6 +314,39 @@ router.post('/rescore', async (req, res) => {
   const count = await rescoreAll();
   req.flash('success', `Alignment scores recalculated for ${count} opportunit${count === 1 ? 'y' : 'ies'}.`);
   res.redirect('/settings#automations');
+});
+
+// Instant backup — streams a zipped .sql dump straight to the browser, no
+// SMTP/email required. The reliable option for "I need a backup right now."
+router.get('/backup-download', async (req, res) => {
+  try {
+    const { sql, tableCount, rowCount } = await generateSqlBackup();
+    const today = new Date().toISOString().split('T')[0];
+    const zipBuffer = await buildZipBuffer(sql, `legacy-govcon-backup-${today}.sql`);
+
+    await db.query(
+      'INSERT INTO automation_log (run_type, status, items_found, message) VALUES (?,?,?,?)',
+      ['backup', 'success', rowCount, `Downloaded directly — ${tableCount} tables, ${rowCount} rows.`]
+    );
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="legacy-govcon-backup-${today}.zip"`);
+    res.send(zipBuffer);
+  } catch (err) {
+    req.flash('error', 'Backup failed: ' + err.message);
+    res.redirect('/settings#backup');
+  }
+});
+
+// Manual run — email a backup now (tests the same path the schedule uses)
+router.post('/run-backup', async (req, res) => {
+  const result = await runBackup();
+  if (result.status === 'success') {
+    req.flash('success', result.message);
+  } else {
+    req.flash('error', `Backup not sent: ${result.message}`);
+  }
+  res.redirect('/settings#backup');
 });
 
 // One-time seed: loads the starter target institution list

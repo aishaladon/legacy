@@ -1,6 +1,9 @@
 <div class="page-header">
   <h2><%= funder.name %></h2>
   <a href="/funders/<%= funder.id %>/edit" class="btn btn-secondary">Edit</a>
+  <form action="/funders/<%= funder.id %>/delete" method="POST" onsubmit="return confirm('Delete this funder? This cannot be undone.')" style="display:inline;">
+    <button type="submit" class="btn btn-danger">Delete</button>
+  </form>
 </div>
 
 <section class="card">

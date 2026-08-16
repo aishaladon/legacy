@@ -35,7 +35,7 @@
   <div class="table-wrap">
     <table class="data-table">
       <thead>
-        <tr><th>Name</th><th>Title</th><th>Institution</th><th>Email</th><th>Phone</th></tr>
+        <tr><th>Name</th><th>Title</th><th>Institution</th><th>Email</th><th>Phone</th><th></th></tr>
       </thead>
       <tbody>
         <% contacts.forEach(function(c) { %>
@@ -45,6 +45,11 @@
             <td><%= c.institution_name || '—' %></td>
             <td><% if (c.email) { %><a href="mailto:<%= c.email %>"><%= c.email %></a><% } else { %>—<% } %></td>
             <td><%= c.phone || '—' %></td>
+            <td>
+              <form action="/contacts/<%= c.id %>/delete" method="POST" onsubmit="return confirm('Delete this contact?')">
+                <button type="submit" class="btn-link btn-link--danger">Delete</button>
+              </form>
+            </td>
           </tr>
         <% }); %>
       </tbody>

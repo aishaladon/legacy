@@ -50,4 +50,10 @@
       <button type="submit" class="btn btn-primary">Save</button>
     </div>
   </form>
+
+  <% if (item) { %>
+    <form action="/pipeline/<%= item.id %>/delete" method="POST" onsubmit="return confirm('Remove this opportunity from the Pipeline? The opportunity itself is not deleted.')" style="margin-top:1rem;">
+      <button type="submit" class="btn btn-danger">Remove from Pipeline</button>
+    </form>
+  <% } %>
 </div>

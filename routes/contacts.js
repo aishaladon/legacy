@@ -68,6 +68,12 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect(`/contacts/${req.params.id}`);
 });
 
+router.post('/:id/delete', async (req, res) => {
+  await db.query('UPDATE contacts SET is_active = 0 WHERE id = ?', [req.params.id]);
+  req.flash('success', 'Contact deleted.');
+  res.redirect('/contacts');
+});
+
 // CSV import
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });

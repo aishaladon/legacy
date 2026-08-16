@@ -12,4 +12,8 @@
     <dt>LinkedIn</dt><dd><% if (contact.linkedin) { %><a href="<%= contact.linkedin %>" target="_blank" rel="noopener"><%= contact.linkedin %></a><% } else { %>—<% } %></dd>
   </dl>
   <% if (contact.notes) { %><div class="prose" style="margin-top:1rem"><%= contact.notes %></div><% } %>
+
+  <form action="/contacts/<%= contact.id %>/delete" method="POST" onsubmit="return confirm('Delete this contact? This cannot be undone.')" style="margin-top:1.5rem;">
+    <button type="submit" class="btn btn-danger">Delete Contact</button>
+  </form>
 </section>

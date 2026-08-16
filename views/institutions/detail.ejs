@@ -3,6 +3,9 @@
   <div class="page-header-actions">
     <a href="/institutions/<%= institution.id %>/draft-outreach" class="btn btn-secondary">✉️ Draft Outreach Email</a>
     <a href="/institutions/<%= institution.id %>/edit" class="btn btn-secondary">Edit</a>
+    <form action="/institutions/<%= institution.id %>/delete" method="POST" onsubmit="return confirm('Delete this institution? This cannot be undone.')" style="display:inline;">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
   </div>
 </div>
 

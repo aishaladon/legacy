@@ -88,7 +88,7 @@
   <h3>General Settings</h3>
   <form action="/settings/general" method="POST">
     <% const emailSettings = settings.filter(s => s.setting_type === 'Email');
-       const textSettings  = settings.filter(s => s.setting_type === 'Text');
+       const textSettings  = settings.filter(s => s.setting_type === 'Text' && !['backup_frequency','backup_destination'].includes(s.name));
        const numSettings   = settings.filter(s => s.setting_type === 'Number');
        const listSettings  = settings.filter(s => s.setting_type === 'List'); %>
 
@@ -304,7 +304,7 @@
         <tbody>
           <% autoLogs.forEach(function(log) { %>
             <tr>
-              <td><%= log.run_type === 'sam_digest' ? 'SAM.gov' : 'Grants.gov' %></td>
+              <td><%= { sam_digest: 'SAM.gov', grants_pull: 'Grants.gov', backup: 'Backup' }[log.run_type] || log.run_type %></td>
               <td><span class="badge badge--<%= log.status %>"><%= log.status %></span></td>
               <td><%= log.items_found || 0 %></td>
               <td><%= log.items_new || 0 %></td>
@@ -318,6 +318,42 @@
   <% } else { %>
     <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No SAM.gov or Grants.gov pull runs yet. Click "Run Now" to test, or enable the toggles above to start the daily schedule. (Digest email attempts are logged separately — see <a href="/digest-log">Digest Log</a>.)</p>
   <% } %>
+</section>
+
+<section class="card" id="backup" style="margin-top:1.5rem">
+  <h3>Backup</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.25rem;">
+    A full copy of your database — every opportunity, contact, institution, and setting — as a <code>.sql</code> file inside a <code>.zip</code> archive. To restore: unzip it, then in Hostinger hPanel go to Databases → phpMyAdmin, select this database, open the Import tab, choose the <code>.sql</code> file, and click Go. Restoring replaces current data with what's in the backup — it does not merge.
+  </p>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+    <a href="/settings/backup-download" class="btn btn-secondary">Download Backup Now</a>
+    <form action="/settings/run-backup" method="POST">
+      <button type="submit" class="btn btn-secondary">Email Backup Now</button>
+    </form>
+  </div>
+
+  <form action="/settings/general" method="POST">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="backup_frequency">Backup Frequency</label>
+        <select id="backup_frequency" name="backup_frequency">
+          <% const bf = (settings.find(s => s.name === 'backup_frequency') || {}).value || 'daily'; %>
+          <option value="daily" <%= bf === 'daily' ? 'selected' : '' %>>Daily (around 3 AM)</option>
+          <option value="weekly" <%= bf === 'weekly' ? 'selected' : '' %>>Weekly (Sunday, around 3 AM)</option>
+          <option value="never" <%= (bf === 'never' || bf === 'off') ? 'selected' : '' %>>Never (manual only)</option>
+        </select>
+      </div>
+      <div class="form-group form-group--wide">
+        <label for="backup_destination">Backup Email Address</label>
+        <input type="email" id="backup_destination" name="backup_destination" value="<%= (settings.find(s => s.name === 'backup_destination') || {}).value || '' %>" placeholder="you@example.com">
+        <span style="font-size:.78rem;color:var(--text-muted);">Where scheduled backups are emailed. Requires <code>SMTP_HOST</code>, <code>SMTP_USERNAME</code>, and <code>SMTP_PASSWORD</code> set in Hostinger environment variables.</span>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save Backup Settings</button>
+    </div>
+  </form>
 </section>
 
 <section class="card" id="seed" style="margin-top:1.5rem">

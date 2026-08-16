@@ -80,4 +80,10 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect('/pipeline');
 });
 
+router.post('/:id/delete', async (req, res) => {
+  await db.query('DELETE FROM pipeline WHERE id = ?', [req.params.id]);
+  req.flash('success', 'Removed from Pipeline.');
+  res.redirect('/pipeline');
+});
+
 module.exports = router;

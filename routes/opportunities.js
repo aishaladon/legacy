@@ -349,4 +349,19 @@ router.post('/:id/delete', async (req, res) => {
   res.redirect('/opportunities');
 });
 
+router.post('/bulk-delete', async (req, res) => {
+  let ids = req.body.ids || [];
+  if (!Array.isArray(ids)) ids = [ids];
+  ids = ids.map(id => parseInt(id, 10)).filter(Number.isInteger);
+
+  if (ids.length === 0) {
+    req.flash('error', 'No opportunities selected.');
+    return res.redirect('/opportunities');
+  }
+
+  await db.query('DELETE FROM opportunities WHERE id IN (?)', [ids]);
+  req.flash('success', `${ids.length} opportunity(ies) deleted.`);
+  res.redirect('/opportunities');
+});
+
 module.exports = router;

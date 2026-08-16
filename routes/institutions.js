@@ -286,4 +286,10 @@ router.post('/:id/edit', async (req, res) => {
   }
 });
 
+router.post('/:id/delete', async (req, res) => {
+  await db.query('UPDATE institutions SET is_active = 0 WHERE id = ?', [req.params.id]);
+  req.flash('success', 'Institution deleted.');
+  res.redirect('/institutions');
+});
+
 module.exports = router;

@@ -2,6 +2,9 @@
   <h2><%= project.title %></h2>
   <div class="page-actions">
     <a href="/projects/<%= project.id %>/edit" class="btn btn-secondary">Edit</a>
+    <form action="/projects/<%= project.id %>/delete" method="POST" onsubmit="return confirm('Delete this project? This cannot be undone.')" style="display:inline;">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
   </div>
 </div>
 

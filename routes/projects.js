@@ -84,4 +84,10 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect(`/projects/${req.params.id}`);
 });
 
+router.post('/:id/delete', async (req, res) => {
+  await db.query('DELETE FROM projects WHERE id = ?', [req.params.id]);
+  req.flash('success', 'Project deleted.');
+  res.redirect('/projects');
+});
+
 module.exports = router;

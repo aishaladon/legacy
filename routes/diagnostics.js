@@ -44,7 +44,7 @@ router.get('/network-check', async (req, res) => {
     }
   }
 
-  res.render('diagnostics/network_check', { title: 'Network Diagnostics', results });
+  res.render('diagnostics/network_check', { title: 'Network Diagnostics', results, checkedAt: new Date(), relayConfigured: !!relayUrl });
 });
 
 module.exports = router;

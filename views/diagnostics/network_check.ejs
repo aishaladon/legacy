@@ -1,7 +1,18 @@
 <div class="page-header">
   <h2>Network Diagnostics</h2>
-  <p class="page-desc">Tests whether this server can make outbound connections to the internet and to each government data source, separate from any search query or API key. Reload this page any time to re-run the checks.</p>
+  <p class="page-desc">Tests whether this server can make outbound connections to the internet and to each government data source, separate from any search query or API key. There's nothing to "clear" — every load below runs a brand-new, live check; nothing here is cached or stored.</p>
 </div>
+
+<div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem;">
+  <a href="/diagnostics/network-check" class="btn btn-secondary btn-sm">Run Diagnostics Again</a>
+  <span style="font-size:.85rem;color:var(--text-muted);">Checked at: <%= checkedAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' }) %></span>
+</div>
+
+<% if (relayConfigured) { %>
+  <p style="font-size:.85rem;background:#f0f7ff;border-left:3px solid #0066cc;border-radius:4px;padding:.6rem .85rem;margin-bottom:.75rem;">
+    The SAM.gov Relay row below is what the app actually uses for SAM.gov searches and the daily digest. The <strong>SAM.gov API</strong> row above it tests a <em>direct</em> connection from this server to api.sam.gov, which Hostinger blocks — that row is expected to stay red permanently now that the Relay is in place. It's not a leftover from before the fix; it re-tests and re-fails the same way on every load, since direct access is genuinely still blocked. As long as the Relay row says Reachable, SAM.gov search and the digest are working.
+  </p>
+<% } %>
 
 <div class="table-wrap">
   <table class="data-table">
