@@ -190,6 +190,90 @@ DIFFERENTIATORS (adapt per pursuit — don't reuse verbatim every time, evaluato
 STANDARD CLOSING / TRANSMITTAL LANGUAGE
 "Legacy Planning & Preservation Ltd. appreciates the opportunity to respond to [solicitation number/title]. We are prepared to begin performance within [X] days of award and welcome the opportunity to discuss our approach further. Please direct questions to [name, title, phone, email]."`;
 
+const OUTREACH_GOV_TEMPLATE = `HOW TO USE THIS TEMPLATE
+For federal, state, city, and county agency contacts — procurement officers, small-business liaisons, or program staff at an agency we want on our bidder's list. Personalize [Contact Name / Procurement Officer] and attach the current capability statement (Settings -> Company Profile) before sending.
+
+SUBJECT: Archival & Digitization Services — Introducing Legacy Planning & Preservation Ltd.
+
+Dear [Contact Name / Procurement Officer],
+
+My name is Aisha LaDon Abdul Rahman, and I am the founder and principal consultant of Legacy Planning & Preservation Ltd., a certified small business based in Roseville, California, specializing in archival management, digitization, metadata creation, and collection management for public institutions.
+
+I am writing to introduce our firm and share our capability statement for your review, in the event that upcoming procurement needs align with our services. Legacy P&P holds the following certifications and registrations: Woman-Owned Small Business (WOSB), Economically Disadvantaged Woman-Owned Small Business (EDWOSB), and Minority Business Enterprise (MBE), with an active SAM.gov registration (CAGE 9XVN3, UEI W9MNGXEFKBS9).
+
+Our core services include:
+  - Archival management and processing
+  - Digitization of physical and audiovisual materials
+  - Collection management system implementation (CollectiveAccess, ArchivesSpace, Omeka)
+  - Metadata creation and finding aid development
+  - Records management consulting
+  - Training and capacity building for library, archive, and museum staff
+
+I hold a Master's in Library and Information Science from San Jose State University, over twenty years of hands-on archival and genealogical research experience, and have completed digitization projects including a multi-thousand-document project for the Lewis Latimer House Museum in New York City.
+
+I would welcome the opportunity to be added to your bidder's list or vendor database, and I have attached our capability statement for your records. Please let me know if there is a specific process for small business vendor registration with your agency, or if a brief call would be helpful to discuss upcoming needs.
+
+Thank you for your time and consideration.
+
+Warm regards,
+Aisha LaDon Abdul Rahman, MLIS
+Founder & Principal Consultant
+Legacy Planning & Preservation Ltd.
+info@legacypnp.ltd
+(916) 934-2273
+legacypnp.ltd`;
+
+const OUTREACH_SMALL_INST_TEMPLATE = `HOW TO USE THIS TEMPLATE
+For smaller museums, historical societies, HBCUs, and academic institutions — organizations that need archival support but may not have the budget or capacity for a large firm. Personalize [Contact Name] and attach the current capability statement before sending.
+
+SUBJECT: Personalized Archival & Digitization Support — Legacy Planning & Preservation Ltd.
+
+Dear [Contact Name],
+
+My name is Aisha LaDon Abdul Rahman, and I am the founder of Legacy Planning & Preservation Ltd., an archival and heritage preservation consultancy based in Roseville, California. I focus on working closely with smaller museums, historical societies, and academic institutions that often need high-quality archival support but may not have the budget or capacity for a large firm.
+
+As a solo consultant, I bring the same level of expertise as larger organizations, including a Master's in Library and Information Science, over twenty years of archival and genealogical research experience, and hands-on project work such as a large-scale digitization project for the Lewis Latimer House Museum in New York City, but with a personalized, flexible approach tailored to smaller institutions and budgets.
+
+My services include:
+  - Digitization of documents, photographs, and audiovisual materials
+  - Archival processing and collection management
+  - Metadata creation and finding aid development
+  - Collection management system setup and training (CollectiveAccess, ArchivesSpace, Omeka)
+  - Consulting on long-term preservation strategy
+  - Staff training and capacity building
+
+I have a particular interest and specialization in African American heritage and culture, including genealogical research and descendant community connections, though I work across all collection types and institutional histories.
+
+I have attached our capability statement, which outlines our services, certifications, and past project work in more detail. I would love the opportunity to learn more about your collection needs and discuss how we might be able to help, whether through a small project, an ongoing consulting relationship, or a one-time assessment.
+
+Please feel free to reach out by email or phone, or let me know a convenient time for a brief call.
+
+Warm regards,
+Aisha LaDon Abdul Rahman, MLIS
+Founder & Principal Consultant
+Legacy Planning & Preservation Ltd.
+info@legacypnp.ltd
+(916) 934-2273
+legacypnp.ltd`;
+
+const OUTREACH_SHORT_TEMPLATE = `HOW TO USE THIS TEMPLATE
+Short, universal version for cold outreach or a quick follow-up when a longer introduction isn't warranted yet. Personalize [Contact Name] and attach the current capability statement before sending.
+
+SUBJECT: Introducing Legacy Planning & Preservation Ltd.
+
+Hello [Contact Name],
+
+I wanted to briefly introduce myself and my consultancy, Legacy Planning & Preservation Ltd. I specialize in archival management, digitization, and collection preservation, with a focus on supporting smaller museums, historical societies, and cultural institutions.
+
+I have attached my capability statement for your reference. If you ever have digitization, cataloging, or archival project needs, I would love to be considered as a resource, no obligation, just an open door for future collaboration.
+
+Thank you for your time, and please don't hesitate to reach out.
+
+Best,
+Aisha LaDon Abdul Rahman, MLIS
+Legacy Planning & Preservation Ltd.
+info@legacypnp.ltd | (916) 934-2273 | legacypnp.ltd`;
+
 const guides = [
   {
     title: 'Capability Statement & Reusable Boilerplate',
@@ -197,6 +281,27 @@ const guides = [
     is_template: 1,
     sort_order: 5,
     content: CAPABILITY_TEMPLATE
+  },
+  {
+    title: 'Outreach Email — Government, City & County Agencies',
+    opportunity_type: 'Other',
+    is_template: 0,
+    sort_order: 40,
+    content: OUTREACH_GOV_TEMPLATE
+  },
+  {
+    title: 'Outreach Email — Small Museums, Historical Societies & HBCUs',
+    opportunity_type: 'Other',
+    is_template: 0,
+    sort_order: 41,
+    content: OUTREACH_SMALL_INST_TEMPLATE
+  },
+  {
+    title: 'Outreach Email — Short Follow-Up / Cold Outreach',
+    opportunity_type: 'Other',
+    is_template: 0,
+    sort_order: 42,
+    content: OUTREACH_SHORT_TEMPLATE
   },
   {
     title: 'Government Contract Response Playbook',
