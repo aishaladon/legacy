@@ -151,7 +151,7 @@
           <% opportunities.forEach(function(o) { %>
             <tr>
               <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
-              <td><%= o.opportunity_type %></td>
+              <td><%= o.opportunity_type === 'Job' ? 'Freelance/Gig' : o.opportunity_type %></td>
               <td><span class="badge badge--<%= o.status.toLowerCase().replace(/\s+/g,'-') %>"><%= o.status %></span></td>
               <td><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
               <td>

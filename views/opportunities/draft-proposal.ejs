@@ -15,7 +15,7 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div>
         <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Type</div>
-        <div><%= opp.opportunity_type %></div>
+        <div><%= opp.opportunity_type === 'Job' ? 'Freelance/Gig' : opp.opportunity_type %></div>
       </div>
       <div>
         <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Due Date</div>

@@ -28,7 +28,7 @@
       <label>Type</label>
       <select name="opportunity_type">
         <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>
-          <option value="<%= t %>" <%= (opportunity && opportunity.opportunity_type === t) ? 'selected' : '' %>><%= t %></option>
+          <option value="<%= t %>" <%= (opportunity && opportunity.opportunity_type === t) ? 'selected' : '' %>><%= t === 'Job' ? 'Freelance/Gig' : t %></option>
         <% }); %>
       </select>
     </div>

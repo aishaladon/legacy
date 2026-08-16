@@ -19,7 +19,7 @@
   <section class="card">
     <h3>Overview</h3>
     <dl class="detail-list">
-      <dt>Type</dt><dd><span class="badge badge--<%= opp.opportunity_type.toLowerCase().replace(' ','-') %>"><%= opp.opportunity_type %></span></dd>
+      <dt>Type</dt><dd><span class="badge badge--<%= opp.opportunity_type.toLowerCase().replace(' ','-') %>"><%= opp.opportunity_type === 'Job' ? 'Freelance/Gig' : opp.opportunity_type %></span></dd>
       <dt>Status</dt><dd><span class="badge badge--<%= opp.status.toLowerCase().replace(' ','-') %>"><%= opp.status %></span></dd>
       <dt>Region</dt><dd><%= opp.region || '—' %></dd>
       <dt>Source</dt><dd><%= opp.source || '—' %><% if (opp.source_url) { %> <a href="<%= opp.source_url %>" target="_blank" rel="noopener">&#8599;</a><% } %></dd>

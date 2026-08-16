@@ -2,14 +2,14 @@
   <h2>All Opportunities</h2>
   <a href="/opportunities/new" class="btn btn-primary">+ Add</a>
 </div>
-<p class="page-desc">Every contract, grant, and professional opportunity tracked in one place — from first discovery through award.</p>
+<p class="page-desc">Every government contract, grant, freelance gig, and professional opportunity tracked in one place — from first discovery through award.</p>
 
 <details class="how-to">
   <summary>How to use All Opportunities</summary>
   <div class="how-to-body">
     <ol>
-      <li>Click <strong>+ Add</strong> to manually enter an opportunity, or use <strong>Email Inbox</strong> to import directly from BidMatch or GovExpert emails.</li>
-      <li>Use the <strong>Type</strong> filter to separate government contracts, grants, subcontracts, and jobs. Use <strong>Status</strong> to focus on what's active.</li>
+      <li>Click <strong>+ Add</strong> to manually enter an opportunity, or use <strong>Email Inbox</strong> to import directly from BidMatch, GovExpert, ArchiveGig, or similar bid/gig alert emails.</li>
+      <li>Use the <strong>Type</strong> filter to separate government contracts, grants, subcontracts, and freelance/gig work. Use <strong>Status</strong> to focus on what's active.</li>
       <li>Click any opportunity title to open its detail page — this is where you add notes, link contacts and institutions, and move it into the Pipeline.</li>
       <li>Star important opportunities (&#9733;) to pin them to the top of the list.</li>
       <li>Once you decide to pursue, open the detail page and click <strong>Add to Pipeline</strong> to begin tracking stages and win probability.</li>
@@ -23,7 +23,7 @@
   <select name="type" class="filter-select">
     <option value="">All Types</option>
     <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>
-      <option value="<%= t %>" <%= filters.type === t ? 'selected' : '' %>><%= t %></option>
+      <option value="<%= t %>" <%= filters.type === t ? 'selected' : '' %>><%= t === 'Job' ? 'Freelance/Gig' : t %></option>
     <% }); %>
   </select>
   <select name="status" class="filter-select">
@@ -65,7 +65,7 @@
               <td><input type="checkbox" class="opp-check" name="ids" value="<%= o.id %>"></td>
               <td><% if (o.is_starred) { %><span class="star">&#9733;</span><% } %></td>
               <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
-              <td><span class="badge badge--<%= o.opportunity_type.toLowerCase().replace(' ','-') %>"><%= o.opportunity_type %></span></td>
+              <td><span class="badge badge--<%= o.opportunity_type.toLowerCase().replace(' ','-') %>"><%= o.opportunity_type === 'Job' ? 'Freelance/Gig' : o.opportunity_type %></span></td>
               <td class="<%= o.due_date && new Date(o.due_date) < new Date(Date.now() + 14*86400000) ? 'due-date--urgent' : '' %>">
                 <%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %>
               </td>
