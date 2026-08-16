@@ -160,7 +160,16 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error(`Unhandled error on ${req.method} ${req.originalUrl}:`, err);
   if (res.headersSent) return next(err);
-  res.status(500).send('Something went wrong loading this page. It has been logged — try again, or go back.');
+  // This app has exactly one authenticated user (you) behind a login wall,
+  // so showing the real error here is safe and, right now, the fastest way
+  // to pin down what's actually failing on a page like this.
+  res.status(500).send(`
+    <div style="font-family:monospace;max-width:900px;margin:2rem auto;padding:1.5rem;background:#fff5f5;border:1px solid #feb2b2;border-radius:6px;">
+      <h2 style="margin:0 0 1rem;color:#c53030;">Error on ${req.method} ${req.originalUrl}</h2>
+      <p style="white-space:pre-wrap;word-break:break-word;">${(err && err.message || String(err)).replace(/</g, '&lt;')}</p>
+      <p style="margin-top:1rem;"><a href="javascript:history.back()">&larr; Go back</a></p>
+    </div>
+  `);
 });
 
 require('./services/scheduler');
