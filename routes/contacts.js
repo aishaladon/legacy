@@ -42,11 +42,15 @@ router.get('/new', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { first_name, last_name, title, email, phone, linkedin, institution_id, notes } = req.body;
+  if (!institution_id) {
+    req.flash('error', 'Every contact needs an institution — select one before saving.');
+    return res.redirect('/contacts/new');
+  }
   const [r] = await db.query(`
     INSERT INTO contacts (first_name, last_name, title, email, phone, linkedin, institution_id, notes)
     VALUES (?,?,?,?,?,?,?,?)
   `, [first_name, last_name, title || null, email || null, phone || null,
-      linkedin || null, institution_id || null, notes || null]);
+      linkedin || null, institution_id, notes || null]);
   req.flash('success', 'Contact added.');
   res.redirect(`/contacts/${r.insertId}`);
 });
@@ -119,11 +123,15 @@ router.get('/:id/edit', async (req, res) => {
 
 router.post('/:id/edit', async (req, res) => {
   const { first_name, last_name, title, email, phone, linkedin, institution_id, notes } = req.body;
+  if (!institution_id) {
+    req.flash('error', 'Every contact needs an institution — select one before saving.');
+    return res.redirect(`/contacts/${req.params.id}/edit`);
+  }
   await db.query(`
     UPDATE contacts SET first_name=?, last_name=?, title=?, email=?, phone=?,
       linkedin=?, institution_id=?, notes=? WHERE id=?
   `, [first_name, last_name, title || null, email || null, phone || null,
-      linkedin || null, institution_id || null, notes || null, req.params.id]);
+      linkedin || null, institution_id, notes || null, req.params.id]);
   req.flash('success', 'Contact updated.');
   res.redirect(`/contacts/${req.params.id}`);
 });
@@ -167,7 +175,7 @@ router.post('/import-csv', upload.single('csv_file'), async (req, res) => {
   const instMap = {};
   instRows.forEach(r => { instMap[r.name.trim().toLowerCase()] = r.id; });
 
-  let added = 0, skipped = 0, errors = 0;
+  let added = 0, skipped = 0, noInstitution = 0, errors = 0;
   for (const row of records) {
     const first_name = (row.first_name || row['First Name'] || row.first || '').trim();
     const last_name  = (row.last_name  || row['Last Name']  || row.last  || '').trim();
@@ -179,8 +187,12 @@ router.post('/import-csv', upload.single('csv_file'), async (req, res) => {
     const linkedin = (row.linkedin || row.LinkedIn || '').trim() || null;
     const notes    = (row.notes    || row.Notes    || '').trim() || null;
 
+    // Every contact needs an institution — a row whose institution column
+    // is blank or doesn't match an existing institution by name is skipped
+    // rather than imported as an orphan contact.
     const instName = (row.institution || row.Institution || row.institution_name || row['Institution Name'] || '').trim();
-    const institution_id = instName ? (instMap[instName.toLowerCase()] || null) : null;
+    const institution_id = instName ? instMap[instName.toLowerCase()] : null;
+    if (!institution_id) { noInstitution++; continue; }
 
     try {
       await db.query(`
@@ -193,7 +205,7 @@ router.post('/import-csv', upload.single('csv_file'), async (req, res) => {
     }
   }
 
-  const msg = `Contacts imported: ${added} added, ${skipped} skipped (blank name)${errors ? ', ' + errors + ' errors' : ''}.`;
+  const msg = `Contacts imported: ${added} added, ${skipped} skipped (blank name), ${noInstitution} skipped (no matching institution)${errors ? ', ' + errors + ' errors' : ''}.`;
   req.flash('success', msg);
   res.redirect('/contacts');
 });

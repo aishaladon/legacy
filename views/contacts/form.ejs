@@ -20,13 +20,16 @@
   </div>
   <div class="form-row">
     <div class="form-group form-group--wide">
-      <label>Institution</label>
-      <select name="institution_id">
-        <option value="">— None —</option>
+      <label>Institution <span class="req">*</span></label>
+      <select name="institution_id" required>
+        <option value="" disabled <%= (contact && contact.institution_id) || (!contact && typeof presetInstitutionId !== 'undefined' && presetInstitutionId) ? '' : 'selected' %>>Select an institution&hellip;</option>
         <% institutions.forEach(function(i) { %>
           <option value="<%= i.id %>" <%= (contact && contact.institution_id == i.id) || (!contact && typeof presetInstitutionId !== 'undefined' && presetInstitutionId == i.id) ? 'selected' : '' %>><%= i.name %></option>
         <% }); %>
       </select>
+      <% if (institutions.length === 0) { %>
+        <small class="form-hint">No institutions yet — <a href="/institutions/new">add one first</a>, then come back to add this contact.</small>
+      <% } %>
     </div>
   </div>
   <div class="form-row">
