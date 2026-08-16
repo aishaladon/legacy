@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
@@ -18,8 +19,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Sessions persist in MySQL (not the default in-memory store) so a
+// redeploy or process restart doesn't silently log everyone out — a bare
+// MemoryStore loses every active session the moment the Node process
+// restarts, which is exactly what a fresh-ZIP redeploy on Hostinger does.
+const sessionStore = new MySQLStore({ createDatabaseTable: true }, db);
+sessionStore.onReady().catch(err => {
+  console.error('Session store failed to initialize, falling back to in-memory sessions:', err.message);
+});
+
 app.use(session({
   secret: process.env.SECRET_KEY || 'change-this-secret',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 8 * 60 * 60 * 1000 }
