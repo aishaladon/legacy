@@ -9,7 +9,7 @@
 
 <% if (relayConfigured) { %>
   <p style="font-size:.85rem;background:#f0f7ff;border-left:3px solid #0066cc;border-radius:4px;padding:.6rem .85rem;margin-bottom:.75rem;">
-    The SAM.gov Relay row below is what the app actually uses for SAM.gov searches and the daily digest — as long as that row says Reachable, SAM.gov search and the digest are working. The <strong>SAM.gov API</strong> row tests a <em>direct</em> connection from this server straight to api.sam.gov, without going through the Relay.
+    The SAM.gov Relay row below is what the app actually uses for SAM.gov searches and the daily digest — as long as that row says Reachable, everything is working. The <strong>SAM.gov API</strong> row tests a <em>direct</em> connection from this server straight to api.sam.gov, bypassing the Relay — Hostinger blocks that outbound connection entirely, so this row is expected to time out every time and isn't something to fix. It's shown as "Blocked (expected)" rather than a plain failure for that reason.
   </p>
 <% } %>
 
@@ -27,6 +27,9 @@
             <% if (r.ok) { %>
               <span class="badge badge--sent">Reachable</span>
               <% if (r.status !== undefined) { %><small> (HTTP <%= r.status %>)</small><% } %>
+            <% } else if (r.expected) { %>
+              <span class="badge">Blocked (expected)</span><br>
+              <small style="color:var(--text-muted);"><%= r.error %></small>
             <% } else { %>
               <span class="badge badge--failed">Failed</span><br>
               <small><%= r.error %></small>
