@@ -12,7 +12,10 @@
   <dl class="detail-list">
     <dt>Type</dt><dd><span class="badge"><%= project.project_type %></span></dd>
     <dt>Status</dt><dd><span class="badge badge--<%= project.status.toLowerCase().replace(' ','-') %>"><%= project.status %></span></dd>
-    <dt>Institution</dt><dd><%= project.institution_name || '—' %></dd>
+    <dt>Institution</dt><dd><% if (project.institution_id) { %><a href="/institutions/<%= project.institution_id %>"><%= project.institution_name %></a><% } else { %>—<% } %></dd>
+    <% if (pipeline) { %>
+      <dt>Pipeline Stage</dt><dd><a href="/pipeline/<%= pipeline.id %>/edit"><%= pipeline.stage %></a><% if (pipeline.probability !== null) { %> &middot; <%= pipeline.probability %>% p-win<% } %></dd>
+    <% } %>
     <dt>Contract Value</dt><dd><%= project.contract_value ? '$' + Number(project.contract_value).toLocaleString() : '—' %></dd>
     <dt>Contract Number</dt><dd><%= project.contract_number || '—' %></dd>
     <dt>Period</dt><dd>
@@ -22,6 +25,28 @@
     </dd>
     <dt>Co-PI / Partners</dt><dd><%= project.co_pi || '—' %></dd>
   </dl>
+</section>
+
+<section class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>Contacts<% if (project.institution_id) { %> at <%= project.institution_name %><% } %> (<%= contacts.length %>)</h3>
+    <% if (project.institution_id) { %><a href="/contacts/new?institution_id=<%= project.institution_id %>" class="btn-link">+ Add</a><% } %>
+  </div>
+  <% if (!project.institution_id) { %>
+    <p class="empty-state">Link an institution to this project to see its contacts here.</p>
+  <% } else if (contacts.length === 0) { %>
+    <p class="empty-state">No contacts linked to <%= project.institution_name %> yet.</p>
+  <% } else { %>
+    <ul class="item-list">
+      <% contacts.forEach(function(c) { %>
+        <li class="item-row">
+          <a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a>
+          <span class="muted"><%= c.title || '' %></span>
+          <% if (c.email) { %><a href="mailto:<%= c.email %>" class="muted"><%= c.email %></a><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
 </section>
 
 <% if (project.deliverables_notes) { %>

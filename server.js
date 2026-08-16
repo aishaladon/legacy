@@ -1,5 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+// Patches Express so a rejected promise in any async route handler (there
+// are hundreds across this app, none individually wrapped) is forwarded to
+// next(err) automatically. Without this, Express 4 leaves the request
+// hanging forever with no response ever sent — the process-level handlers
+// below stop the whole server from crashing, but on their own they turn a
+// failing request into an infinite spinner instead of a fast error page.
+// Must be required before any router/route is defined.
+require('express-async-errors');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const flash = require('connect-flash');

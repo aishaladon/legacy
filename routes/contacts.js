@@ -34,7 +34,10 @@ router.get('/', async (req, res) => {
 
 router.get('/new', async (req, res) => {
   const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
-  res.render('contacts/form', { title: 'Add Contact', contact: null, institutions });
+  res.render('contacts/form', {
+    title: 'Add Contact', contact: null, institutions,
+    presetInstitutionId: req.query.institution_id || null
+  });
 });
 
 router.post('/', async (req, res) => {
@@ -100,7 +103,7 @@ router.get('/:id/edit', async (req, res) => {
   const [[contact]] = await db.query('SELECT * FROM contacts WHERE id = ?', [req.params.id]);
   if (!contact) { req.flash('error', 'Not found.'); return res.redirect('/contacts'); }
   const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
-  res.render('contacts/form', { title: 'Edit Contact', contact, institutions });
+  res.render('contacts/form', { title: 'Edit Contact', contact, institutions, presetInstitutionId: null });
 });
 
 router.post('/:id/edit', async (req, res) => {

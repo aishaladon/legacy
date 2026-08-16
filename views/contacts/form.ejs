@@ -24,7 +24,7 @@
       <select name="institution_id">
         <option value="">— None —</option>
         <% institutions.forEach(function(i) { %>
-          <option value="<%= i.id %>" <%= (contact && contact.institution_id == i.id) ? 'selected' : '' %>><%= i.name %></option>
+          <option value="<%= i.id %>" <%= (contact && contact.institution_id == i.id) || (!contact && typeof presetInstitutionId !== 'undefined' && presetInstitutionId == i.id) ? 'selected' : '' %>><%= i.name %></option>
         <% }); %>
       </select>
     </div>

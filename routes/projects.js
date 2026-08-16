@@ -55,7 +55,24 @@ router.get('/:id', async (req, res) => {
     WHERE p.id = ?
   `, [req.params.id]);
   if (!project) { req.flash('error', 'Not found.'); return res.redirect('/projects'); }
-  res.render('projects/detail', { title: project.title, project });
+
+  // Contacts aren't linked to a project directly — they're linked to the
+  // project's institution, so pull that institution's contacts here too.
+  let contacts = [];
+  if (project.institution_id) {
+    [contacts] = await db.query(
+      'SELECT * FROM contacts WHERE institution_id = ? AND is_active = 1 ORDER BY last_name, first_name',
+      [project.institution_id]
+    );
+  }
+
+  // If this project came from a won opportunity, show its Pipeline stage too.
+  let pipeline = null;
+  if (project.opportunity_id) {
+    [[pipeline]] = await db.query('SELECT * FROM pipeline WHERE opportunity_id = ?', [project.opportunity_id]);
+  }
+
+  res.render('projects/detail', { title: project.title, project, contacts, pipeline });
 });
 
 router.get('/:id/edit', async (req, res) => {
