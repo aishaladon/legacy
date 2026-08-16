@@ -5,11 +5,32 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
-// Communications used to require an institution — a contact with no
-// institution linked couldn't have anything logged against them. Relaxed
-// so a call/email/meeting can be logged straight from a Contact's page
-// even when they aren't tied to an org yet.
-db.query('ALTER TABLE communications MODIFY COLUMN institution_id INT DEFAULT NULL').catch(() => {});
+// The communications table was added to schema.sql but only gets created
+// via /setup or init_db.js, which this install had never re-run since —
+// every institution/contact detail page was failing outright with
+// "Table 'communications' doesn't exist". Self-provisioning like the rest
+// of this app's supplementary tables so it stops depending on that.
+db.query(`
+  CREATE TABLE IF NOT EXISTS communications (
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    institution_id INT          DEFAULT NULL,
+    contact_id     INT          DEFAULT NULL,
+    comm_type      ENUM('Email','Call','Meeting','Other') NOT NULL DEFAULT 'Email',
+    direction      ENUM('Outbound','Inbound') NOT NULL DEFAULT 'Outbound',
+    subject        VARCHAR(300) DEFAULT NULL,
+    notes          TEXT         DEFAULT NULL,
+    logged_at      DATE         NOT NULL,
+    created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (institution_id) REFERENCES institutions(id) ON DELETE CASCADE,
+    FOREIGN KEY (contact_id)     REFERENCES contacts(id) ON DELETE SET NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+`).then(() => {
+  // Communications used to require an institution — a contact with no
+  // institution linked couldn't have anything logged against them. Relaxed
+  // so a call/email/meeting can be logged straight from a Contact's page
+  // even when they aren't tied to an org yet.
+  return db.query('ALTER TABLE communications MODIFY COLUMN institution_id INT DEFAULT NULL');
+}).catch(() => {});
 
 const COMM_TYPES = ['Email', 'Call', 'Meeting', 'Other'];
 

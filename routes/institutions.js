@@ -11,6 +11,24 @@ router.use(requireLogin);
 
 const COMM_TYPES = ['Email', 'Call', 'Meeting', 'Other'];
 
+// Self-provisioning, same as contacts.js — the communications table only
+// existed in schema.sql, not the live database, until /setup was re-run.
+db.query(`
+  CREATE TABLE IF NOT EXISTS communications (
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    institution_id INT          DEFAULT NULL,
+    contact_id     INT          DEFAULT NULL,
+    comm_type      ENUM('Email','Call','Meeting','Other') NOT NULL DEFAULT 'Email',
+    direction      ENUM('Outbound','Inbound') NOT NULL DEFAULT 'Outbound',
+    subject        VARCHAR(300) DEFAULT NULL,
+    notes          TEXT         DEFAULT NULL,
+    logged_at      DATE         NOT NULL,
+    created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (institution_id) REFERENCES institutions(id) ON DELETE CASCADE,
+    FOREIGN KEY (contact_id)     REFERENCES contacts(id) ON DELETE SET NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+`).catch(() => {});
+
 // Auto-migrate relationship_status column for existing installs
 db.query(`
   ALTER TABLE institutions
