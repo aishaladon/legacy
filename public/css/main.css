@@ -798,11 +798,10 @@ a.stat-tile:hover { background: color-mix(in srgb, var(--text) 4%, transparent);
   flex-direction: column;
   height: calc(100vh - var(--topbar-h) - 3rem - 90px);
   min-height: 420px;
-  max-width: 900px;
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -889,7 +888,7 @@ a.stat-tile:hover { background: color-mix(in srgb, var(--text) 4%, transparent);
   color: white;
   margin-left: 2rem;
   align-self: flex-end;
-  max-width: 85%;
+  max-width: min(85%, 720px);
 }
 
 .claude-message-claude {
@@ -897,7 +896,7 @@ a.stat-tile:hover { background: color-mix(in srgb, var(--text) 4%, transparent);
   color: var(--text);
   margin-right: 2rem;
   align-self: flex-start;
-  max-width: 85%;
+  max-width: min(85%, 720px);
   border: 1px solid var(--border);
 }
 
