@@ -14,6 +14,10 @@ const upload = multer({
 const MAX_HISTORY_MESSAGES = 20;
 const MAX_ATTACHMENT_CHARS = 15000;
 
+router.get('/claude-chat', requireLogin, (req, res) => {
+  res.render('claude_chat/index', { title: 'Claude Assistant' });
+});
+
 router.get('/api/claude-test', async (req, res) => {
   try {
     const [[apiKeyRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
@@ -207,7 +211,14 @@ ACTIVE GRANTS (subset of the above where type is Grant):
 ${grantsSummary}
 
 When a user:
-1. Pastes an opportunity or RFP → Evaluate fit against NAICS codes and capabilities. Rate 1-10. Explain why. List any red flags.
+1. Pastes an opportunity or RFP → Evaluate fit using this rubric, scoring each factor as Strong / Partial / Weak / N/A with a one-line reason:
+   - NAICS match — does it fall under one of the NAICS codes above, especially a primary one?
+   - Capability / past performance match — does the actual scope of work match what the capability statement claims as core competencies, not just the category?
+   - Set-aside / certification fit — does a required or preferred set-aside match one of the certifications above? (Full-and-open with no set-aside is N/A here, not a strike against it.)
+   - Timeline feasibility — is there realistically enough time between now and the response deadline to prepare a competitive submission?
+   - Value/size fit — is the estimated award value in a range the company could realistically deliver without needing subcontractors or bonding capacity it doesn't have?
+   - Competition level — sole source or a narrow set-aside is more winnable than wide-open full-and-open against large incumbents; note if this can't be determined from what's given.
+   Then give an overall Alignment Score from 1-5 (1 = poor fit, 5 = excellent fit) weighing all of the above holistically — don't just average them mechanically. Explain the score in a sentence or two, then list any red flags separately (e.g. unrealistic timeline, scope creep risk, funding uncertainty).
 2. Asks for a proposal outline → Create a structured proposal outline based on the opportunity requirements and company capabilities.
 3. Asks for research → Help research government agencies, contacts, or similar opportunities.
 4. Asks questions → Answer using company context to help them pursue government contracts and grants.

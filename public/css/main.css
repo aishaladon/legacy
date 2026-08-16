@@ -18,8 +18,6 @@
   --topbar-h:    52px;
   --radius:      6px;
   --shadow:      0 1px 3px rgba(0,0,0,.08);
-  --claude-bar-h: 150px;
-  --claude-bar-h-expanded: min(45vh, 420px);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -99,7 +97,6 @@ a:hover { text-decoration: underline; }
   margin-left: var(--sidebar-w);
   display: flex; flex-direction: column;
   flex: 1; min-height: 100vh;
-  padding-bottom: var(--claude-bar-h);
 }
 .topbar {
   position: sticky; top: 0; z-index: 90;
@@ -637,46 +634,18 @@ a:hover { text-decoration: underline; }
 .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
 
-/* ── Claude Chat Panel ────────────────────────────────── */
-/* Collapsed by default (no conversation yet) — just tall enough for the
-   header + input row, like a slim footer bar. Grows to show the message
-   history only once there's a conversation (.has-messages). */
-.claude-chat-panel {
-  position: fixed;
-  bottom: 0;
-  left: var(--sidebar-w);
-  right: 0;
-  height: auto;
-  min-height: var(--claude-bar-h);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+/* ── Claude Assistant (dedicated page) ───────────────────── */
+.claude-page {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -2px 8px rgba(0,0,0,.12);
-  z-index: 200;
-  transition: height .15s ease;
-}
-
-.claude-chat-panel.has-messages {
-  height: var(--claude-bar-h-expanded);
-}
-
-.claude-chat-messages {
-  display: none;
-}
-
-.claude-chat-panel.has-messages .claude-chat-messages {
-  display: flex;
-}
-
-.claude-chat-panel .claude-chat-messages,
-.claude-chat-panel .claude-attachment-chip,
-.claude-chat-panel .claude-chat-input-area {
-  width: 100%;
+  height: calc(100vh - var(--topbar-h) - 3rem - 90px);
+  min-height: 420px;
   max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .claude-chat-header {
@@ -699,13 +668,12 @@ a:hover { text-decoration: underline; }
 
 .claude-chat-toggle {
   background: none;
-  border: none;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: var(--radius);
   color: white;
-  font-size: 1.5rem;
+  font-size: .85rem;
   cursor: pointer;
-  padding: 0;
-  width: 28px;
-  height: 28px;
+  padding: .3rem .6rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -813,14 +781,9 @@ a:hover { text-decoration: underline; }
   align-self: flex-end;
 }
 
-/* Mobile: Bottom sheet style */
 @media (max-width: 640px) {
-  :root {
-    --claude-bar-h-expanded: 60vh;
-  }
-
-  .claude-chat-panel {
-    left: 0;
+  .claude-page {
+    height: calc(100vh - var(--topbar-h) - 3rem - 70px);
   }
 
   .claude-message-user,
