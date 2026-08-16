@@ -6,7 +6,12 @@ router.use(requireLogin);
 
 const TARGETS = [
   { label: 'General internet (Google)', url: 'https://www.google.com/generate_204' },
-  { label: 'SAM.gov API',               url: 'https://api.sam.gov' },
+  // The bare domain root (no path) isn't representative — api.sam.gov may not
+  // have a handler for "/" at all and can hang to a timeout for reasons that
+  // have nothing to do with outbound connectivity. Test the same endpoint +
+  // path the real SAM.gov search feature calls (routes/sam_search.js) so a
+  // fast 4xx (no API key given here) reads as Reachable, same as Grants.gov below.
+  { label: 'SAM.gov API',               url: 'https://api.sam.gov/opportunities/v2/search?limit=1' },
   { label: 'Grants.gov API',            url: 'https://api.grants.gov' },
   { label: 'USASpending API (IMLS too)',url: 'https://api.usaspending.gov' }
 ];
