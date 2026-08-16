@@ -1,13 +1,43 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const Anthropic = require('@anthropic-ai/sdk');
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const { rescoreAll } = require('../services/alignmentScorer');
+const { getClaudeApiKey } = require('../utils/claudeApiKey');
+const { extractResponseText } = require('../utils/claudeResponseText');
+const { extractTextFromFile } = require('../utils/fileText');
 
 router.use(requireLogin);
 
+const docUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+async function getCapabilityStatement() {
+  const [[guide]] = await db.query(
+    "SELECT id, content FROM bid_writing_guides WHERE is_template = 1 ORDER BY sort_order LIMIT 1"
+  );
+  return guide || null;
+}
+
+async function saveCapabilityStatement(content) {
+  const existing = await getCapabilityStatement();
+  if (existing) {
+    await db.query('UPDATE bid_writing_guides SET content = ? WHERE id = ?', [content, existing.id]);
+  } else {
+    await db.query(`
+      INSERT INTO bid_writing_guides (title, opportunity_type, content, is_template, sort_order)
+      VALUES ('Capability Statement', 'Other', ?, 1, 0)
+    `, [content]);
+  }
+}
+
 router.get('/', async (req, res) => {
-  const [settings] = await db.query('SELECT * FROM user_settings ORDER BY setting_type, name');
+  const [settings] = await db.query("SELECT * FROM user_settings WHERE setting_type != 'Profile' AND setting_type != 'Internal' ORDER BY setting_type, name");
+  const [profileSettings] = await db.query("SELECT * FROM user_settings WHERE setting_type = 'Profile' ORDER BY name");
   const [naics] = await db.query('SELECT * FROM naics_codes ORDER BY is_primary DESC, code');
   const [keywords] = await db.query('SELECT * FROM keywords ORDER BY priority, keyword');
   const [sources] = await db.query('SELECT * FROM data_sources ORDER BY source_type, name');
@@ -16,6 +46,7 @@ router.get('/', async (req, res) => {
   const [[grantsRow]] = await db.query("SELECT value FROM user_settings WHERE name='auto_grants_enabled'");
   const [[digestRow]] = await db.query("SELECT value FROM user_settings WHERE name='auto_digest_enabled'");
   const [[claudeRow]] = await db.query("SELECT value FROM user_settings WHERE name='claude_api_key'");
+  const [[logoRow]]   = await db.query("SELECT value FROM user_settings WHERE name='company_logo_path'");
 
   const autoEnabled = {
     sam:    samRow    ? samRow.value    === '1' : false,
@@ -23,6 +54,8 @@ router.get('/', async (req, res) => {
     digest: digestRow ? digestRow.value === '1' : false
   };
   const claudeApiKey = claudeRow ? claudeRow.value : null;
+  const logoPath = logoRow ? logoRow.value : null;
+  const capabilityStatement = await getCapabilityStatement();
 
   let autoLogs = [];
   try {
@@ -31,7 +64,135 @@ router.get('/', async (req, res) => {
     );
   } catch (_) {}
 
-  res.render('settings/index', { title: 'Settings', settings, naics, keywords, sources, autoEnabled, autoLogs, claudeApiKey });
+  res.render('settings/index', {
+    title: 'Settings', settings, profileSettings, naics, keywords, sources, autoEnabled, autoLogs, claudeApiKey,
+    logoPath, capabilityStatement
+  });
+});
+
+router.post('/company-profile', async (req, res) => {
+  for (const [key, val] of Object.entries(req.body)) {
+    if (!key.startsWith('company_')) continue;
+    await db.query('UPDATE user_settings SET value = ? WHERE name = ?', [val || null, key]);
+  }
+  req.flash('success', 'Company profile saved.');
+  res.redirect('/settings#profile');
+});
+
+router.post('/logo', imageUpload.single('logo'), async (req, res) => {
+  if (!req.file) { req.flash('error', 'No file selected.'); return res.redirect('/settings#profile'); }
+
+  const ext = (req.file.originalname.split('.').pop() || '').toLowerCase();
+  if (!['png', 'jpg', 'jpeg', 'svg', 'webp'].includes(ext)) {
+    req.flash('error', 'Unsupported image type — use PNG, JPG, SVG, or WebP.');
+    return res.redirect('/settings#profile');
+  }
+
+  const uploadsDir = path.join(__dirname, '../public/uploads');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  const filename = `company-logo.${ext}`;
+  fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer);
+
+  await db.query("UPDATE user_settings SET value = ? WHERE name = 'company_logo_path'", [`/uploads/${filename}`]);
+  req.flash('success', 'Logo uploaded.');
+  res.redirect('/settings#profile');
+});
+
+router.post('/capability-statement', async (req, res) => {
+  await saveCapabilityStatement(req.body.content || '');
+  req.flash('success', 'Capability statement saved.');
+  res.redirect('/settings#profile');
+});
+
+router.post('/capability-statement-upload', docUpload.single('file'), async (req, res) => {
+  if (!req.file) { req.flash('error', 'No file selected.'); return res.redirect('/settings#profile'); }
+
+  let text;
+  try {
+    text = await extractTextFromFile(req.file, 20000);
+  } catch (err) {
+    req.flash('error', err.message);
+    return res.redirect('/settings#profile');
+  }
+
+  await saveCapabilityStatement(text);
+
+  const apiKey = await getClaudeApiKey();
+  if (!apiKey) {
+    req.flash('success', 'Capability statement uploaded and saved. Add a Claude API key in Settings → API Keys, then re-upload to get keyword/NAICS suggestions.');
+    return res.redirect('/settings#profile');
+  }
+
+  try {
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.create({
+      model: 'claude-opus-5',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: `Read this capability statement and suggest search keywords and NAICS codes for tracking relevant government contract/grant opportunities. Base suggestions only on what's actually described — don't invent unrelated ones.
+
+CAPABILITY STATEMENT:
+${text.slice(0, 12000)}
+
+Respond ONLY with valid JSON (no markdown), up to 15 keywords and up to 8 NAICS codes:
+{"keywords": [{"keyword": "...", "priority": "High"}], "naics_codes": [{"code": "6-digit code", "description": "..."}]}`
+      }]
+    });
+
+    const raw = extractResponseText(response).trim();
+    const suggestions = JSON.parse(raw);
+    req.session.capabilitySuggestions = suggestions;
+    return res.redirect('/settings/capability-review');
+  } catch (err) {
+    console.error('Capability statement extraction error:', err.message);
+    req.flash('success', 'Capability statement uploaded and saved. Keyword/NAICS suggestion failed — you can add them manually below.');
+    return res.redirect('/settings#profile');
+  }
+});
+
+router.get('/capability-review', (req, res) => {
+  const suggestions = req.session.capabilitySuggestions;
+  if (!suggestions) {
+    req.flash('error', 'No pending suggestions — upload a capability statement first.');
+    return res.redirect('/settings#profile');
+  }
+  res.render('settings/capability-review', { title: 'Review Suggested Keywords & NAICS', suggestions });
+});
+
+router.post('/capability-review/apply', async (req, res) => {
+  const suggestions = req.session.capabilitySuggestions;
+  if (!suggestions) {
+    req.flash('error', 'Nothing to apply — the suggestions expired. Try uploading again.');
+    return res.redirect('/settings#profile');
+  }
+
+  const selectedKeywords = [].concat(req.body.keywords || []);
+  const selectedNaics = [].concat(req.body.naics || []);
+  let addedKw = 0, addedNaics = 0;
+
+  for (const idx of selectedKeywords) {
+    const kw = (suggestions.keywords || [])[idx];
+    if (!kw || !kw.keyword) continue;
+    const [existing] = await db.query('SELECT id FROM keywords WHERE keyword = ? LIMIT 1', [kw.keyword]);
+    if (existing.length) continue;
+    const priority = ['High', 'Medium', 'Low'].includes(kw.priority) ? kw.priority : 'Medium';
+    await db.query('INSERT INTO keywords (keyword, priority) VALUES (?,?)', [kw.keyword, priority]);
+    addedKw++;
+  }
+
+  for (const idx of selectedNaics) {
+    const n = (suggestions.naics_codes || [])[idx];
+    if (!n || !n.code) continue;
+    const [existing] = await db.query('SELECT id FROM naics_codes WHERE code = ? LIMIT 1', [n.code]);
+    if (existing.length) continue;
+    await db.query('INSERT INTO naics_codes (code, description) VALUES (?,?)', [n.code, n.description || '']);
+    addedNaics++;
+  }
+
+  delete req.session.capabilitySuggestions;
+  req.flash('success', `Added ${addedKw} keyword(s) and ${addedNaics} NAICS code(s).`);
+  res.redirect('/settings#naics');
 });
 
 router.post('/general', async (req, res) => {
@@ -169,7 +330,6 @@ router.post('/seed-aa-museums', async (req, res) => {
 });
 
 // CSV import: file upload or paste
-const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 async function processCSV(csvText, req, res) {

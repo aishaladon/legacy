@@ -6,6 +6,7 @@ const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 const { extractResponseText } = require('../utils/claudeResponseText');
 const { getCompanyProfile } = require('../utils/companyProfile');
+const { extractTextFromFile } = require('../utils/fileText');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -55,29 +56,11 @@ router.get('/api/claude-test', async (req, res) => {
   }
 });
 
-// Extracts plain text from an uploaded attachment. Only .txt and .pdf are
-// supported — there's no docx-reading library in this project (the "docx"
-// dependency only writes .docx, it doesn't parse them).
+// Wraps the shared extractor with the "[Attached file: ...]" framing the
+// chat prompt expects.
 async function extractAttachmentText(file) {
-  const name = file.originalname || 'attachment';
-  const ext = (name.split('.').pop() || '').toLowerCase();
-
-  let text;
-  if (ext === 'pdf' || file.mimetype === 'application/pdf') {
-    const pdfParse = require('pdf-parse');
-    const parsed = await pdfParse(file.buffer);
-    text = parsed.text;
-  } else if (ext === 'txt' || file.mimetype === 'text/plain') {
-    text = file.buffer.toString('utf8');
-  } else {
-    throw new Error(`Unsupported file type "${ext || file.mimetype}" — only .txt and .pdf are supported.`);
-  }
-
-  text = (text || '').trim();
-  const truncated = text.length > MAX_ATTACHMENT_CHARS;
-  if (truncated) text = text.slice(0, MAX_ATTACHMENT_CHARS) + '\n\n[...attachment truncated...]';
-
-  return `[Attached file: ${name}]\n\n${text || '(no extractable text found in this file)'}`;
+  const text = await extractTextFromFile(file, MAX_ATTACHMENT_CHARS);
+  return `[Attached file: ${file.originalname || 'attachment'}]\n\n${text || '(no extractable text found in this file)'}`;
 }
 
 // Conversation history is sent by the client (persisted in its own

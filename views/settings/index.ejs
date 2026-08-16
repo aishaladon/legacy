@@ -3,7 +3,88 @@
   <p class="page-desc">Your company profile, NAICS codes, tracked keywords, and notification preferences — configure how the system is tuned for your business.</p>
 </div>
 
-<section class="card" id="general">
+<% function pv(name) { const s = profileSettings.find(x => x.name === name); return (s && s.value) || ''; } %>
+
+<section class="card" id="profile">
+  <h3>Company Profile</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.25rem;">Who you are, for AI drafts (proposals, outreach emails) and Claude's opportunity evaluations to reference.</p>
+
+  <div class="profile-logo-row">
+    <div class="profile-logo-preview">
+      <% if (logoPath) { %>
+        <img src="<%= logoPath %>" alt="Company logo">
+      <% } else { %>
+        <span class="profile-logo-placeholder">No logo</span>
+      <% } %>
+    </div>
+    <form action="/settings/logo" method="POST" enctype="multipart/form-data" class="profile-logo-form">
+      <label style="font-weight:600;font-size:.85rem;">Logo</label>
+      <input type="file" name="logo" accept=".png,.jpg,.jpeg,.svg,.webp">
+      <span style="font-size:.78rem;color:var(--text-muted);">PNG, JPG, SVG, or WebP. Max 5 MB.</span>
+      <button type="submit" class="btn btn-secondary btn-sm">Upload Logo</button>
+    </form>
+  </div>
+
+  <form action="/settings/company-profile" method="POST">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Business Name</label>
+        <input type="text" name="company_business_name" value="<%= pv('company_business_name') %>">
+      </div>
+      <div class="form-group">
+        <label>Owner's Name</label>
+        <input type="text" name="company_owner_name" value="<%= pv('company_owner_name') %>">
+      </div>
+      <div class="form-group">
+        <label>Years in Business</label>
+        <input type="number" name="company_years_in_business" value="<%= pv('company_years_in_business') %>" style="width:8rem;">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group form-group--wide">
+        <label>Website</label>
+        <input type="text" name="company_website" value="<%= pv('company_website') %>" placeholder="https://…">
+      </div>
+      <div class="form-group">
+        <label>CAGE Code</label>
+        <input type="text" name="company_cage" value="<%= pv('company_cage') %>">
+      </div>
+      <div class="form-group">
+        <label>UEI</label>
+        <input type="text" name="company_uei" value="<%= pv('company_uei') %>">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Certifications</label>
+      <input type="text" name="company_certifications" value="<%= pv('company_certifications') %>" placeholder="e.g. WOSB, EDWOSB, MBE">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save Company Profile</button>
+    </div>
+  </form>
+
+  <hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--border);">
+
+  <h4 class="settings-group-title" style="margin-bottom:.5rem;">Capability Statement</h4>
+  <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem;">
+    This is what Claude reads for opportunity fit evaluations, RFP responses, and outreach email drafts. Edit directly below, or upload a file to replace it — uploading also suggests keywords and NAICS codes based on what it says.
+  </p>
+  <form action="/settings/capability-statement" method="POST">
+    <div class="form-group">
+      <textarea name="content" rows="10" style="width:100%;font-family:inherit;font-size:.9rem;" placeholder="Paste or write your capability statement here…"><%= capabilityStatement ? capabilityStatement.content : '' %></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-secondary">Save Capability Statement</button>
+    </div>
+  </form>
+  <form action="/settings/capability-statement-upload" method="POST" enctype="multipart/form-data" style="margin-top:.85rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+    <input type="file" name="file" accept=".txt,.pdf,.docx" required>
+    <button type="submit" class="btn btn-secondary btn-sm">Upload &amp; Suggest Keywords/NAICS</button>
+    <span style="font-size:.78rem;color:var(--text-muted);">.txt, .pdf, or .docx — replaces the text above</span>
+  </form>
+</section>
+
+<section class="card" id="general" style="margin-top:1.5rem">
   <h3>General Settings</h3>
   <form action="/settings/general" method="POST">
     <% const emailSettings = settings.filter(s => s.setting_type === 'Email');

@@ -1,6 +1,10 @@
 <nav class="sidebar" id="sidebar">
   <a href="/" class="sidebar-brand">
-    <span class="brand-mark">L</span>
+    <% if (typeof companyLogo !== 'undefined' && companyLogo) { %>
+      <img src="<%= companyLogo %>" alt="Logo" class="brand-logo">
+    <% } else { %>
+      <span class="brand-mark">L</span>
+    <% } %>
     <span class="brand-name">Legacy GovCon</span>
   </a>
   <ul class="nav-list">

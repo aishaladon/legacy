@@ -4,6 +4,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
+const db = require('./config/database');
 
 const SERVER_STARTED = new Date();
 const app = express();
@@ -26,12 +27,19 @@ app.use(session({
 
 app.use(flash());
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.flash_success = req.flash('success');
   res.locals.flash_error = req.flash('error');
   res.locals.flash_info = req.flash('info');
   res.locals.serverStarted = SERVER_STARTED;
+  res.locals.companyLogo = null;
+  try {
+    const [[row]] = await db.query("SELECT value FROM user_settings WHERE name = 'company_logo_path'");
+    if (row && row.value) res.locals.companyLogo = row.value;
+  } catch (_) {
+    // settings table not reachable yet (e.g. before first /setup run) — sidebar falls back to the default mark
+  }
   next();
 });
 

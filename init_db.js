@@ -8,6 +8,7 @@ const { seedBidWritingGuides } = require('./database/seeds/bid_writing_guides');
 const { updateNaicsCodes } = require('./database/migrations/update_naics_codes');
 const { dedupeDataSources } = require('./database/migrations/dedupe_data_sources');
 const { scoreAllUnscored } = require('./services/alignmentScorer');
+const { migrateCompanyProfileSettings } = require('./database/migrations/migrate_company_profile_settings');
 
 async function init() {
   const conn = await mysql.createConnection({
@@ -62,6 +63,9 @@ async function init() {
 
   const scored = await scoreAllUnscored();
   if (scored > 0) console.log(`Alignment score computed for ${scored} previously-unscored opportunit${scored === 1 ? 'y' : 'ies'}.`);
+
+  const profileRetyped = await migrateCompanyProfileSettings(conn);
+  if (profileRetyped > 0) console.log(`Regrouped ${profileRetyped} company profile setting(s) into the Profile section.`);
 
   await conn.end();
   console.log('Database initialized successfully.');

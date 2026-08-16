@@ -9,6 +9,7 @@ const { seedBidWritingGuides } = require('../database/seeds/bid_writing_guides')
 const { updateNaicsCodes } = require('../database/migrations/update_naics_codes');
 const { dedupeDataSources } = require('../database/migrations/dedupe_data_sources');
 const { scoreAllUnscored } = require('../services/alignmentScorer');
+const { migrateCompanyProfileSettings } = require('../database/migrations/migrate_company_profile_settings');
 
 const SETUP_KEY = process.env.SETUP_KEY || 'legacy-setup-2026';
 
@@ -71,6 +72,9 @@ router.get('/setup', async (req, res) => {
 
     const scored = await scoreAllUnscored();
     log.push(scored > 0 ? `Alignment score computed for ${scored} previously-unscored opportunit${scored === 1 ? 'y' : 'ies'}.` : 'All opportunities already scored.');
+
+    const profileRetyped = await migrateCompanyProfileSettings(conn);
+    log.push(profileRetyped > 0 ? `Regrouped ${profileRetyped} company profile setting(s).` : 'Company profile settings already grouped.');
 
     await conn.end();
     log.push('Database initialized successfully!');
