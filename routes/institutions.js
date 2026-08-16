@@ -110,6 +110,23 @@ router.get('/new', (req, res) => {
   });
 });
 
+// Quick-create from another form (e.g. Add Contact) without navigating
+// away and losing what's already been typed there. Minimal fields only —
+// full details can be filled in later from the institution's own page.
+router.post('/quick-create', async (req, res) => {
+  const name = (req.body.name || '').trim();
+  if (!name) return res.status(400).json({ error: 'Name is required.' });
+
+  const [existing] = await db.query('SELECT id, name FROM institutions WHERE name = ? AND is_active = 1 LIMIT 1', [name]);
+  if (existing.length) return res.json({ id: existing[0].id, name: existing[0].name, existed: true });
+
+  const [r] = await db.query(
+    'INSERT INTO institutions (name, institution_type, relationship_status) VALUES (?,?,?)',
+    [name, req.body.institution_type || null, 'Target']
+  );
+  res.json({ id: r.insertId, name });
+});
+
 router.post('/', async (req, res) => {
   const {
     name, institution_type, relationship_status, address, city, state,
