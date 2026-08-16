@@ -47,7 +47,13 @@
             <td><%= a.amount ? '$' + Number(a.amount).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
             <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) : '—' %><% if (a.period_start && a.period_end) { %> – <%= new Date(a.period_end).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %><% } %></td>
             <td><%= a.set_aside || '—' %></td>
-            <td><a href="/award-history/<%= a.id %>/edit" class="btn-link">Edit</a></td>
+            <td style="white-space:nowrap;">
+              <a href="/award-history/<%= a.id %>/edit" class="btn-link">Edit</a>
+              &nbsp;&middot;&nbsp;
+              <form action="/award-history/<%= a.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this award history entry?')">
+                <button type="submit" class="btn-link btn-link--danger">Delete</button>
+              </form>
+            </td>
           </tr>
         <% }); %>
       </tbody>

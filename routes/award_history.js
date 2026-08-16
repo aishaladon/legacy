@@ -75,4 +75,10 @@ router.post('/:id/edit', async (req, res) => {
   res.redirect('/award-history');
 });
 
+router.post('/:id/delete', async (req, res) => {
+  await db.query('DELETE FROM award_history WHERE id = ?', [req.params.id]);
+  req.flash('success', 'Award removed.');
+  res.redirect('/award-history');
+});
+
 module.exports = router;

@@ -10,6 +10,19 @@ const db = require('./config/database');
 const SERVER_STARTED = new Date();
 const app = express();
 
+// An unhandled rejection in any async route handler (there's no global
+// try/catch on route handlers in this app) crashes the entire Node process
+// on Node 15+ by default — every user gets a 503 while it restarts, and any
+// in-memory state (previously: sessions) is lost. These two handlers stop
+// that: log the error and keep the process running instead of exiting, so
+// one bad request can't take the whole app down for everyone.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection (process kept alive):', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception (process kept alive):', err);
+});
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
@@ -129,6 +142,18 @@ app.use('/email-inbox', require('./routes/email_inbox'));
 app.use('/diagnostics', require('./routes/diagnostics'));
 app.use('/', require('./routes/claude-chat'));
 app.use('/', require('./routes/setup'));
+
+// Catch-all error handler — anything a route passes to next(err), or throws
+// synchronously, ends up here with a normal error page instead of Express's
+// default stack-trace dump (or, previously, an uncaught crash).
+app.use((req, res) => {
+  res.status(404).send('Not found.');
+});
+app.use((err, req, res, next) => {
+  console.error(`Unhandled error on ${req.method} ${req.originalUrl}:`, err);
+  if (res.headersSent) return next(err);
+  res.status(500).send('Something went wrong loading this page. It has been logged — try again, or go back.');
+});
 
 require('./services/scheduler');
 
