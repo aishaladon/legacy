@@ -23,6 +23,7 @@
   <summary>How to use Email Inbox</summary>
   <div class="how-to-body">
     <ol>
+      <li><strong><span style="color:var(--success);font-weight:700;">$</span> / <span style="color:var(--text-muted);font-weight:700;">#</span></strong> next to each email — Claude's read on whether it's worth opening (<span style="color:var(--success);font-weight:700;">$</span> = plausibly relevant, <span style="color:var(--text-muted);font-weight:700;">#</span> = safe to archive unread). Hover the mark for its reason. New emails get classified the first time they load here.</li>
       <li><strong>Regular emails</strong> (single opportunity) — click <strong>Convert</strong> to open a pre-filled opportunity form. Review, edit if needed, then click Save.</li>
       <li><strong>Digest emails</strong> (BidMatch, GovExpert with 20+ listings) — click <strong>Convert</strong> and a blue banner will appear. Click <strong>Parse &amp; Import All</strong> to split the email into individual opportunity cards.</li>
       <li>On the Parse page, all opportunities are checked by default. <strong>Uncheck</strong> any you don't want, edit titles or due dates, then click <strong>Save Selected Opportunities</strong> — they all import at once.</li>
@@ -49,6 +50,7 @@
       <thead>
         <tr>
           <th style="width:1.75rem;"></th>
+          <th style="width:1.75rem;" title="Claude's read on whether this is worth reviewing">&#9670;</th>
           <th>From</th>
           <th>Subject</th>
           <th>Date</th>
@@ -63,6 +65,11 @@
             <td class="inbox-dot-cell">
               <% if (!msg.seen && !isConverted) { %><span class="inbox-unread-dot"></span><% } %>
               <% if (isConverted) { %><span class="inbox-converted-dot" title="Converted">&#10003;</span><% } %>
+            </td>
+            <td class="inbox-relevance-cell">
+              <% if (msg.relevance) { %>
+                <span class="inbox-relevance inbox-relevance--<%= msg.relevance.marker === '$' ? 'yes' : 'no' %>" title="<%= msg.relevance.reason %>"><%= msg.relevance.marker %></span>
+              <% } %>
             </td>
             <td class="inbox-from"><%= msg.from %></td>
             <td class="inbox-subject">

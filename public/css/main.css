@@ -420,6 +420,10 @@ a:hover { text-decoration: underline; }
 .inbox-table .inbox-date  { width: 9rem; white-space: nowrap; color: var(--text-muted); font-size: .85rem; vertical-align: top; padding-top: .75rem; }
 .inbox-table .inbox-action{ width: 7rem; text-align: right; vertical-align: top; padding-top: .75rem; }
 .inbox-table .inbox-dot-cell { vertical-align: top; padding-top: .9rem; }
+.inbox-table .inbox-relevance-cell { width: 1.75rem; text-align: center; vertical-align: top; padding-top: .75rem; }
+.inbox-relevance { font-weight: 700; font-size: 1rem; cursor: help; }
+.inbox-relevance--yes { color: var(--success); }
+.inbox-relevance--no { color: var(--text-muted); }
 .inbox-unread td { font-weight: 600; }
 .inbox-converted { opacity: .65; }
 .inbox-converted td { text-decoration: none; }

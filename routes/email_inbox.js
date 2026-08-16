@@ -22,6 +22,15 @@ db.query(`
   )
 `).catch(() => {});
 
+db.query(`
+  CREATE TABLE IF NOT EXISTS email_relevance (
+    uid VARCHAR(100) NOT NULL PRIMARY KEY,
+    marker CHAR(1) NOT NULL,
+    reason VARCHAR(300),
+    computed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`).catch(() => {});
+
 const OPPORTUNITY_KEYWORDS = [
   'contract', 'opportunity', 'opportunities', 'bid', 'grant', 'grants',
   'rfp', 'rfq', 'solicitation', 'procurement', 'award', 'federal',
@@ -269,6 +278,59 @@ function parseBulletDigestEmail(body) {
   return results;
 }
 
+// Classifies opportunity emails as worth reviewing ($) or not (#) so the
+// inbox list can be triaged without opening each one. Batched (not one call
+// per email) and cached in email_relevance so repeat page loads don't
+// re-classify — only genuinely new emails cost an API call.
+async function classifyEmailRelevance(items) {
+  const apiKey = await getClaudeApiKey();
+  if (!apiKey || items.length === 0) return {};
+
+  const results = {};
+  const BATCH = 20;
+
+  for (let start = 0; start < items.length; start += BATCH) {
+    const chunk = items.slice(start, start + BATCH);
+    try {
+      const client = new Anthropic({ apiKey });
+      const text = chunk.map((it, i) =>
+        `[${i}] Subject: ${it.subject}\nBody:\n${(it.body || '').slice(0, 1500)}`
+      ).join('\n\n---\n\n');
+
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: `Legacy Planning & Preservation Ltd. is a government contracting and grants consultancy focused on records management, archives, museums, and libraries. Triage each email below for whether it's worth this company's time to open and review, vs. safe to archive unread.
+
+Mark "$" if the email contains (or is likely to contain) at least one contract, grant, or job opportunity plausibly relevant to records management, archives, museums, libraries, historic preservation, or digitization work — even if only one item in a larger digest qualifies. Mark "#" if the email is generic, off-topic (e.g. construction, IT hardware, medical, unrelated industries), a newsletter with no actual opportunities, or otherwise not worth opening.
+
+Respond ONLY with valid JSON (no markdown):
+{"items": [{"index": 0, "marker": "$", "reason": "<under 15 words>"}]}
+
+EMAILS:
+${text}`
+        }]
+      });
+
+      const content = extractResponseText(response).trim();
+      const parsed = JSON.parse(content);
+      (parsed.items || []).forEach(it => {
+        const original = chunk[it.index];
+        if (original && (it.marker === '$' || it.marker === '#')) {
+          results[original.uid] = { marker: it.marker, reason: it.reason || '' };
+        }
+      });
+    } catch (err) {
+      console.error('Email relevance classification error:', err.message);
+      // leave this chunk unclassified — no marker is shown rather than a wrong one
+    }
+  }
+
+  return results;
+}
+
 // Evaluate opportunities with Claude
 async function evaluateOpportunitiesWithClaude(opportunities) {
   const apiKey = await getClaudeApiKey();
@@ -472,6 +534,37 @@ router.get('/', async (req, res) => {
             previewUrl: urlMatch ? urlMatch[0].replace(/[.,;'"]+$/, '') : null
           };
         });
+
+        // $ / # relevance markers — cached per email so only genuinely new
+        // messages cost a Claude call on subsequent page loads.
+        const fetchedUids = Object.keys(bodies);
+        let relevanceMap = {};
+        if (fetchedUids.length > 0) {
+          const placeholders = fetchedUids.map(() => '?').join(',');
+          const [cached] = await db.query(
+            `SELECT uid, marker, reason FROM email_relevance WHERE uid IN (${placeholders})`,
+            fetchedUids
+          );
+          cached.forEach(r => { relevanceMap[r.uid] = { marker: r.marker, reason: r.reason }; });
+
+          const uncached = fetchedUids.filter(uid => !relevanceMap[uid]);
+          if (uncached.length > 0) {
+            const toClassify = uncached.map(uid => {
+              const m = messages.find(msg => msg.uid === uid);
+              return { uid, subject: m ? m.subject : '', body: bodies[uid] };
+            });
+            const classified = await classifyEmailRelevance(toClassify);
+            for (const [uid, result] of Object.entries(classified)) {
+              relevanceMap[uid] = result;
+              await db.query(
+                'INSERT INTO email_relevance (uid, marker, reason) VALUES (?,?,?) ON DUPLICATE KEY UPDATE marker=VALUES(marker), reason=VALUES(reason)',
+                [uid, result.marker, result.reason]
+              ).catch(() => {});
+            }
+          }
+        }
+
+        messages = messages.map(m => relevanceMap[m.uid] ? { ...m, relevance: relevanceMap[m.uid] } : m);
       }
     }
 
