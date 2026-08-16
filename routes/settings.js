@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const multer = require('multer');
 const Anthropic = require('@anthropic-ai/sdk');
 const db = require('../config/database');
@@ -13,6 +11,17 @@ const { extractTextFromFile } = require('../utils/fileText');
 const { generateSqlBackup, buildZipBuffer, runBackup } = require('../services/backupService');
 
 router.use(requireLogin);
+
+// Self-provisioning so the logo survives redeploys immediately, without
+// needing /setup re-run first (same pattern as automation_log elsewhere).
+db.query(`
+  CREATE TABLE IF NOT EXISTS company_assets (
+    name       VARCHAR(50) PRIMARY KEY,
+    mime_type  VARCHAR(100) NOT NULL,
+    data       LONGBLOB NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )
+`).catch(() => {});
 
 const docUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -36,9 +45,34 @@ async function saveCapabilityStatement(content) {
   }
 }
 
+const PROFILE_FIELD_META = {
+  company_business_name:     'Business name',
+  company_owner_name:        "Owner's name",
+  company_years_in_business: 'Years in business',
+  company_website:           'Company website — included in outreach email drafts',
+  company_cage:               'CAGE code — used in bid prep',
+  company_uei:                'UEI — used in SAM.gov queries and bid prep',
+  company_certifications:     'Active certifications'
+};
+const PROFILE_FIELD_NAMES = Object.keys(PROFILE_FIELD_META);
+
 router.get('/', async (req, res) => {
-  const [settings] = await db.query("SELECT * FROM user_settings WHERE setting_type != 'Profile' AND setting_type != 'Internal' ORDER BY setting_type, name");
-  const [profileSettings] = await db.query("SELECT * FROM user_settings WHERE setting_type = 'Profile' ORDER BY name");
+  // Both queries key off PROFILE_FIELD_NAMES rather than trusting
+  // setting_type='Profile' in the DB — on an install where these fields
+  // predate the Company Profile card, they may still be stored as
+  // setting_type='Text', which would make them vanish from the Profile
+  // card (queried by type) while lingering, duplicated, in General
+  // Settings. Selecting/excluding by name is correct regardless of
+  // whatever type is currently on the row.
+  const profilePlaceholders = PROFILE_FIELD_NAMES.map(() => '?').join(',');
+  const [settings] = await db.query(
+    `SELECT * FROM user_settings WHERE setting_type NOT IN ('Profile','Internal') AND name NOT IN (${profilePlaceholders}) ORDER BY setting_type, name`,
+    PROFILE_FIELD_NAMES
+  );
+  const [profileSettings] = await db.query(
+    `SELECT * FROM user_settings WHERE name IN (${profilePlaceholders}) ORDER BY name`,
+    PROFILE_FIELD_NAMES
+  );
   const [naics] = await db.query('SELECT * FROM naics_codes ORDER BY is_primary DESC, code');
   const [keywords] = await db.query('SELECT * FROM keywords ORDER BY priority, keyword');
   const [sources] = await db.query('SELECT * FROM data_sources ORDER BY source_type, name');
@@ -71,23 +105,17 @@ router.get('/', async (req, res) => {
   });
 });
 
-const PROFILE_FIELD_META = {
-  company_business_name:     'Business name',
-  company_owner_name:        "Owner's name",
-  company_years_in_business: 'Years in business',
-  company_website:           'Company website — included in outreach email drafts',
-  company_cage:               'CAGE code — used in bid prep',
-  company_uei:                'UEI — used in SAM.gov queries and bid prep',
-  company_certifications:     'Active certifications'
-};
-
 // Upsert, not a plain UPDATE — these setting rows may not exist yet on an
 // install that hasn't re-run /setup since this field was added, and a bare
 // UPDATE against a missing row silently affects zero rows (no error, but
 // nothing gets saved either) — confirmed live with the logo path setting.
+// Also re-writes setting_type/description on conflict, not just value, so a
+// row stuck with a stale type (e.g. company_cage saved back when it was
+// still setting_type='Text', before the Profile card existed) heals itself
+// the next time it's saved instead of staying invisible to the Profile card.
 async function upsertSetting(name, value, settingType, description) {
   await db.query(
-    'INSERT INTO user_settings (name, value, setting_type, description) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE value = VALUES(value)',
+    'INSERT INTO user_settings (name, value, setting_type, description) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE value = VALUES(value), setting_type = VALUES(setting_type), description = VALUES(description)',
     [name, value, settingType, description]
   );
 }
@@ -101,23 +129,38 @@ router.post('/company-profile', async (req, res) => {
   res.redirect('/settings#profile');
 });
 
+const LOGO_MIME_TYPES = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', svg: 'image/svg+xml', webp: 'image/webp' };
+
 router.post('/logo', imageUpload.single('logo'), async (req, res) => {
   if (!req.file) { req.flash('error', 'No file selected.'); return res.redirect('/settings#profile'); }
 
   const ext = (req.file.originalname.split('.').pop() || '').toLowerCase();
-  if (!['png', 'jpg', 'jpeg', 'svg', 'webp'].includes(ext)) {
+  if (!LOGO_MIME_TYPES[ext]) {
     req.flash('error', 'Unsupported image type — use PNG, JPG, SVG, or WebP.');
     return res.redirect('/settings#profile');
   }
 
-  const uploadsDir = path.join(__dirname, '../public/uploads');
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  const filename = `company-logo.${ext}`;
-  fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer);
+  // Stored as a DB blob, not a file on local disk — Hostinger's "Upload new
+  // files" redeploy re-extracts a fresh ZIP over the app directory, which
+  // wipes anything written to public/uploads/ at runtime (it was never part
+  // of the deployed ZIP to begin with). The database is the only storage
+  // here that actually survives a redeploy.
+  await db.query(
+    'INSERT INTO company_assets (name, mime_type, data) VALUES (?,?,?) ON DUPLICATE KEY UPDATE mime_type = VALUES(mime_type), data = VALUES(data), updated_at = NOW()',
+    ['logo', LOGO_MIME_TYPES[ext], req.file.buffer]
+  );
 
-  await upsertSetting('company_logo_path', `/uploads/${filename}`, 'Internal', 'Company logo file path — set via upload, not directly editable');
+  await upsertSetting('company_logo_path', `/settings/logo-image?v=${Date.now()}`, 'Internal', 'Company logo — served from the database, not a file path');
   req.flash('success', 'Logo uploaded.');
   res.redirect('/settings#profile');
+});
+
+router.get('/logo-image', async (req, res) => {
+  const [[asset]] = await db.query('SELECT mime_type, data FROM company_assets WHERE name = ?', ['logo']);
+  if (!asset) return res.status(404).end();
+  res.setHeader('Content-Type', asset.mime_type);
+  res.setHeader('Cache-Control', 'private, max-age=86400');
+  res.send(asset.data);
 });
 
 router.post('/capability-statement', async (req, res) => {
