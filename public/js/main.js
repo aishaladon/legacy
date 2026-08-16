@@ -14,6 +14,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Mark the sidebar link matching the current path as active — longest
+  // matching href wins so "/opportunities" doesn't also light up for
+  // "/opportunities/5" when a more specific link exists.
+  var navLinks = document.querySelectorAll('.nav-link');
+  var path = window.location.pathname;
+  var best = null;
+  navLinks.forEach(function (link) {
+    var href = link.getAttribute('href');
+    if (!href) return;
+    var matches = href === '/' ? path === '/' : path === href || path.indexOf(href + '/') === 0;
+    if (matches && (!best || href.length > best.getAttribute('href').length)) best = link;
+  });
+  if (best) best.classList.add('active');
+
   var flashes = document.querySelectorAll('.flash');
   flashes.forEach(function (el) {
     setTimeout(function () {
