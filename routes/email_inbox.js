@@ -7,6 +7,7 @@ const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
 const { extractResponseText } = require('../utils/claudeResponseText');
+const { parseJsonLoose } = require('../utils/parseJsonLoose');
 
 router.use(requireLogin);
 
@@ -284,7 +285,11 @@ function parseBulletDigestEmail(body) {
 // re-classify — only genuinely new emails cost an API call.
 async function classifyEmailRelevance(items) {
   const apiKey = await getClaudeApiKey();
-  if (!apiKey || items.length === 0) return {};
+  if (!apiKey) {
+    console.error('Email relevance classification skipped: no Claude API key set (Settings -> API Keys).');
+    return {};
+  }
+  if (items.length === 0) return {};
 
   const results = {};
   const BATCH = 20;
@@ -315,7 +320,13 @@ ${text}`
       });
 
       const content = extractResponseText(response).trim();
-      const parsed = JSON.parse(content);
+      let parsed;
+      try {
+        parsed = parseJsonLoose(content);
+      } catch (parseErr) {
+        console.error('Email relevance classification: could not parse Claude response as JSON.', parseErr.message, '\nRaw response:', content.slice(0, 500));
+        continue;
+      }
       (parsed.items || []).forEach(it => {
         const original = chunk[it.index];
         if (original && (it.marker === '$' || it.marker === '#')) {
@@ -323,7 +334,8 @@ ${text}`
         }
       });
     } catch (err) {
-      console.error('Email relevance classification error:', err.message);
+      const detail = err.status ? `HTTP ${err.status}: ${err.message}` : err.message;
+      console.error('Email relevance classification error:', detail);
       // leave this chunk unclassified — no marker is shown rather than a wrong one
     }
   }
