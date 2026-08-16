@@ -9,9 +9,27 @@
 <body>
   <%- include('sidebar') %>
   <div class="main-wrap">
+    <%
+      const _path = (typeof currentPath !== 'undefined' && currentPath) ? currentPath : '/';
+      const _isTab = (prefix) => prefix === '/' ? _path === '/' : _path.indexOf(prefix) === 0;
+      const _newRecordHref =
+        _isTab('/contacts')     ? '/contacts/new' :
+        _isTab('/institutions') ? '/institutions/new' :
+        _isTab('/projects')     ? '/projects/new' :
+        _isTab('/funders')      ? '/funders/new' :
+        '/opportunities/new';
+    %>
     <header class="topbar">
       <button class="menu-toggle" id="menuToggle">&#9776;</button>
-      <span class="topbar-title"><%= title %></span>
+      <nav class="top-tabs">
+        <a href="/" class="top-tab <%= _isTab('/') ? 'active' : '' %>">Dashboard</a>
+        <a href="/opportunities" class="top-tab <%= _isTab('/opportunities') ? 'active' : '' %>">Opportunities</a>
+        <a href="/contacts" class="top-tab <%= _isTab('/contacts') ? 'active' : '' %>">Contacts</a>
+      </nav>
+      <form action="/opportunities" method="GET" class="topbar-search">
+        <input type="text" name="q" placeholder="Search notices, agencies, NAICS, contacts&hellip;" class="input">
+      </form>
+      <a href="<%= _newRecordHref %>" class="btn btn-primary btn-sm">+ New record</a>
       <form action="/logout" method="POST" class="logout-form">
         <button type="submit" class="btn-link">Log out</button>
       </form>

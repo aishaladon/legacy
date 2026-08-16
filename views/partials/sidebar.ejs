@@ -1,46 +1,113 @@
+<%
+  // Small inline icon set (16px line icons) — no external icon font/CDN,
+  // just SVG strings keyed by name so the nav below can stay data-driven.
+  const icons = {
+    grid:     '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    sparkle:  '<path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/>',
+    table:    '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9.5h18M9 4v16"/>',
+    building: '<path d="M4 21V9l8-5 8 5v12"/><path d="M4 21h16M9 21v-6h6v6M9 12h.01M15 12h.01M12 12h.01M9 9h.01M15 9h.01M12 9h.01"/>',
+    box:      '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>',
+    search:   '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    book:     '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5V5.5z"/><path d="M20 18H6.5A2.5 2.5 0 0 0 4 20.5"/>',
+    chart:    '<path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 3 5-7"/>',
+    pulse:    '<path d="M3 12h4l2-7 4 14 2-7h6"/>',
+    kanban:   '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M9 4v16M15 4v16"/>',
+    clock:    '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    home:     '<path d="M4 21V10.5L12 4l8 6.5V21"/><path d="M4 21h16"/>',
+    person:   '<circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/>',
+    handshake:'<path d="M2 12l4-4 4 3 4-3 4 4"/><path d="M6 15l3 3 3-3 3 3 3-3"/>',
+    inbox:    '<path d="M4 4h16v16H4z"/><path d="M4 12h5l2 3h2l2-3h5"/>',
+    flag:     '<path d="M5 21V4"/><path d="M5 5h13l-3 4 3 4H5"/>',
+    gear:     '<circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4.6a7.6 7.6 0 0 0-1.8-1l-.4-2.5H9.2l-.4 2.5a7.6 7.6 0 0 0-1.8 1l-2.4-.6-2 3.4L4.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.4-.6a7.6 7.6 0 0 0 1.8 1l.4 2.5h5.6l.4-2.5a7.6 7.6 0 0 0 1.8-1l2.4.6 2-3.4z"/>',
+    signal:   '<path d="M4 18h.01M9 18v-4M14 18v-8M19 18V6"/>'
+  };
+  function icon(name) {
+    return '<svg class="nav-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + (icons[name] || '') + '</svg>';
+  }
+
+  const _counts = (typeof navCounts !== 'undefined' && navCounts) ? navCounts : {};
+  const sections = [
+    { items: [
+      { href: '/', label: 'Dashboard', icon: 'grid' },
+      { href: '/claude-chat', label: 'Claude Assistant', icon: 'sparkle' }
+    ]},
+    { title: 'Opportunities', items: [
+      { href: '/opportunities', label: 'All Opportunities', icon: 'table', count: _counts.opportunities },
+      { href: '/government', label: 'Government', icon: 'building', count: _counts.government },
+      { href: '/grants', label: 'Grants', icon: 'box', count: _counts.grants },
+      { href: '/sam-search', label: 'SAM.gov Search', icon: 'search' },
+      { href: '/grants-search', label: 'Grants.gov Search', icon: 'search' }
+    ]},
+    { title: 'Research', items: [
+      { href: '/imls', label: 'IMLS Awards', icon: 'book' },
+      { href: '/usaspending', label: 'USASpending', icon: 'chart' }
+    ]},
+    { title: 'Tracking', items: [
+      { href: '/pipeline', label: 'Pipeline', icon: 'pulse', count: _counts.pipeline },
+      { href: '/projects', label: 'Projects', icon: 'kanban', count: _counts.projects },
+      { href: '/award-history', label: 'Award History', icon: 'clock', count: _counts.awards }
+    ]},
+    { title: 'Network', items: [
+      { href: '/institutions', label: 'Institutions', icon: 'home', count: _counts.institutions },
+      { href: '/contacts', label: 'Contacts', icon: 'person', count: _counts.contacts },
+      { href: '/funders', label: 'Funders', icon: 'handshake', count: _counts.funders }
+    ]},
+    { title: 'Resources', items: [
+      { href: '/guides', label: 'Bid Guides', icon: 'book' },
+      { href: '/digest-log', label: 'Digest Log', icon: 'inbox' },
+      { href: '/email-inbox', label: 'Email Inbox', icon: 'inbox' }
+    ]},
+    { title: 'System', items: [
+      { href: '/getting-started', label: 'Getting Started', icon: 'flag' },
+      { href: '/settings', label: 'Settings', icon: 'gear' },
+      { href: '/diagnostics/network-check', label: 'Network Diagnostics', icon: 'signal' }
+    ]}
+  ];
+
+  const _owner = (typeof ownerName !== 'undefined' && ownerName) ? ownerName : null;
+  const _company = (typeof companyNameShort !== 'undefined' && companyNameShort) ? companyNameShort : null;
+  const _initials = _owner ? _owner.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() : 'A';
+%>
 <nav class="sidebar" id="sidebar">
   <a href="/" class="sidebar-brand">
     <% if (typeof companyLogo !== 'undefined' && companyLogo) { %>
       <img src="<%= companyLogo %>" alt="Logo" class="brand-logo">
     <% } else { %>
-      <span class="brand-mark">L</span>
+      <span class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3c-2.5 2-4 4.5-4 7.5a4 4 0 0 0 8 0c0-3-1.5-5.5-4-7.5z"/>
+          <path d="M12 10.5V21M8 15c1.5 1 2.5 1.5 4 1.5M16 15c-1.5 1-2.5 1.5-4 1.5"/>
+        </svg>
+      </span>
     <% } %>
-    <span class="brand-name">Legacy GovCon</span>
+    <span class="brand-text">
+      <span class="brand-name">Legacy GovCon</span>
+      <span class="brand-sub">by Legacy P&amp;P</span>
+      <span class="brand-tagline">Pipeline Intelligence</span>
+    </span>
   </a>
   <ul class="nav-list">
-    <li class="nav-item"><a href="/" class="nav-link"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
-    <li class="nav-item"><a href="/claude-chat" class="nav-link"><span class="nav-icon">&#9632;</span> Claude Assistant</a></li>
-
-    <li class="nav-section">Opportunities</li>
-    <li class="nav-item"><a href="/opportunities" class="nav-link"><span class="nav-icon">&#9670;</span> All Opportunities</a></li>
-    <li class="nav-item"><a href="/government" class="nav-link"><span class="nav-icon">&#9670;</span> Government</a></li>
-    <li class="nav-item"><a href="/grants" class="nav-link"><span class="nav-icon">&#9670;</span> Grants</a></li>
-    <li class="nav-item"><a href="/sam-search" class="nav-link"><span class="nav-icon">&#9670;</span> SAM.gov Search</a></li>
-    <li class="nav-item"><a href="/grants-search" class="nav-link"><span class="nav-icon">&#9670;</span> Grants.gov Search</a></li>
-
-    <li class="nav-section">Research</li>
-    <li class="nav-item"><a href="/imls" class="nav-link"><span class="nav-icon">&#9670;</span> IMLS Awards</a></li>
-    <li class="nav-item"><a href="/usaspending" class="nav-link"><span class="nav-icon">&#9670;</span> USASpending</a></li>
-
-    <li class="nav-section">Tracking</li>
-    <li class="nav-item"><a href="/pipeline" class="nav-link"><span class="nav-icon">&#9670;</span> Pipeline</a></li>
-    <li class="nav-item"><a href="/projects" class="nav-link"><span class="nav-icon">&#9670;</span> Projects</a></li>
-    <li class="nav-item"><a href="/award-history" class="nav-link"><span class="nav-icon">&#9670;</span> Award History</a></li>
-
-    <li class="nav-section">Network</li>
-    <li class="nav-item"><a href="/institutions" class="nav-link"><span class="nav-icon">&#9670;</span> Institutions</a></li>
-    <li class="nav-item"><a href="/contacts" class="nav-link"><span class="nav-icon">&#9670;</span> Contacts</a></li>
-    <li class="nav-item"><a href="/funders" class="nav-link"><span class="nav-icon">&#9670;</span> Funders</a></li>
-
-    <li class="nav-section">Resources</li>
-    <li class="nav-item"><a href="/guides" class="nav-link"><span class="nav-icon">&#9670;</span> Bid Guides</a></li>
-    <li class="nav-item"><a href="/digest-log" class="nav-link"><span class="nav-icon">&#9670;</span> Digest Log</a></li>
-    <li class="nav-item"><a href="/email-inbox" class="nav-link"><span class="nav-icon">&#9670;</span> Email Inbox</a></li>
-
-    <li class="nav-section">System</li>
-    <li class="nav-item"><a href="/getting-started" class="nav-link"><span class="nav-icon">&#9670;</span> Getting Started</a></li>
-    <li class="nav-item"><a href="/settings" class="nav-link"><span class="nav-icon">&#9670;</span> Settings</a></li>
-    <li class="nav-item"><a href="/diagnostics/network-check" class="nav-link"><span class="nav-icon">&#9670;</span> Network Diagnostics</a></li>
+    <% sections.forEach(function(section) { %>
+      <% if (section.title) { %><li class="nav-section"><%= section.title %></li><% } %>
+      <% section.items.forEach(function(item) { %>
+        <li class="nav-item">
+          <a href="<%= item.href %>" class="nav-link">
+            <span class="nav-icon"><%- icon(item.icon) %></span>
+            <span class="nav-label"><%= item.label %></span>
+            <% if (item.count !== undefined && item.count !== null) { %>
+              <span class="nav-count"><%= item.count %></span>
+            <% } %>
+          </a>
+        </li>
+      <% }); %>
+    <% }); %>
   </ul>
+  <div class="sidebar-footer">
+    <span class="sidebar-avatar"><%= _initials %></span>
+    <span class="sidebar-footer-text">
+      <span class="sidebar-footer-name"><%= _owner || 'Account owner' %></span>
+      <span class="sidebar-footer-role"><%= _company || 'Legacy GovCon' %></span>
+    </span>
+  </div>
 </nav>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>

@@ -29,6 +29,7 @@ app.use(flash());
 
 app.use(async (req, res, next) => {
   res.locals.user = req.session.user || null;
+  res.locals.currentPath = req.path;
   res.locals.flash_success = req.flash('success');
   res.locals.flash_error = req.flash('error');
   res.locals.flash_info = req.flash('info');
@@ -55,6 +56,40 @@ app.use(async (req, res, next) => {
     res.locals.dateline.samSync = samRow ? samRow.last_checked : null;
   } catch (_) {
     // pipeline/data_sources not reachable yet — rail just omits those fields
+  }
+
+  // Sidebar record counts — one cheap COUNT per list-type nav item, all run
+  // together so a single missing table can't take the others down with it.
+  res.locals.navCounts = {};
+  res.locals.ownerName = null;
+  res.locals.companyNameShort = null;
+  try {
+    const [
+      [[oppRow]], [[govRow]], [[grantRow]], [[pipeRow]], [[projRow]],
+      [[awardRow]], [[instRow]], [[contactRow]], [[funderRow]], [[profileRows]]
+    ] = await Promise.all([
+      db.query('SELECT COUNT(*) AS c FROM opportunities'),
+      db.query("SELECT COUNT(*) AS c FROM opportunities WHERE opportunity_type = 'Government Contract'"),
+      db.query("SELECT COUNT(*) AS c FROM opportunities WHERE opportunity_type = 'Grant'"),
+      db.query("SELECT COUNT(*) AS c FROM pipeline WHERE stage NOT IN ('Awarded','Lost','Withdrawn')"),
+      db.query("SELECT COUNT(*) AS c FROM projects WHERE status = 'Active'"),
+      db.query('SELECT COUNT(*) AS c FROM award_history'),
+      db.query('SELECT COUNT(*) AS c FROM institutions WHERE is_active = 1'),
+      db.query('SELECT COUNT(*) AS c FROM contacts WHERE is_active = 1'),
+      db.query('SELECT COUNT(*) AS c FROM funders WHERE is_active = 1'),
+      db.query("SELECT name, value FROM user_settings WHERE name IN ('company_owner_name','company_business_name')")
+    ]);
+    res.locals.navCounts = {
+      opportunities: oppRow.c, government: govRow.c, grants: grantRow.c,
+      pipeline: pipeRow.c, projects: projRow.c, awards: awardRow.c,
+      institutions: instRow.c, contacts: contactRow.c, funders: funderRow.c
+    };
+    profileRows.forEach(r => {
+      if (r.name === 'company_owner_name' && r.value) res.locals.ownerName = r.value;
+      if (r.name === 'company_business_name' && r.value) res.locals.companyNameShort = r.value;
+    });
+  } catch (_) {
+    // a table isn't reachable yet — sidebar just omits count badges
   }
 
   next();
