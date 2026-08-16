@@ -17,6 +17,32 @@
       </form>
     </header>
 
+    <%
+      const _now = new Date();
+      const _m = _now.getMonth() + 1;
+      const _fy = (_m >= 10 ? _now.getFullYear() + 1 : _now.getFullYear()) % 100;
+      const _q = (_m >= 10) ? 1 : (_m <= 3) ? 2 : (_m <= 6) ? 3 : 4;
+      const _dateStr = _now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      let _pipelineStr = '—';
+      if (typeof dateline !== 'undefined' && dateline.pipelineValue !== null) {
+        _pipelineStr = '$' + (dateline.pipelineValue / 1000000).toFixed(1) + 'M';
+      }
+      let _samStr = 'not synced yet';
+      if (typeof dateline !== 'undefined' && dateline.samSync) {
+        const _mins = Math.round((_now - new Date(dateline.samSync)) / 60000);
+        _samStr = _mins < 1 ? 'just now' : _mins < 60 ? _mins + ' min ago' : _mins < 1440 ? Math.round(_mins / 60) + ' hr ago' : Math.round(_mins / 1440) + ' d ago';
+      }
+    %>
+    <div class="dateline-rail">
+      <span><%= _dateStr %></span>
+      <span class="dateline-sep">|</span>
+      <span>FY<%= _fy %> &middot; Q<%= _q %></span>
+      <span class="dateline-sep">|</span>
+      <span>Pipeline <%= _pipelineStr %></span>
+      <span class="dateline-sep">|</span>
+      <span>SAM.gov synced <%= _samStr %></span>
+    </div>
+
     <main class="content">
       <% if (flash_success && flash_success.length) { %>
         <div class="flash flash-success"><%= flash_success[0] %></div>

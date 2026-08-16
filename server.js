@@ -40,6 +40,23 @@ app.use(async (req, res, next) => {
   } catch (_) {
     // settings table not reachable yet (e.g. before first /setup run) — sidebar falls back to the default mark
   }
+
+  // Dateline rail — the app-shell furniture from the redesign: today's date,
+  // federal fiscal year/quarter, live pipeline value, and SAM.gov sync
+  // freshness, rendered as a thin status line under the header on every page.
+  res.locals.dateline = { pipelineValue: null, samSync: null };
+  try {
+    const [[pipelineRow]] = await db.query(
+      "SELECT SUM(expected_value) AS total FROM pipeline WHERE stage NOT IN ('Awarded','Lost','Withdrawn')"
+    );
+    res.locals.dateline.pipelineValue = pipelineRow ? Number(pipelineRow.total) || 0 : null;
+
+    const [[samRow]] = await db.query("SELECT last_checked FROM data_sources WHERE name = 'SAM.gov'");
+    res.locals.dateline.samSync = samRow ? samRow.last_checked : null;
+  } catch (_) {
+    // pipeline/data_sources not reachable yet — rail just omits those fields
+  }
+
   next();
 });
 
