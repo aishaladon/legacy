@@ -436,72 +436,9 @@ router.post('/seed-aa-museums', async (req, res) => {
   res.redirect('/institutions');
 });
 
-// CSV import: file upload or paste
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
-
-async function processCSV(csvText, req, res) {
-  const { parse } = require('csv-parse/sync');
-  let records;
-  try {
-    records = parse(csvText, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
-      relax_column_count: true,
-    });
-  } catch (err) {
-    req.flash('error', 'Could not parse CSV: ' + err.message);
-    return res.redirect('/settings#import');
-  }
-
-  if (!records.length) {
-    req.flash('error', 'CSV contained no data rows.');
-    return res.redirect('/settings#import');
-  }
-
-  let added = 0, skipped = 0, errors = 0;
-  for (const row of records) {
-    const name = (row.name || row.Name || '').trim();
-    if (!name) { skipped++; continue; }
-
-    const institution_type    = (row.institution_type    || row['Institution Type']    || 'Museum').trim();
-    const relationship_status = (row.relationship_status || row['Relationship Status'] || 'Target').trim();
-    const city    = (row.city    || row.City    || '').trim() || null;
-    const state   = (row.state   || row.State   || '').trim() || null;
-    const website = (row.website || row.Website || '').trim() || null;
-    const notes   = (row.notes   || row.Notes   || '').trim() || null;
-
-    try {
-      const [existing] = await db.query('SELECT id FROM institutions WHERE name = ? LIMIT 1', [name]);
-      if (existing.length > 0) { skipped++; continue; }
-      await db.query(`
-        INSERT INTO institutions (name, institution_type, relationship_status, city, state, website, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [name, institution_type, relationship_status, city, state, website, notes]);
-      added++;
-    } catch (_) {
-      errors++;
-    }
-  }
-
-  const msg = `CSV import complete: ${added} added, ${skipped} skipped (already exist or blank)${errors ? ', ' + errors + ' errors' : ''}.`;
-  req.flash('success', msg);
-  res.redirect('/institutions');
-}
-
-router.post('/import-institutions-csv', upload.single('csv_file'), async (req, res) => {
-  let csvText = '';
-  if (req.file && req.file.buffer.length > 0) {
-    csvText = req.file.buffer.toString('utf8').trim();
-  } else {
-    csvText = (req.body.csv_data || '').trim();
-  }
-  if (!csvText) {
-    req.flash('error', 'No CSV data provided — upload a file or paste CSV text.');
-    return res.redirect('/settings#import');
-  }
-  return processCSV(csvText, req, res);
-});
+// Institution CSV import moved to the Institutions page itself
+// (POST /institutions/import-csv), matching the Contacts/Funders pattern
+// of living on the entity's own list page instead of buried in Settings.
 
 router.post('/api-keys', async (req, res) => {
   const { claude_api_key } = req.body;

@@ -341,4 +341,65 @@ router.post('/:id/delete', async (req, res) => {
   res.redirect('/institutions');
 });
 
+// CSV import — on the Institutions page itself, same pattern as Contacts/Funders
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+router.post('/import-csv', upload.single('csv_file'), async (req, res) => {
+  const { parse } = require('csv-parse/sync');
+  const csvText = (req.file && req.file.buffer.length > 0)
+    ? req.file.buffer.toString('utf8').trim()
+    : (req.body.csv_data || '').trim();
+
+  if (!csvText) {
+    req.flash('error', 'No CSV data provided — upload a file or paste CSV text.');
+    return res.redirect('/institutions#import');
+  }
+
+  let records;
+  try {
+    records = parse(csvText, { columns: true, skip_empty_lines: true, trim: true, relax_column_count: true });
+  } catch (err) {
+    req.flash('error', 'Could not parse CSV: ' + err.message);
+    return res.redirect('/institutions#import');
+  }
+
+  if (!records.length) {
+    req.flash('error', 'CSV contained no data rows.');
+    return res.redirect('/institutions#import');
+  }
+
+  let added = 0, skipped = 0, errors = 0;
+  for (const row of records) {
+    const name = (row.name || row.Name || '').trim();
+    if (!name) { skipped++; continue; }
+
+    const institution_type    = (row.institution_type    || row['Institution Type']    || 'Museum').trim();
+    const relationship_status = (row.relationship_status || row['Relationship Status'] || 'Target').trim();
+    const address = (row.address || row.Address || '').trim() || null;
+    const city    = (row.city    || row.City    || '').trim() || null;
+    const state   = (row.state   || row.State   || '').trim() || null;
+    const zip_code = (row.zip_code || row.zip || row.Zip || row['Zip Code'] || '').trim() || null;
+    const phone   = (row.phone   || row.Phone   || '').trim() || null;
+    const website = (row.website || row.Website || '').trim() || null;
+    const notes   = (row.notes   || row.Notes   || '').trim() || null;
+
+    try {
+      const [existing] = await db.query('SELECT id FROM institutions WHERE name = ? LIMIT 1', [name]);
+      if (existing.length > 0) { skipped++; continue; }
+      await db.query(`
+        INSERT INTO institutions (name, institution_type, relationship_status, address, city, state, zip_code, phone, website, notes)
+        VALUES (?,?,?,?,?,?,?,?,?,?)
+      `, [name, institution_type, relationship_status, address, city, state, zip_code, phone, website, notes]);
+      added++;
+    } catch (_) {
+      errors++;
+    }
+  }
+
+  const msg = `Institutions imported: ${added} added, ${skipped} skipped (already exist or blank name)${errors ? ', ' + errors + ' errors' : ''}.`;
+  req.flash('success', msg);
+  res.redirect('/institutions');
+});
+
 module.exports = router;
