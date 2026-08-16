@@ -5,6 +5,14 @@ const { requireLogin } = require('../middleware/auth');
 
 router.use(requireLogin);
 
+// Communications used to require an institution — a contact with no
+// institution linked couldn't have anything logged against them. Relaxed
+// so a call/email/meeting can be logged straight from a Contact's page
+// even when they aren't tied to an org yet.
+db.query('ALTER TABLE communications MODIFY COLUMN institution_id INT DEFAULT NULL').catch(() => {});
+
+const COMM_TYPES = ['Email', 'Call', 'Meeting', 'Other'];
+
 router.get('/', async (req, res) => {
   const { q, institution_id } = req.query;
   let where = ['c.is_active = 1'];
@@ -47,7 +55,45 @@ router.get('/:id', async (req, res) => {
     WHERE c.id = ?
   `, [req.params.id]);
   if (!contact) { req.flash('error', 'Not found.'); return res.redirect('/contacts'); }
-  res.render('contacts/detail', { title: `${contact.first_name} ${contact.last_name}`, contact });
+
+  const [communications] = await db.query(
+    'SELECT * FROM communications WHERE contact_id = ? ORDER BY logged_at DESC, created_at DESC',
+    [req.params.id]
+  );
+
+  res.render('contacts/detail', {
+    title: `${contact.first_name} ${contact.last_name}`, contact, communications, commTypes: COMM_TYPES
+  });
+});
+
+// Log a communication (email/call/meeting) with this contact. Also tagged
+// with their institution_id (if they have one) so it shows up on that
+// institution's Communication Log too, not just here.
+router.post('/:id/communications', async (req, res) => {
+  const [[contact]] = await db.query('SELECT institution_id FROM contacts WHERE id = ?', [req.params.id]);
+  if (!contact) { req.flash('error', 'Not found.'); return res.redirect('/contacts'); }
+
+  const { comm_type, direction, subject, notes, logged_at } = req.body;
+  await db.query(`
+    INSERT INTO communications (institution_id, contact_id, comm_type, direction, subject, notes, logged_at)
+    VALUES (?,?,?,?,?,?,?)
+  `, [
+    contact.institution_id || null,
+    req.params.id,
+    COMM_TYPES.includes(comm_type) ? comm_type : 'Email',
+    direction === 'Inbound' ? 'Inbound' : 'Outbound',
+    subject || null,
+    notes || null,
+    logged_at || new Date().toISOString().split('T')[0]
+  ]);
+  req.flash('success', 'Communication logged.');
+  res.redirect(`/contacts/${req.params.id}#communications`);
+});
+
+router.post('/:id/communications/:commId/delete', async (req, res) => {
+  await db.query('DELETE FROM communications WHERE id = ? AND contact_id = ?', [req.params.commId, req.params.id]);
+  req.flash('success', 'Communication log entry removed.');
+  res.redirect(`/contacts/${req.params.id}#communications`);
 });
 
 router.get('/:id/edit', async (req, res) => {

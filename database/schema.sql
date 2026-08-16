@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS contacts (
 
 CREATE TABLE IF NOT EXISTS communications (
   id             INT AUTO_INCREMENT PRIMARY KEY,
-  institution_id INT          NOT NULL,
+  institution_id INT          DEFAULT NULL,
   contact_id     INT          DEFAULT NULL,
   comm_type      ENUM('Email','Call','Meeting','Other') NOT NULL DEFAULT 'Email',
   direction      ENUM('Outbound','Inbound') NOT NULL DEFAULT 'Outbound',

@@ -6,7 +6,7 @@
 <section class="card">
   <dl class="detail-list">
     <dt>Title / Role</dt><dd><%= contact.title || '—' %></dd>
-    <dt>Institution</dt><dd><%= contact.institution_name || '—' %></dd>
+    <dt>Institution</dt><dd><% if (contact.institution_id) { %><a href="/institutions/<%= contact.institution_id %>"><%= contact.institution_name %></a><% } else { %>—<% } %></dd>
     <dt>Email</dt><dd><% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%= contact.email %></a><% } else { %>—<% } %></dd>
     <dt>Phone</dt><dd><%= contact.phone || '—' %></dd>
     <dt>LinkedIn</dt><dd><% if (contact.linkedin) { %><a href="<%= contact.linkedin %>" target="_blank" rel="noopener"><%= contact.linkedin %></a><% } else { %>—<% } %></dd>
@@ -16,4 +16,63 @@
   <form action="/contacts/<%= contact.id %>/delete" method="POST" onsubmit="return confirm('Delete this contact? This cannot be undone.')" style="margin-top:1.5rem;">
     <button type="submit" class="btn btn-danger">Delete Contact</button>
   </form>
+</section>
+
+<!-- Communication log (emails, calls, meetings) with this contact -->
+<section class="card" style="margin-top:1rem" id="communications">
+  <div class="card-header">
+    <h3>Communication Log (<%= communications.length %>)</h3>
+  </div>
+
+  <form action="/contacts/<%= contact.id %>/communications" method="POST" class="comm-log-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select name="comm_type">
+          <% commTypes.forEach(function(t) { %><option value="<%= t %>"><%= t %></option><% }); %>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Direction</label>
+        <select name="direction">
+          <option value="Outbound">Outbound</option>
+          <option value="Inbound">Inbound</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="logged_at" value="<%= new Date().toISOString().split('T')[0] %>" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Subject / Summary</label>
+      <input type="text" name="subject" placeholder="e.g. Intro call re: digitization project">
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea name="notes" rows="2" placeholder="What was discussed, next steps, etc."></textarea>
+    </div>
+    <button type="submit" class="btn btn-secondary btn-sm">Log Communication</button>
+  </form>
+
+  <% if (communications.length === 0) { %>
+    <p class="empty-state">No communications logged yet.</p>
+  <% } else { %>
+    <ul class="comm-log-list">
+      <% communications.forEach(function(c) { %>
+        <li class="comm-log-item">
+          <div class="comm-log-header">
+            <span class="badge badge--<%= c.comm_type.toLowerCase() %>"><%= c.comm_type %></span>
+            <span class="comm-log-direction"><%= c.direction %></span>
+            <span class="comm-log-date"><%= new Date(c.logged_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) %></span>
+            <form action="/contacts/<%= contact.id %>/communications/<%= c.id %>/delete" method="POST" style="display:inline;margin-left:auto;">
+              <button type="submit" class="btn-link btn-link--muted" title="Remove this entry" onclick="return confirm('Remove this communication log entry?')">Remove</button>
+            </form>
+          </div>
+          <% if (c.subject) { %><div class="comm-log-subject"><%= c.subject %></div><% } %>
+          <% if (c.notes) { %><div class="comm-log-notes"><%= c.notes %></div><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
 </section>
