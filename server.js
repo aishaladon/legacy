@@ -103,12 +103,12 @@ app.use(async (req, res, next) => {
       db.query('SELECT COUNT(*) AS c FROM opportunities'),
       db.query("SELECT COUNT(*) AS c FROM opportunities WHERE opportunity_type = 'Government Contract'"),
       db.query("SELECT COUNT(*) AS c FROM opportunities WHERE opportunity_type = 'Grant'"),
-      db.query("SELECT COUNT(*) AS c FROM pipeline WHERE stage NOT IN ('Awarded','Lost','Withdrawn')"),
-      db.query("SELECT COUNT(*) AS c FROM projects WHERE status = 'Active'"),
+      db.query('SELECT COUNT(*) AS c FROM pipeline'),
+      db.query('SELECT COUNT(*) AS c FROM projects'),
       db.query('SELECT COUNT(*) AS c FROM award_history'),
-      db.query('SELECT COUNT(*) AS c FROM institutions WHERE is_active = 1'),
-      db.query('SELECT COUNT(*) AS c FROM contacts WHERE is_active = 1'),
-      db.query('SELECT COUNT(*) AS c FROM funders WHERE is_active = 1'),
+      db.query('SELECT COUNT(*) AS c FROM institutions'),
+      db.query('SELECT COUNT(*) AS c FROM contacts'),
+      db.query('SELECT COUNT(*) AS c FROM funders'),
       db.query("SELECT name, value FROM user_settings WHERE name IN ('company_owner_name','company_business_name')")
     ]);
     res.locals.navCounts = {
@@ -130,6 +130,7 @@ app.use(async (req, res, next) => {
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/getting_started'));
 app.use('/', require('./routes/dashboard'));
+app.use('/search', require('./routes/search'));
 app.use('/opportunities', require('./routes/opportunities'));
 app.use('/sam-search', require('./routes/sam_search'));
 app.use('/grants-search', require('./routes/grants_search'));

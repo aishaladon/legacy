@@ -1,0 +1,93 @@
+<div class="page-header">
+  <h2>Search</h2>
+</div>
+
+<form class="filter-bar" method="GET" action="/search">
+  <input type="text" name="q" value="<%= q %>" placeholder="Search notices, agencies, NAICS, contacts…" class="filter-input" autofocus>
+  <button type="submit" class="btn btn-secondary">Search</button>
+</form>
+
+<% if (!q) { %>
+  <p class="empty-state">Enter a search term above — this searches across Opportunities, Institutions, Contacts, and Funders at once.</p>
+<% } else if (total === 0) { %>
+  <p class="empty-state">No matches for "<%= q %>" in Opportunities, Institutions, Contacts, or Funders.</p>
+<% } else { %>
+  <p class="page-desc"><%= total %> result<%= total === 1 ? '' : 's' %> for "<%= q %>"</p>
+
+  <% if (results.opportunities.length > 0) { %>
+    <h3 class="form-section-title">Opportunities (<%= results.opportunities.length %>)</h3>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Institution</th><th>Agency</th><th>Due</th></tr></thead>
+        <tbody>
+          <% results.opportunities.forEach(function(o) { %>
+            <tr>
+              <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
+              <td><span class="badge"><%= o.opportunity_type === 'Job' ? 'Freelance/Gig' : o.opportunity_type %></span></td>
+              <td><%= o.status %></td>
+              <td><%= o.institution_name || '—' %></td>
+              <td><%= o.agency || '—' %></td>
+              <td><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+  <% if (results.institutions.length > 0) { %>
+    <h3 class="form-section-title">Institutions (<%= results.institutions.length %>)</h3>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Status</th><th>Type</th><th>City</th><th>State</th></tr></thead>
+        <tbody>
+          <% results.institutions.forEach(function(i) { %>
+            <tr>
+              <td><a href="/institutions/<%= i.id %>"><%= i.name %></a></td>
+              <td><%= i.relationship_status %></td>
+              <td><%= i.institution_type || '—' %></td>
+              <td><%= i.city || '—' %></td>
+              <td><%= i.state || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+  <% if (results.contacts.length > 0) { %>
+    <h3 class="form-section-title">Contacts (<%= results.contacts.length %>)</h3>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Title</th><th>Institution</th><th>Email</th></tr></thead>
+        <tbody>
+          <% results.contacts.forEach(function(c) { %>
+            <tr>
+              <td><a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a></td>
+              <td><%= c.title || '—' %></td>
+              <td><%= c.institution_name || '—' %></td>
+              <td><%= c.email || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+  <% if (results.funders.length > 0) { %>
+    <h3 class="form-section-title">Funders (<%= results.funders.length %>)</h3>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Type</th></tr></thead>
+        <tbody>
+          <% results.funders.forEach(function(f) { %>
+            <tr>
+              <td><a href="/funders/<%= f.id %>"><%= f.name %></a></td>
+              <td><%= f.funder_type %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+<% } %>

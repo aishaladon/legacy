@@ -52,7 +52,12 @@ router.get('/', async (req, res) => {
 
 router.get('/new', async (req, res) => {
   const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
-  res.render('opportunities/form', { title: 'Add Opportunity', opportunity: null, institutions });
+  const [contacts] = await db.query(`
+    SELECT c.id, c.first_name, c.last_name, i.name AS institution_name
+    FROM contacts c LEFT JOIN institutions i ON c.institution_id = i.id
+    ORDER BY c.first_name, c.last_name
+  `);
+  res.render('opportunities/form', { title: 'Add Opportunity', opportunity: null, institutions, contacts });
 });
 
 router.get('/evaluate', async (req, res) => {
@@ -240,7 +245,7 @@ ${text}`
 router.post('/', async (req, res) => {
   const {
     title, opportunity_type, source, source_url, posted_date, due_date,
-    amount_min, amount_max, description, region, status, is_starred, institution_id
+    amount_min, amount_max, description, region, status, is_starred, institution_id, contact_id
   } = req.body;
 
   if (!title || !title.trim()) {
@@ -251,14 +256,14 @@ router.post('/', async (req, res) => {
   const [result] = await db.query(`
     INSERT INTO opportunities
       (title, opportunity_type, source, source_url, posted_date, due_date,
-       amount_min, amount_max, description, region, status, is_starred, institution_id)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+       amount_min, amount_max, description, region, status, is_starred, institution_id, contact_id)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `, [
     title, opportunity_type, source || null, source_url || null,
     posted_date || null, due_date || null,
     amount_min || null, amount_max || null,
     description || null, region || null,
-    status || 'New', is_starred ? 1 : 0, institution_id || null
+    status || 'New', is_starred ? 1 : 0, institution_id || null, contact_id || null
   ]);
 
   await db.query(
@@ -306,13 +311,18 @@ router.get('/:id/edit', async (req, res) => {
   const [[opportunity]] = await db.query('SELECT * FROM opportunities WHERE id = ?', [req.params.id]);
   if (!opportunity) { req.flash('error', 'Not found.'); return res.redirect('/opportunities'); }
   const [institutions] = await db.query('SELECT id, name FROM institutions WHERE is_active=1 ORDER BY name');
-  res.render('opportunities/form', { title: 'Edit Opportunity', opportunity, institutions });
+  const [contacts] = await db.query(`
+    SELECT c.id, c.first_name, c.last_name, i.name AS institution_name
+    FROM contacts c LEFT JOIN institutions i ON c.institution_id = i.id
+    ORDER BY c.first_name, c.last_name
+  `);
+  res.render('opportunities/form', { title: 'Edit Opportunity', opportunity, institutions, contacts });
 });
 
 router.post('/:id/edit', async (req, res) => {
   const {
     title, opportunity_type, source, source_url, posted_date, due_date,
-    amount_min, amount_max, description, region, status, is_starred, institution_id
+    amount_min, amount_max, description, region, status, is_starred, institution_id, contact_id
   } = req.body;
 
   if (!title || !title.trim()) {
@@ -324,14 +334,14 @@ router.post('/:id/edit', async (req, res) => {
     UPDATE opportunities SET
       title=?, opportunity_type=?, source=?, source_url=?, posted_date=?,
       due_date=?, amount_min=?, amount_max=?, description=?, region=?,
-      status=?, is_starred=?, institution_id=?
+      status=?, is_starred=?, institution_id=?, contact_id=?
     WHERE id=?
   `, [
     title, opportunity_type, source || null, source_url || null,
     posted_date || null, due_date || null,
     amount_min || null, amount_max || null,
     description || null, region || null,
-    status, is_starred ? 1 : 0, institution_id || null,
+    status, is_starred ? 1 : 0, institution_id || null, contact_id || null,
     req.params.id
   ]);
 

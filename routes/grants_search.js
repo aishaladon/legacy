@@ -3,21 +3,9 @@ const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const { scoreOpportunity } = require('../services/alignmentScorer');
+const { decodeHtmlEntities } = require('../utils/cleanExternalText');
 
 router.use(requireLogin);
-
-// Grants.gov's titles sometimes come through with literal HTML entities
-// (e.g. "&amp;", "&nbsp;") already baked into the text, which the view then
-// escapes again on output — decode here so it only gets escaped once.
-const HTML_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
-function decodeHtmlEntities(str) {
-  return String(str || '')
-    .replace(/&(amp|lt|gt|quot|apos|nbsp);/g, (m, name) => HTML_ENTITIES[name])
-    .replace(/&#(\d+);/g, (m, code) => String.fromCharCode(parseInt(code, 10)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (m, code) => String.fromCharCode(parseInt(code, 16)))
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 // Grants.gov's dates render fine on the search results page (new Date()
 // parses "MM/DD/YYYY" leniently), but that same raw string was being

@@ -21,6 +21,15 @@
         <% }); %>
       </select>
     </div>
+    <div class="form-group form-group--wide">
+      <label>Contact</label>
+      <select name="contact_id">
+        <option value="">— Not linked —</option>
+        <% contacts.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= (opportunity && opportunity.contact_id == c.id) ? 'selected' : '' %>><%= c.first_name %> <%= c.last_name %><%= c.institution_name ? ' (' + c.institution_name + ')' : '' %></option>
+        <% }); %>
+      </select>
+    </div>
   </div>
 
   <div class="form-row">

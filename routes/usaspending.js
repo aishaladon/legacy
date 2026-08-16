@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const { cleanExternalText } = require('../utils/cleanExternalText');
 
 router.use(requireLogin);
 
@@ -70,7 +71,7 @@ router.get('/', async (req, res) => {
         amount:       r['Award Amount'] || 0,
         agency:       r['Awarding Agency'] || '',
         subAgency:    r['Awarding Sub Agency'] || '',
-        description:  r['Description'] || '',
+        description:  cleanExternalText(r['Description'] || ''),
         state:        r['Place of Performance State Code'] || '',
         naicsCode:    r['NAICS Code'] || ''
       }));

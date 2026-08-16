@@ -26,7 +26,7 @@
         <a href="/opportunities" class="top-tab <%= _isTab('/opportunities') ? 'active' : '' %>">Opportunities</a>
         <a href="/contacts" class="top-tab <%= _isTab('/contacts') ? 'active' : '' %>">Contacts</a>
       </nav>
-      <form action="/opportunities" method="GET" class="topbar-search">
+      <form action="/search" method="GET" class="topbar-search">
         <input type="text" name="q" placeholder="Search notices, agencies, NAICS, contacts&hellip;" class="input">
       </form>
       <a href="<%= _newRecordHref %>" class="btn btn-primary btn-sm">+ New record</a>

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const { cleanExternalText } = require('../utils/cleanExternalText');
 
 router.use(requireLogin);
 
@@ -77,7 +78,7 @@ router.get('/', async (req, res) => {
         endDate:     r['End Date']     || '',
         amount:      r['Award Amount'] || 0,
         subAgency:   r['Awarding Sub Agency'] || '',
-        description: r['Description'] || '',
+        description: cleanExternalText(r['Description'] || ''),
         state:       r['Place of Performance State Code'] || '',
         city:        r['Place of Performance City Name'] || ''
       }));
