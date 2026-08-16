@@ -7,6 +7,7 @@ const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
 const { extractResponseText } = require('../utils/claudeResponseText');
 const { scoreOpportunity } = require('../services/alignmentScorer');
+const { getCompanyProfile } = require('../utils/companyProfile');
 
 router.use(requireLogin);
 
@@ -67,14 +68,7 @@ router.post('/:id/draft-proposal-api', async (req, res) => {
   const apiKey = await getClaudeApiKey();
   if (!apiKey) return res.status(500).json({ error: 'Claude API key not set. Go to Settings → API Keys to add it.' });
 
-  // Get company info from settings
-  let companyInfo = {};
-  try {
-    const [settings] = await db.query("SELECT name, value FROM user_settings WHERE name IN ('company_name', 'company_mission', 'company_naics_codes', 'company_capabilities', 'company_background')");
-    settings.forEach(s => { companyInfo[s.name] = s.value; });
-  } catch (dbErr) {
-    // company settings not found, use defaults
-  }
+  const company = await getCompanyProfile();
 
   try {
     const client = new Anthropic({ apiKey });
@@ -82,10 +76,12 @@ router.post('/:id/draft-proposal-api', async (req, res) => {
     const prompt = `You are drafting a professional RFP response for a government contracting opportunity.
 
 COMPANY INFO:
-Name: ${companyInfo.company_name || 'Legacy Planning & Preservation Ltd.'}
-Mission: ${companyInfo.company_mission || ''}
-Capabilities: ${companyInfo.company_capabilities || ''}
-Background: ${companyInfo.company_background || ''}
+Name: ${company.name}
+NAICS Codes: ${company.naicsSummary}
+Certifications: ${company.certifications || '(not specified)'}
+
+CAPABILITY STATEMENT / BOILERPLATE:
+${company.capabilityStatement}
 
 OPPORTUNITY:
 Title: ${opp.title}

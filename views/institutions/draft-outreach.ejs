@@ -1,0 +1,136 @@
+<div class="page-header">
+  <h2>Draft Outreach Email</h2>
+  <a href="/institutions/<%= institution.id %>" class="btn btn-secondary">← Back</a>
+</div>
+
+<p class="page-desc">Claude will draft a personalized introduction to <strong><%= institution.name %></strong> using your capability statement, NAICS codes, and certifications. Review and edit before sending — nothing is sent from here, you'll open it in Gmail (or copy/paste) to send it yourself.</p>
+
+<section class="card">
+  <h3><%= institution.name %></h3>
+  <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">
+    <%= institution.institution_type || 'Institution' %><% if (institution.city || institution.state) { %> · <%= [institution.city, institution.state].filter(Boolean).join(', ') %><% } %> · <%= institution.relationship_status %>
+  </div>
+
+  <div class="form-group">
+    <label>Addressing (optional)</label>
+    <input type="text" id="contactName" placeholder="e.g. Dr. Jane Smith" value="<%= primaryContact ? (primaryContact.first_name + ' ' + primaryContact.last_name) : '' %>">
+  </div>
+  <div class="form-group">
+    <label>Anything specific to mention? (optional)</label>
+    <textarea id="extraNotes" rows="2" placeholder="e.g. we met at the AAM conference, or focus on their upcoming digitization project"></textarea>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+    <button id="draftBtn" class="btn btn-primary">Generate Draft with AI</button>
+  </div>
+</section>
+
+<div id="loadingSpinner" style="display:none;text-align:center;margin:2rem 0;">
+  <div style="display:inline-block;border:3px solid var(--bg-subtle);border-top:3px solid var(--text-primary);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;"></div>
+  <p style="margin-top:.5rem;color:var(--text-muted);">Claude is drafting your outreach email…</p>
+</div>
+
+<div id="draftSection" style="display:none;margin-top:2rem;">
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h3>Draft</h3>
+      <span style="font-size:.85rem;color:var(--text-muted);">AI-generated • Review & customize before sending</span>
+    </div>
+
+    <div class="form-group">
+      <label>To</label>
+      <input type="email" id="draftTo" value="<%= primaryContact && primaryContact.email ? primaryContact.email : '' %>" placeholder="recipient@institution.org">
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" id="draftSubject">
+    </div>
+    <div class="form-group">
+      <label>Body</label>
+      <textarea id="draftBody" style="width:100%;font-family:inherit;font-size:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:4px;resize:vertical;height:320px;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;">
+      <button id="gmailBtn" class="btn btn-primary">✉️ Open in Gmail</button>
+      <button id="copyBtn" class="btn btn-secondary">📋 Copy to Clipboard</button>
+      <button id="logBtn" class="btn btn-secondary">Log as Sent</button>
+    </div>
+
+    <p style="font-size:.85rem;color:var(--text-muted);margin-top:1rem;">
+      💡 If the body is long, "Open in Gmail" may truncate it — Copy to Clipboard and paste manually is more reliable for longer drafts.
+    </p>
+  </section>
+</div>
+
+<form id="logForm" action="/institutions/<%= institution.id %>/communications" method="POST" style="display:none;">
+  <input type="hidden" name="comm_type" value="Email">
+  <input type="hidden" name="direction" value="Outbound">
+  <input type="hidden" name="subject" id="logSubject">
+  <input type="hidden" name="notes" id="logNotes">
+  <input type="hidden" name="logged_at" value="<%= new Date().toISOString().split('T')[0] %>">
+</form>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  document.getElementById('draftBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('draftSection').style.display = 'none';
+
+    try {
+      const res = await fetch('/institutions/<%= institution.id %>/draft-outreach-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contact_name: document.getElementById('contactName').value,
+          notes: document.getElementById('extraNotes').value
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Draft generation failed');
+      }
+
+      const data = await res.json();
+      document.getElementById('draftSubject').value = data.subject || '';
+      document.getElementById('draftBody').value = data.body || '';
+
+      document.getElementById('loadingSpinner').style.display = 'none';
+      document.getElementById('draftSection').style.display = 'block';
+    } catch (err) {
+      document.getElementById('loadingSpinner').style.display = 'none';
+      alert('Error: ' + err.message);
+    }
+  });
+
+  document.getElementById('gmailBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    const to = encodeURIComponent(document.getElementById('draftTo').value || '');
+    const su = encodeURIComponent(document.getElementById('draftSubject').value || '');
+    const body = encodeURIComponent(document.getElementById('draftBody').value || '');
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`, '_blank');
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    navigator.clipboard.writeText(document.getElementById('draftBody').value).then(() => {
+      const btn = e.target;
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  });
+
+  document.getElementById('logBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('logSubject').value = document.getElementById('draftSubject').value;
+    document.getElementById('logNotes').value = 'Outreach email sent.\n\n' + document.getElementById('draftBody').value;
+    document.getElementById('logForm').submit();
+  });
+</script>

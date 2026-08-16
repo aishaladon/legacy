@@ -218,6 +218,18 @@ a:hover { text-decoration: underline; }
 .activity-item:last-child { border-bottom: none; }
 .activity-time { color: var(--text-muted); white-space: nowrap; }
 
+/* ── Communication log ──────────────────────────────────── */
+.comm-log-form { padding: .85rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; }
+.comm-log-form .form-row { margin-bottom: .5rem; }
+.comm-log-form .form-group { margin-bottom: .5rem; min-width: 8rem; }
+.comm-log-list { list-style: none; }
+.comm-log-item { padding: .6rem 0; border-bottom: 1px solid var(--border); }
+.comm-log-item:last-child { border-bottom: none; }
+.comm-log-header { display: flex; align-items: center; gap: .6rem; font-size: .8rem; color: var(--text-muted); }
+.comm-log-direction { text-transform: uppercase; letter-spacing: .03em; font-size: .7rem; }
+.comm-log-subject { font-weight: 600; margin-top: .3rem; font-size: .9rem; }
+.comm-log-notes { margin-top: .2rem; font-size: .85rem; color: var(--text-muted); white-space: pre-wrap; }
+
 /* ── Tables ─────────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
@@ -254,6 +266,10 @@ a:hover { text-decoration: underline; }
 .badge--low    { background: #e2e8f0; color: #718096; }
 .badge--active   { background: #c6f6d5; color: #276749; }
 .badge--inactive { background: #e2e8f0; color: #718096; }
+.badge--email   { background: #bee3f8; color: #2a69ac; }
+.badge--call    { background: #fefcbf; color: #744210; }
+.badge--meeting { background: #e9d8fd; color: #553c9a; }
+.badge--other   { background: #e2e8f0; color: #718096; }
 .badge--sent   { background: #c6f6d5; color: #276749; }
 .badge--failed { background: #fed7d7; color: #9b2c2c; }
 .badge--template { background: #fefcbf; color: #744210; }

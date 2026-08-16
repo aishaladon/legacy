@@ -2,8 +2,14 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
+const Anthropic = require('@anthropic-ai/sdk');
+const { getClaudeApiKey } = require('../utils/claudeApiKey');
+const { extractResponseText } = require('../utils/claudeResponseText');
+const { getCompanyProfile } = require('../utils/companyProfile');
 
 router.use(requireLogin);
+
+const COMM_TYPES = ['Email', 'Call', 'Meeting', 'Other'];
 
 // Auto-migrate relationship_status column for existing installs
 db.query(`
@@ -124,10 +130,121 @@ router.get('/:id', async (req, res) => {
     'SELECT id, title, project_type, status, start_date, end_date, contract_value, contract_number FROM projects WHERE institution_id = ? ORDER BY start_date DESC',
     [req.params.id]
   );
+  const [communications] = await db.query(`
+    SELECT c.*, ct.first_name, ct.last_name
+    FROM communications c
+    LEFT JOIN contacts ct ON ct.id = c.contact_id
+    WHERE c.institution_id = ?
+    ORDER BY c.logged_at DESC, c.created_at DESC
+  `, [req.params.id]);
 
   res.render('institutions/detail', {
-    title: institution.name, institution, contacts, awards, opportunities, projects
+    title: institution.name, institution, contacts, awards, opportunities, projects,
+    communications, commTypes: COMM_TYPES
   });
+});
+
+// Log a communication (email/call/meeting) with this institution
+router.post('/:id/communications', async (req, res) => {
+  const { comm_type, direction, contact_id, subject, notes, logged_at } = req.body;
+  await db.query(`
+    INSERT INTO communications (institution_id, contact_id, comm_type, direction, subject, notes, logged_at)
+    VALUES (?,?,?,?,?,?,?)
+  `, [
+    req.params.id,
+    contact_id || null,
+    COMM_TYPES.includes(comm_type) ? comm_type : 'Email',
+    direction === 'Inbound' ? 'Inbound' : 'Outbound',
+    subject || null,
+    notes || null,
+    logged_at || new Date().toISOString().split('T')[0]
+  ]);
+  req.flash('success', 'Communication logged.');
+  res.redirect(`/institutions/${req.params.id}#communications`);
+});
+
+router.post('/:id/communications/:commId/delete', async (req, res) => {
+  await db.query('DELETE FROM communications WHERE id = ? AND institution_id = ?', [req.params.commId, req.params.id]);
+  req.flash('success', 'Communication log entry removed.');
+  res.redirect(`/institutions/${req.params.id}#communications`);
+});
+
+// Draft a personalized outreach email with Claude, using the company's
+// capability statement/NAICS/certifications and this institution's info.
+router.get('/:id/draft-outreach', async (req, res) => {
+  const [[institution]] = await db.query('SELECT * FROM institutions WHERE id = ?', [req.params.id]);
+  if (!institution) { req.flash('error', 'Not found.'); return res.redirect('/institutions'); }
+  const [[primaryContact]] = await db.query(
+    'SELECT * FROM contacts WHERE institution_id = ? AND is_active=1 ORDER BY created_at ASC LIMIT 1',
+    [req.params.id]
+  );
+  res.render('institutions/draft-outreach', { title: 'Draft Outreach Email', institution, primaryContact });
+});
+
+router.post('/:id/draft-outreach-api', async (req, res) => {
+  const [[institution]] = await db.query('SELECT * FROM institutions WHERE id = ?', [req.params.id]);
+  if (!institution) return res.status(404).json({ error: 'Institution not found.' });
+
+  const apiKey = await getClaudeApiKey();
+  if (!apiKey) return res.status(500).json({ error: 'Claude API key not set. Go to Settings → API Keys to add it.' });
+
+  const company = await getCompanyProfile();
+  const { contact_name, notes: extraNotes } = req.body;
+
+  try {
+    const client = new Anthropic({ apiKey });
+
+    const prompt = `Draft a short, professional introductory outreach email from ${company.name} to a target institution, aimed at opening a relationship for future government contract or grant work.
+
+OUR COMPANY:
+Name: ${company.name}
+Website: ${company.website || '(not specified)'}
+NAICS Codes: ${company.naicsSummary}
+Certifications: ${company.certifications || '(not specified)'}
+
+CAPABILITY STATEMENT / BOILERPLATE (draw on this for what to highlight, don't paste it verbatim):
+${company.capabilityStatement}
+
+TARGET INSTITUTION:
+Name: ${institution.name}
+Type: ${institution.institution_type || '(not specified)'}
+Location: ${[institution.city, institution.state].filter(Boolean).join(', ') || '(not specified)'}
+Relationship status: ${institution.relationship_status}
+Notes on file: ${institution.notes || '(none)'}
+${contact_name ? `Addressing: ${contact_name}` : 'No specific contact name — address generically (e.g. "Hello,").'}
+${extraNotes ? `Additional context from the user for this specific email: ${extraNotes}` : ''}
+
+Write a concise (150-250 word) email that:
+1. Briefly introduces the company and what it does
+2. Names 1-2 specific capabilities relevant to what this type of institution would need (based on the capability statement and the institution's type/notes — don't just list everything)
+3. Mentions the website as a way to learn more
+4. Ends with a low-pressure call to action (e.g. a short call, or happy to send the full capability statement)
+5. Is warm but professional, not salesy or generic-sounding
+
+Respond ONLY with valid JSON (no markdown): {"subject": "...", "body": "..."}. The body should use \\n for line breaks, no markdown formatting, ready to paste into an email.`;
+
+    const response = await client.messages.create({
+      model: 'claude-opus-5',
+      max_tokens: 1200,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const content = extractResponseText(response).trim();
+    let draft;
+    try {
+      draft = JSON.parse(content);
+    } catch (e) {
+      return res.status(500).json({ error: 'Could not parse the draft — try again.' });
+    }
+
+    res.json(draft);
+  } catch (err) {
+    console.error('Claude API error:', err);
+    let errorMsg = 'Draft generation failed. Please try again.';
+    if (err.status === 401) errorMsg = 'Invalid Claude API key — check it in Settings → API Keys.';
+    else if (err.status === 429) errorMsg = 'Rate limited — too many requests. Wait a moment and try again.';
+    res.status(500).json({ error: errorMsg });
+  }
 });
 
 router.get('/:id/edit', async (req, res) => {

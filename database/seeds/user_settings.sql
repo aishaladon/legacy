@@ -17,4 +17,5 @@ INSERT IGNORE INTO user_settings (name, value, setting_type, description) VALUES
 ('company_cage',                  '9XVN3',                     'Text',   'CAGE code — used in bid prep'),
 ('company_uei',                   'W9MNGXEFKBS9',              'Text',   'UEI — used in SAM.gov queries and bid prep'),
 ('company_certifications',        'WOSB, EDWOSB, MBE',         'Text',   'Active certifications'),
+('company_website',               '',                          'Text',   'Company website — included in outreach email drafts'),
 ('sam_registration_renewal_date', '',                          'Text',   'SAM.gov registration expiration date (YYYY-MM-DD)');

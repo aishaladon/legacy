@@ -5,6 +5,7 @@ const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
 const Anthropic = require('@anthropic-ai/sdk');
 const { extractResponseText } = require('../utils/claudeResponseText');
+const { getCompanyProfile } = require('../utils/companyProfile');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -122,44 +123,7 @@ router.post('/claude-chat', requireLogin, upload.single('file'), async (req, res
 
     const client = new Anthropic({ apiKey });
 
-    // Pull real company context — these three sources are where the data
-    // actually lives (a previous version of this prompt queried user_settings
-    // for company_name/company_naics_codes/company_capabilities/
-    // company_background, none of which exist as setting names, so Claude
-    // was always told "(not specified)" regardless of what was configured).
-    let companyInfo = {};
-    try {
-      const [settings] = await db.query(
-        "SELECT name, value FROM user_settings WHERE name IN ('company_cage', 'company_uei', 'company_certifications')"
-      );
-      settings.forEach(s => { companyInfo[s.name] = s.value; });
-    } catch (dbErr) {
-      // settings table not reachable, fall through with defaults below
-    }
-
-    let naicsSummary = '(not specified)';
-    try {
-      const [naics] = await db.query(
-        'SELECT code, description, is_primary FROM naics_codes ORDER BY is_primary DESC, code'
-      );
-      if (naics.length > 0) {
-        naicsSummary = naics
-          .map(n => `${n.code} (${n.description})${n.is_primary ? ' [primary]' : ''}`)
-          .join(', ');
-      }
-    } catch (dbErr) {
-      // naics_codes table not reachable, fall through with default above
-    }
-
-    let capabilityStatement = '(not specified — add one in Bid Writing Guides, marked as a Template)';
-    try {
-      const [[guide]] = await db.query(
-        "SELECT content FROM bid_writing_guides WHERE is_template = 1 ORDER BY sort_order LIMIT 1"
-      );
-      if (guide) capabilityStatement = guide.content;
-    } catch (dbErr) {
-      // bid_writing_guides table not reachable, fall through with default above
-    }
+    const company = await getCompanyProfile();
 
     // Active pipeline so Claude can actually answer "what's in my
     // opportunities/grants" instead of only knowing static company profile
@@ -195,14 +159,14 @@ router.post('/claude-chat', requireLogin, upload.single('file'), async (req, res
     const systemPrompt = `You are a government contracting expert helping Legacy Planning & Preservation Ltd. evaluate opportunities and draft proposals.
 
 COMPANY INFO:
-Name: Legacy Planning & Preservation Ltd.
-CAGE Code: ${companyInfo.company_cage || '(not specified)'}
-UEI: ${companyInfo.company_uei || '(not specified)'}
-Certifications: ${companyInfo.company_certifications || '(not specified)'}
-NAICS Codes: ${naicsSummary}
+Name: ${company.name}
+CAGE Code: ${company.cage || '(not specified)'}
+UEI: ${company.uei || '(not specified)'}
+Certifications: ${company.certifications || '(not specified)'}
+NAICS Codes: ${company.naicsSummary}
 
 CAPABILITY STATEMENT / BOILERPLATE:
-${capabilityStatement}
+${company.capabilityStatement}
 
 ACTIVE OPPORTUNITIES (status not Closed/Not Pursuing, up to 40, soonest due date first):
 ${opportunitiesSummary}

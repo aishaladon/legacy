@@ -85,6 +85,20 @@ CREATE TABLE IF NOT EXISTS contacts (
   FOREIGN KEY (institution_id) REFERENCES institutions(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS communications (
+  id             INT AUTO_INCREMENT PRIMARY KEY,
+  institution_id INT          NOT NULL,
+  contact_id     INT          DEFAULT NULL,
+  comm_type      ENUM('Email','Call','Meeting','Other') NOT NULL DEFAULT 'Email',
+  direction      ENUM('Outbound','Inbound') NOT NULL DEFAULT 'Outbound',
+  subject        VARCHAR(300) DEFAULT NULL,
+  notes          TEXT         DEFAULT NULL,
+  logged_at      DATE         NOT NULL,
+  created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (institution_id) REFERENCES institutions(id) ON DELETE CASCADE,
+  FOREIGN KEY (contact_id)     REFERENCES contacts(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS opportunities (
   id                INT AUTO_INCREMENT PRIMARY KEY,
   title             VARCHAR(300) NOT NULL,
