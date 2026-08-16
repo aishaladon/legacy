@@ -4,30 +4,30 @@
 </div>
 
 <div class="stat-grid">
-  <div class="stat-tile">
+  <a href="/opportunities?status=New" class="stat-tile">
     <div class="stat-value"><%= oppCounts.new_count || 0 %></div>
     <div class="stat-label">New Opportunities</div>
-  </div>
-  <div class="stat-tile">
+  </a>
+  <a href="/opportunities?status=Pursuing" class="stat-tile">
     <div class="stat-value"><%= oppCounts.pursuing || 0 %></div>
     <div class="stat-label">Pursuing</div>
-  </div>
-  <div class="stat-tile">
+  </a>
+  <a href="/opportunities?status=Submitted" class="stat-tile">
     <div class="stat-value"><%= oppCounts.submitted || 0 %></div>
     <div class="stat-label">Submitted</div>
-  </div>
-  <div class="stat-tile">
+  </a>
+  <a href="/pipeline" class="stat-tile">
     <div class="stat-value"><%= pipelineCounts.in_pipeline || 0 %></div>
     <div class="stat-label">In Pipeline</div>
-  </div>
-  <div class="stat-tile">
+  </a>
+  <a href="/projects?status=Active" class="stat-tile">
     <div class="stat-value"><%= projectCounts.active_projects || 0 %></div>
     <div class="stat-label">Active Projects</div>
-  </div>
-  <div class="stat-tile stat-tile--warn">
+  </a>
+  <a href="/opportunities?due_within=14" class="stat-tile stat-tile--warn">
     <div class="stat-value"><%= oppCounts.due_soon || 0 %></div>
     <div class="stat-label">Due in 14 Days</div>
-  </div>
+  </a>
 </div>
 
 <div class="dashboard-cols">

@@ -194,6 +194,8 @@ a:hover { text-decoration: underline; }
 .stat-value { font-size: 2rem; font-weight: 800; color: var(--brand); line-height: 1.1; }
 .stat-label { font-size: .75rem; color: var(--text-muted); margin-top: .25rem; }
 .stat-tile--warn .stat-value { color: var(--warn); }
+a.stat-tile { display: block; text-decoration: none; color: inherit; transition: box-shadow .15s, transform .15s; }
+a.stat-tile:hover { box-shadow: 0 4px 14px rgba(0,0,0,.1); transform: translateY(-2px); }
 
 .stat-inline { display: flex; gap: 1.5rem; color: var(--text-muted); font-size: .9rem; }
 .stat-inline strong { color: var(--text); }

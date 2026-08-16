@@ -12,12 +12,18 @@ const { getCompanyProfile } = require('../utils/companyProfile');
 router.use(requireLogin);
 
 router.get('/', async (req, res) => {
-  const { type, status, q } = req.query;
+  const { type, status, q, due_within } = req.query;
   let where = ['1=1'];
   const params = [];
 
   if (type) { where.push('o.opportunity_type = ?'); params.push(type); }
   if (status) { where.push('o.status = ?'); params.push(status); }
+  if (due_within) {
+    // Matches the Dashboard's "Due in 14 Days" tile count exactly —
+    // due_date within N days from today, no status filter.
+    where.push('o.due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)');
+    params.push(parseInt(due_within, 10) || 14);
+  }
   if (q) {
     // Search title, description, source, and (for government contracts)
     // agency and NAICS code — a title-only search made "no results" the
@@ -38,7 +44,7 @@ router.get('/', async (req, res) => {
   `, params);
 
   res.render('opportunities/index', {
-    title: 'All Opportunities',
+    title: due_within ? `Due in ${due_within} Days` : 'All Opportunities',
     opportunities,
     filters: { type, status, q }
   });
