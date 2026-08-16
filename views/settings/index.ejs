@@ -197,9 +197,13 @@
             <td><strong><%= n.code %></strong></td>
             <td><%= n.description %></td>
             <td><%= n.is_primary ? '★ Primary' : '—' %></td>
-            <td>
-              <form action="/settings/naics/<%= n.id %>/toggle" method="POST">
+            <td style="white-space:nowrap;">
+              <form action="/settings/naics/<%= n.id %>/toggle" method="POST" style="display:inline;">
                 <button type="submit" class="btn-link"><%= n.is_primary ? 'Unmark' : 'Mark Primary' %></button>
+              </form>
+              &nbsp;&middot;&nbsp;
+              <form action="/settings/naics/<%= n.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Remove NAICS code <%= n.code %>?')">
+                <button type="submit" class="btn-link btn-link--danger">Delete</button>
               </form>
             </td>
           </tr>

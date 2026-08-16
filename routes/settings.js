@@ -249,6 +249,12 @@ router.post('/naics/:id/toggle', async (req, res) => {
   res.redirect('/settings#naics');
 });
 
+router.post('/naics/:id/delete', async (req, res) => {
+  await db.query('DELETE FROM naics_codes WHERE id = ?', [req.params.id]);
+  req.flash('success', 'NAICS code removed.');
+  res.redirect('/settings#naics');
+});
+
 router.post('/sources/:id/toggle', async (req, res) => {
   await db.query('UPDATE data_sources SET is_active = NOT is_active WHERE id = ?', [req.params.id]);
   res.redirect('/settings#sources');
