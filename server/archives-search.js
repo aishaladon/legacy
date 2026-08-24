@@ -17,8 +17,10 @@ async function searchNARA(query, { limit = 10 } = {}) {
   });
 
   const url = `${NARA_BASE}/records?${params}`;
+  const naraHeaders = { 'Accept': 'application/json' };
+  if (process.env.NARA_API_KEY) naraHeaders['x-api-key'] = process.env.NARA_API_KEY;
   const res = await fetch(url, {
-    headers: { 'Accept': 'application/json' },
+    headers: naraHeaders,
     signal: AbortSignal.timeout(10000),
   });
 
