@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Krio Griot</title>
+<link rel="stylesheet" href="/docs/docs.css">
+<style>
+.about-hero{padding:52px 0 48px;border-bottom:1px solid var(--rule)}
+.about-hero .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mango);margin:0 0 14px}
+.about-hero h1{font-size:clamp(30px,4vw,44px);line-height:1.15;margin:0 0 18px;
+  font-weight:600;color:#fff;letter-spacing:-.015em}
+.about-hero .lead{font-size:18px;line-height:1.65;color:var(--body);max-width:56ch;margin:0}
+
+.about-body{max-width:680px}
+.about-body h2{font-size:clamp(22px,3vw,30px);line-height:1.2;font-weight:600;color:#fff;
+  margin:0 0 14px;letter-spacing:-.012em}
+.about-body h3{font-size:18px;font-weight:600;color:var(--mango);margin:0 0 10px}
+.about-body p{font-size:16.5px;line-height:1.7;color:var(--body);margin:0 0 20px}
+.about-body a{color:var(--green);text-decoration:none}
+.about-body a:hover{text-decoration:underline}
+
+.mango-metaphor{background:var(--harbour);border-left:3px solid var(--mango);
+  padding:22px 24px;border-radius:0 2px 2px 0;margin:32px 0}
+.mango-metaphor p{margin:0 0 12px;font-size:16px;line-height:1.7;color:var(--body)}
+.mango-metaphor p:last-child{margin:0}
+
+.names-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin:24px 0 32px}
+.name-card{background:var(--harbour);padding:18px;border:1px solid var(--rule)}
+.name-card .word{font-size:22px;font-weight:600;color:var(--mango);margin:0 0 6px;line-height:1.1}
+.name-card .def{font-size:14px;line-height:1.6;color:var(--body);margin:0}
+
+.aisha-links{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 0}
+.aisha-links a{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--green);
+  text-decoration:none;border:1px solid rgba(61,220,132,.3);padding:8px 14px;border-radius:2px}
+.aisha-links a:hover{border-color:var(--green);background:rgba(61,220,132,.06)}
+</style>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <div class="doc-nav-inner">
+    <a href="/" class="doc-nav-brand">
+      <svg viewBox="0 0 90 90" width="26" height="26" role="img" aria-hidden="true">
+        <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#EF9F27"/>
+        <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#D85A30"/>
+        <path d="M52 18 L55 9" stroke="#3DDC84" stroke-width="5" stroke-linecap="round"/>
+        <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#3DDC84"/>
+      </svg>
+      Krio Griot
+    </a>
+    <div class="doc-nav-links">
+      <a href="/about.html" class="active">About</a>
+      <a href="/docs/getting-started.html">Getting started</a>
+      <a href="/docs/documentation.html">Documentation</a>
+      <a href="/docs/privacy.html">Privacy</a>
+    </div>
+    <button class="doc-nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false"
+      onclick="var d=document.getElementById('nav-drawer'),o=d.classList.toggle('open');this.setAttribute('aria-expanded',o)">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="doc-nav-drawer" id="nav-drawer">
+    <a href="/about.html" class="active">About</a>
+    <a href="/docs/getting-started.html">Getting started</a>
+    <a href="/docs/documentation.html">Documentation</a>
+    <a href="/docs/privacy.html">Privacy</a>
+  </div>
+</nav>
+
+<div class="doc-wrap">
+  <header class="about-hero">
+    <p class="eyebrow">About Krio Griot</p>
+    <h1>A research tool built by a genealogist,<br>for the work that genealogists actually do.</h1>
+    <p class="lead">Krio Griot is an AI-assisted research workspace for African American and African diaspora genealogy — built to handle the specific gaps, silences, and record structures that other tools ignore.</p>
+  </header>
+
+  <div class="doc-section about-body">
+    <h2>The name</h2>
+    <div class="names-grid">
+      <div class="name-card">
+        <p class="word">Krio</p>
+        <p class="def">The language of the Sierra Leone Krio people — a creole that carries West African grammar and vocabulary into its English-based structure. It is the language of a people who survived the crossing and built a new tongue on the other side.</p>
+      </div>
+      <div class="name-card">
+        <p class="word">Griot</p>
+        <p class="def">The keeper of the family line in West African tradition — not a passive archivist, but a living carrier of the story. The griot holds the names of the dead so the living can know where they come from. That is this tool's purpose.</p>
+      </div>
+    </div>
+    <p>A <span class="term">Krio Griot</span> is a keeper of the line, working in the language of the people and the logic of the archive. The name holds both what the tool does and where it comes from.</p>
+  </div>
+
+  <div class="doc-section about-body">
+    <h2>The mango</h2>
+    <div class="mango-metaphor">
+      <p>The mango is the fruit of West Africa and the diaspora — the tree that grows in laterite soil, the reddish-gold earth that runs from Sierra Leone through the continent. It does not need rich soil to root. It seeds itself from what it is given and grows into something that feeds people for generations.</p>
+      <p>The seed of research is a single name, a single date, a single question you cannot answer. What Krio Griot does is hold that seed in the right conditions — the archives, the context, the method — and let it grow into something your family can hold. <span class="term">The mango is what the research bears, grown from the soil of the record.</span></p>
+      <p>The mango orange in the logo is that gold. The green is the living shoot. The deep navy is the depth of the archive, the ocean crossing, the place the record does not reach — and the place we keep searching anyway.</p>
+    </div>
+  </div>
+
+  <div class="doc-section about-body">
+    <h2>Who built this</h2>
+    <h3>Aisha LaDon Abdul Rahman, MLIS, PhD</h3>
+    <p>I am an archivist and professional genealogist. I have spent years working with the specific record structures of African American and African diaspora research — Freedmen's Bureau documents, slave schedules, plantation records, probate inventories, the silences in county deed books where my ancestors' names should be.</p>
+    <p>I built Krio Griot because I needed it for my own research and nothing else did what I needed. The other tools either ignored the 1870 break — the point where most formerly enslaved people first appear in records under their own names — or they papered over the gaps with fabricated connections. I needed a workspace that would hold the uncertainty honestly and help me search methodically through it.</p>
+    <p>I have traced my own line to <span class="term">Sierra Leone</span> through mitochondrial DNA testing. I am of <span class="term">Mende, Temne, and Fula descent</span> — three of the major peoples of Sierra Leone and the broader Senegambian region. That tracing is how I came to understand that the records do not end at the water. They just require different tools to follow.</p>
+    <p>Krio Griot started as a tool for my own research. Every family that crosses the 1870 break needs a workspace built for that crossing — one that holds the uncertainty honestly, knows what the archive does and does not hold, and does not pretend otherwise. This is that workspace.</p>
+    <div class="aisha-links">
+      <a href="https://www.aishaladon.com" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 1 0 20M2 12h20"/></svg>
+        aishaladon.com
+      </a>
+      <a href="https://youtube.com/aishaladon" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M10 10l5 3-5 3V10z" fill="currentColor" stroke="none"/></svg>
+        youtube.com/aishaladon
+      </a>
+    </div>
+  </div>
+
+  <div class="doc-section about-body">
+    <h2>What the tool does</h2>
+    <p>Krio Griot is a five-module research workspace. The modules are designed around how genealogical research actually works — not as a passive tree builder, but as an active investigative workspace. Everything in the tool is private. This is a workspace built for us, by us — not for public display.</p>
+    <p><span class="term">People</span> — a private biographical database for every person in your research, with sourced facts, dated relationships, and a clear distinction between documented connections and hypotheses.</p>
+    <p><span class="term">Research</span> — your active questions, with AI-assisted sessions that help you identify record sets, build search strategies, and interpret what you find. Every session is logged automatically — a null result is still evidence of what was searched.</p>
+    <p><span class="term">Archives</span> — your document collection and digitization workspace. The AI scanner extracts names, dates, and places from uploaded photographs and documents — preserving physical materials in a searchable, archival-quality format. Nothing is written to your records without your review and approval.</p>
+    <p><span class="term">DNA</span> — tools for managing autosomal DNA match data imported from AncestryDNA, 23andMe, FamilyTreeDNA, or MyHeritage. Clustering, cM tracking, notes, and links to your tree.</p>
+    <p><span class="term">Collections</span> — private archival collections that bring together the primary sources, research logs, oral interviews, photographs, and documents your family has gathered across generations. Organized and held with archival standards. Yours alone.</p>
+    <p>The AI assistant does not fabricate. It does not invent record collections, generate plausible names for unnamed people, or produce confident answers when the evidence runs out. It says what the record holds and what the record does not hold. That distinction is the most important thing this tool does.</p>
+  </div>
+
+  <div class="doc-section about-body">
+    <h2>The 1870 break</h2>
+    <p>The 1870 federal census is the first to name formerly enslaved people as free individuals. Before 1870, most African American families are documented — if at all — only in records that identified them as property: slave schedules that record ages and sex but not names, estate inventories, tax lists, plantation records held by the enslaver's family.</p>
+    <p>The 1870 break is not a failure of your family. It is a deliberate record structure imposed by a legal system that did not recognize enslaved people as people with names worth recording. Getting through it requires specific knowledge of specific record sets — Freedmen's Bureau documents, Freedman's Savings and Trust ledgers, marriage registers, cohabitation registers, the records of enslavers, county probate — and a research strategy built around what those records actually hold.</p>
+    <p>Every feature of Krio Griot is designed with the 1870 break in mind. The AI assistant knows these record sets. The workspace is built to hold the uncertainty and the silence honestly, and to search through them methodically, without inventing what the archive does not provide.</p>
+  </div>
+
+  <footer class="doc-footer">
+    <span>&copy; 2026 Krio Griot</span>
+    <span>built by <a href="https://www.aishaladon.com" target="_blank" rel="noopener">Aisha LaDon Abdul Rahman</a>, archivist and genealogist</span>
+  </footer>
+</div>
+
+<button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+<script>
+var bt=document.getElementById('back-top');
+window.addEventListener('scroll',function(){
+  if(window.scrollY>300)bt.classList.add('visible');
+  else bt.classList.remove('visible');
+},{passive:true});
+</script>
+</body>
+</html>

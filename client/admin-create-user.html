@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create User — Krio Griot Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: #04223F;
+      color: #F0F6FC;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #062F58;
+      border: 1px solid rgba(160,200,240,.22);
+      border-radius: 8px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    .logo { text-align: center; margin-bottom: 2rem; }
+    .logo h1 { font-size: 1.4rem; font-weight: 700; color: #EF9F27; }
+    .logo p { font-size: .8rem; color: rgba(192,220,248,.5); margin-top: 4px; }
+    label { display: block; font-size: .82rem; color: rgba(192,220,248,.7); margin-bottom: 6px; }
+    input, select {
+      width: 100%; padding: 10px 12px; border-radius: 6px;
+      border: 1px solid rgba(160,200,240,.22); background: #04223F; color: #F0F6FC;
+      font-size: .95rem; margin-bottom: 1rem; outline: none;
+    }
+    input:focus, select:focus { border-color: #EF9F27; }
+    .btn {
+      width: 100%; padding: 11px; border-radius: 6px; border: none;
+      background: #EF9F27; color: #0f0f0f; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .error   { color: #e57373; font-size: .85rem; margin-bottom: 1rem; display: none; }
+    .success { color: #3DDC84; font-size: .85rem; margin-bottom: 1rem; display: none; }
+    .divider { border: none; border-top: 1px solid rgba(160,200,240,.15); margin: 1.5rem 0; }
+    .result-box {
+      display: none;
+      background: #04223F;
+      border: 1px solid #3DDC84;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: .85rem;
+      line-height: 1.8;
+      word-break: break-all;
+    }
+    .result-box strong { color: #EF9F27; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <h1>Krio Griot</h1>
+    <p>Admin — Create User Account</p>
+  </div>
+
+  <div id="error-msg" class="error"></div>
+  <div id="success-msg" class="success"></div>
+
+  <form onsubmit="doCreate(event)">
+    <label>Admin Key</label>
+    <input type="password" id="admin-key" placeholder="Your ADMIN_KEY value" required />
+
+    <hr class="divider" />
+
+    <label>Name</label>
+    <input type="text" id="reg-name" placeholder="User's full name" />
+
+    <label>Email</label>
+    <input type="email" id="reg-email" placeholder="user@example.com" required />
+
+    <label>Password</label>
+    <input type="password" id="reg-password" placeholder="Min 8 characters" required />
+
+    <label>Plan</label>
+    <select id="reg-plan">
+      <option value="free">Free</option>
+      <option value="basic-paid">Basic ($25/month)</option>
+      <option value="upgrade">Upgrade ($49/month)</option>
+    </select>
+
+    <button class="btn" type="submit" id="btn-create">Create Account</button>
+  </form>
+
+  <div id="result-box" class="result-box"></div>
+</div>
+
+<script>
+async function doCreate(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('error-msg');
+  const sucEl = document.getElementById('success-msg');
+  const resEl = document.getElementById('result-box');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  resEl.style.display = 'none';
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-key': document.getElementById('admin-key').value,
+      },
+      body: JSON.stringify({
+        name:     document.getElementById('reg-name').value,
+        email:    document.getElementById('reg-email').value,
+        password: document.getElementById('reg-password').value,
+        plan:     document.getElementById('reg-plan').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Failed to create account.';
+      errEl.style.display = 'block';
+      return;
+    }
+    const emailNote = data.emailSent
+      ? '&#10003; Welcome email sent.'
+      : `&#9888; Welcome email not sent${data.emailError ? ': ' + data.emailError : ' (SMTP not configured)'}. Share login details manually.`;
+    sucEl.innerHTML = 'Account created successfully.<br><span style="font-size:.82rem;opacity:.8">' + emailNote + '</span>';
+    sucEl.style.display = 'block';
+    resEl.innerHTML = `
+      <strong>Name</strong>  ${data.user.name || '(none)'}<br>
+      <strong>Email</strong> ${data.user.email}<br>
+      <strong>Plan</strong>  ${data.user.plan || 'free'}<br>
+      <strong>ID</strong>    ${data.user.id}
+    `;
+    resEl.style.display = 'block';
+    document.getElementById('reg-name').value = '';
+    document.getElementById('reg-email').value = '';
+    document.getElementById('reg-password').value = '';
+  } catch (err) {
+    errEl.textContent = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+</script>
+</body>
+</html>

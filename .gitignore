@@ -1,0 +1,12 @@
+node_modules/
+.env
+*.log
+.DS_Store
+
+# Local upload cache (Airtable stores canonical Image URLs)
+uploads/*
+!uploads/.gitkeep
+
+# GEDCOM exports contain family PII — keep out of source control
+server/gedcom-data.json
+server/gedcom-map.json

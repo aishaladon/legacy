@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mango requests — Krio Griot</title>
+<style>
+:root{--deep:#04223F;--harbour:#062F58;--blue:#2A6DB0;--pale:#C7DDF3;--green:#3DDC84;--mango:#EF9F27;--body:#F0F6FC;--rule:rgba(160,200,240,.22)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--deep);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+header{padding:24px 0 18px;border-bottom:1px solid var(--rule);margin-bottom:24px}
+header h1{margin:0 0 4px;font-size:22px;color:#fff;font-weight:600}
+header p{margin:0;color:var(--pale);font-size:13.5px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+input,select{background:var(--harbour);border:1px solid var(--blue);color:var(--body);padding:8px 12px;border-radius:2px;font-size:14px;font-family:inherit}
+input{width:220px}
+.btn{background:var(--green);color:#04321C;border:0;padding:8px 16px;border-radius:2px;font-size:13.5px;font-weight:600;cursor:pointer}
+.btn-ghost{background:none;border:1px solid var(--blue);color:var(--pale);padding:8px 16px;border-radius:2px;font-size:13.5px;cursor:pointer}
+.btn-ghost:hover{border-color:var(--green);color:#fff}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;color:var(--pale);font-weight:500;border-bottom:1px solid var(--rule);padding:7px 10px;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;letter-spacing:.06em}
+td{padding:10px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:hover td{background:rgba(42,109,176,.06)}
+td.q{max-width:280px;cursor:pointer}
+td.q .short{display:block}
+td.q .full{display:none;color:var(--pale);font-size:13px}
+td.q.open .short{display:none}
+td.q.open .full{display:block}
+a.mail,a.wa{color:var(--green);text-decoration:none}
+a.mail:hover,a.wa:hover{text-decoration:underline}
+.badge{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.5px;letter-spacing:.08em;padding:3px 8px;border-radius:2px;background:var(--harbour);color:var(--pale);white-space:nowrap}
+.badge.new{color:#fff;background:#2A6DB0}
+.badge.researching{color:var(--mango);background:rgba(239,159,39,.12)}
+.badge.sent{color:var(--green);background:rgba(61,220,132,.1)}
+.badge.noreply{color:#aaa}
+select.status{padding:5px 8px;font-size:12.5px;width:auto}
+.toast{position:fixed;bottom:24px;right:24px;background:#062F58;border:1px solid var(--green);
+  color:var(--green);padding:12px 20px;border-radius:2px;font-size:13.5px;
+  opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:none}
+.empty{padding:48px;text-align:center;color:var(--pale)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Mango requests</h1>
+    <p>Sales funnel leads from the opt-in modal. Newest first.</p>
+  </header>
+
+  <div class="controls">
+    <input id="qSearch" type="search" placeholder="Name or email" oninput="load()">
+    <select id="qStatus" onchange="load()">
+      <option value="">All statuses</option>
+      <option value="new">New</option>
+      <option value="researching">Researching</option>
+      <option value="sent">Sent</option>
+      <option value="no reply">No reply</option>
+    </select>
+    <button class="btn-ghost" onclick="exportCsv()">Export CSV</button>
+  </div>
+
+  <div class="tbl-wrap">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Ancestor</th>
+          <th>State</th>
+          <th>Era</th>
+          <th>Question</th>
+          <th>Email</th>
+          <th>WhatsApp</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">No requests found.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var rows=[];
+var tok=(function(){
+  try{ return localStorage.getItem('kg_token')||''; }catch(e){ return ''; }
+})();
+
+function load(){
+  var s=document.getElementById('qSearch').value.trim();
+  var st=document.getElementById('qStatus').value;
+  var url='/api/mango?'+new URLSearchParams(Object.fromEntries(Object.entries({q:s,status:st}).filter(function(e){return e[1];})));
+  fetch(url,{headers:{'Authorization':'Bearer '+tok}})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      rows=d.rows||[];
+      render();
+    }).catch(function(){ showToast('Failed to load.'); });
+}
+
+function render(){
+  var tb=document.getElementById('tbody');
+  var em=document.getElementById('empty');
+  if(!rows.length){ tb.innerHTML=''; em.style.display=''; return; }
+  em.style.display='none';
+  tb.innerHTML=rows.map(function(r,i){
+    var dt=new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var q=r.question||'';
+    var short=q.length>60?q.slice(0,60)+'…':q;
+    var cc=(r.phone_cc||'+1').replace(/\D/g,'');
+    var ph=(r.phone||'').replace(/\D/g,'');
+    var waNum=cc+ph;
+    var wa='https://wa.me/'+waNum;
+    var badge={'new':'new','researching':'researching','sent':'sent','no reply':'noreply'}[r.status]||'';
+    return '<tr>'+
+      '<td style="white-space:nowrap;color:var(--pale)">'+esc(dt)+'</td>'+
+      '<td style="white-space:nowrap">'+esc(r.ancestor_name||'—')+'</td>'+
+      '<td style="white-space:nowrap">'+esc(r.state||'—')+'</td>'+
+      '<td style="white-space:nowrap;color:var(--pale)">'+esc(r.era||'—')+'</td>'+
+      '<td class="q" onclick="this.classList.toggle(\'open\')">'+
+        '<span class="short">'+esc(short||'—')+'</span>'+
+        '<span class="full">'+esc(q||'—')+'</span>'+
+      '</td>'+
+      '<td><a class="mail" href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a></td>'+
+      '<td><a class="wa" href="'+esc(wa)+'" target="_blank" rel="noopener">'+esc((r.phone_cc||'')+(r.phone||''))+'</a></td>'+
+      '<td><select class="status" data-id="'+r.id+'" onchange="setStatus(this)">'+
+        '<option value="new"'+(r.status==='new'?' selected':'')+'>new</option>'+
+        '<option value="researching"'+(r.status==='researching'?' selected':'')+'>researching</option>'+
+        '<option value="sent"'+(r.status==='sent'?' selected':'')+'>sent</option>'+
+        '<option value="no reply"'+(r.status==='no reply'?' selected':'')+'>no reply</option>'+
+      '</select></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function setStatus(sel){
+  var id=sel.getAttribute('data-id'), st=sel.value;
+  fetch('/api/mango/'+id,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({status:st})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if(d.ok) showToast('Status updated.'); else showToast(d.error||'Error'); load(); })
+    .catch(function(){ showToast('Request failed.'); });
+}
+
+function exportCsv(){
+  if(!rows.length){ showToast('Nothing to export.'); return; }
+  var cols=['created_at','ancestor_name','state','era','question','email','phone_cc','phone','status'];
+  var lines=[cols.join(',')].concat(rows.map(function(r){
+    return cols.map(function(c){ var v=String(r[c]||'').replace(/"/g,'""'); return '"'+v+'"'; }).join(',');
+  }));
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='mango-requests.csv'; a.click();
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); },2400);
+}
+
+function esc(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+
+load();
+</script>
+</body>
+</html>

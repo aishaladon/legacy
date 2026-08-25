@@ -1,0 +1,640 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   FAMILY TREE  ·  Krio Griot
+   Dark-gold theme matching the rest of the app
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Controls bar ─────────────────────────────────────────────────────── */
+.ft-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 16px;
+  flex-wrap: wrap;
+}
+
+.ft-search-wrap {
+  flex: 1;
+  min-width: 180px;
+  max-width: 280px;
+  position: relative;
+}
+
+.ft-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: .9rem;
+  pointer-events: none;
+}
+
+.ft-search-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px 8px 32px;
+  color: var(--text);
+  font-size: .875rem;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+
+.ft-search-input:focus {
+  border-color: var(--accent);
+}
+
+.ft-search-input::placeholder {
+  color: var(--muted2);
+}
+
+/* Orientation toggle pills */
+.ft-orient-wrap {
+  display: flex;
+  gap: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px;
+}
+
+.ft-orient-btn {
+  padding: 5px 14px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  font-size: .8rem;
+  font-family: var(--font);
+  font-weight: 500;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.ft-orient-btn.active {
+  background: var(--accent);
+  color: #0e0d0b;
+  font-weight: 600;
+}
+
+/* Zoom buttons */
+.ft-zoom-wrap {
+  display: flex;
+  gap: 4px;
+}
+
+.ft-zoom-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  font-family: var(--font);
+}
+
+.ft-zoom-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ft-reset-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: .8rem;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: all .15s;
+}
+
+.ft-reset-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Tree container ───────────────────────────────────────────────────── */
+.ft-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 186px);
+  min-height: 420px;
+  background: #0c0b09;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+}
+
+.ft-container:active {
+  cursor: grabbing;
+}
+
+#ft-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Loading / empty state ────────────────────────────────────────────── */
+.ft-loading,
+.ft-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted);
+  gap: 12px;
+  font-size: .9rem;
+}
+
+.ft-empty-icon {
+  font-size: 2.5rem;
+  opacity: .4;
+}
+
+/* ── SVG node styles ──────────────────────────────────────────────────── */
+
+/* Link lines between nodes */
+.ft-link {
+  fill: none;
+  stroke: #2d2820;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+/* Card rectangle */
+.ft-card-bg {
+  fill: #1a1712;
+  stroke: rgba(201, 168, 76, 0.22);
+  stroke-width: 1.5;
+  rx: 10;
+  transition: stroke 0.15s, filter 0.15s;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+}
+
+.ft-node:hover .ft-card-bg {
+  stroke: rgba(201, 168, 76, 0.7);
+  stroke-width: 2;
+  filter: drop-shadow(0 4px 14px rgba(201, 168, 76, 0.18));
+}
+
+/* Highlighted (search match) */
+.ft-card-bg.ft-highlighted {
+  stroke: #c9a84c !important;
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 0 12px rgba(201, 168, 76, 0.45)) !important;
+}
+
+/* Root node card gets slightly brighter border */
+.ft-root-node .ft-card-bg {
+  stroke: rgba(201, 168, 76, 0.5);
+  stroke-width: 2;
+}
+
+/* Avatar circle */
+.ft-avatar {
+  stroke-width: 1.2;
+}
+
+.ft-avatar-m {
+  fill: #1a2233;
+  stroke: rgba(100, 140, 210, 0.35);
+}
+
+.ft-avatar-f {
+  fill: #271a2e;
+  stroke: rgba(200, 120, 200, 0.35);
+}
+
+.ft-avatar-u {
+  fill: #1f1d17;
+  stroke: rgba(140, 128, 100, 0.3);
+}
+
+/* Avatar icon (sex symbol or ?) */
+.ft-avatar-icon {
+  fill: #6a6050;
+  font-size: 15px;
+  dominant-baseline: central;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Card text */
+.ft-card-name {
+  fill: #c9a84c;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ft-card-dates {
+  fill: #7a7060;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.ft-card-relation {
+  fill: #5a5040;
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px;
+  font-style: italic;
+}
+
+/* Expand / collapse toggle button */
+.ft-toggle-bg {
+  fill: #2a2518;
+  stroke: rgba(201, 168, 76, 0.4);
+  stroke-width: 1.2;
+  cursor: pointer;
+  transition: fill .15s;
+}
+
+.ft-toggle-bg:hover {
+  fill: #3a3420;
+  stroke: #c9a84c;
+}
+
+.ft-toggle-label {
+  fill: #c9a84c;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  dominant-baseline: central;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Virtual "Unlinked People" group node */
+.ft-card-virtual {
+  fill: #141210 !important;
+  stroke: rgba(100, 88, 50, 0.35) !important;
+  stroke-dasharray: 4 3;
+}
+
+/* Generation badge */
+.ft-gen-badge {
+  fill: rgba(201, 168, 76, 0.1);
+  stroke: rgba(201, 168, 76, 0.2);
+  stroke-width: 1;
+}
+
+.ft-gen-label {
+  fill: #6a5c30;
+  font-size: 8.5px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Legend */
+.ft-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(26, 23, 18, 0.85);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: .75rem;
+  color: var(--muted);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.ft-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ft-legend-row:last-child {
+  margin-bottom: 0;
+}
+
+.ft-legend-line {
+  width: 24px;
+  height: 2px;
+  background: #2d2820;
+  border-radius: 1px;
+}
+
+.ft-legend-card {
+  width: 14px;
+  height: 10px;
+  background: #1a1712;
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 2px;
+}
+
+/* ── Edit Mode button ─────────────────────────────────────────────────────── */
+.ft-edit-mode-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: .8rem;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: all .15s;
+  font-weight: 500;
+}
+
+.ft-edit-mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ft-edit-mode-btn.active {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── Edit mode banner ─────────────────────────────────────────────────────── */
+.ft-edit-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  font-size: .82rem;
+  color: #c9a84c;
+  font-weight: 600;
+}
+
+.ft-edit-banner-hint {
+  color: #a08838;
+  font-weight: 400;
+  font-size: .8rem;
+}
+
+.ft-edit-banner-close {
+  margin-left: auto;
+  background: rgba(201,168,76,0.2);
+  border: 1px solid rgba(201,168,76,0.4);
+  color: #c9a84c;
+  border-radius: var(--radius);
+  padding: 3px 12px;
+  cursor: pointer;
+  font-size: .78rem;
+  font-family: var(--font);
+  transition: all .15s;
+}
+
+.ft-edit-banner-close:hover {
+  background: rgba(201,168,76,0.35);
+}
+
+/* ── Edit mode: highlight card borders ───────────────────────────────────── */
+.ft-edit-active .ft-card-bg {
+  stroke: rgba(201, 168, 76, 0.45) !important;
+}
+
+/* ── Card context menu ────────────────────────────────────────────────────── */
+.ft-context-menu {
+  position: fixed;
+  z-index: 2000;
+  background: #1e1c17;
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.65);
+  min-width: 170px;
+  padding: 6px 0;
+  overflow: hidden;
+}
+
+.ft-ctx-name {
+  padding: 7px 14px 6px;
+  font-size: .76rem;
+  color: #c9a84c;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 4px;
+  font-family: 'Playfair Display', Georgia, serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ft-ctx-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 14px;
+  color: var(--text);
+  font-size: .82rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.ft-ctx-btn:hover {
+  background: rgba(201, 168, 76, 0.1);
+  color: #c9a84c;
+}
+
+.ft-ctx-cancel {
+  color: var(--muted);
+  font-size: .78rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 4px;
+}
+
+/* ── Connect Parents panel ────────────────────────────────────────────────── */
+.ft-connect-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2100;
+  background: #1e1c17;
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.75);
+  width: 420px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.ft-connect-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.ft-connect-header span {
+  font-size: .9rem;
+  font-weight: 600;
+  color: #c9a84c;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.ft-connect-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color .12s;
+}
+
+.ft-connect-close:hover { color: var(--text); }
+
+.ft-connect-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ft-connect-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ft-connect-label {
+  font-size: .78rem;
+  color: var(--muted);
+  font-weight: 600;
+  min-width: 48px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.ft-connect-search-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.ft-connect-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  color: var(--text);
+  font-size: .85rem;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+
+.ft-connect-input:focus { border-color: var(--accent); }
+
+.ft-connect-input.ft-selected {
+  border-color: rgba(201, 168, 76, 0.6);
+  background: rgba(201, 168, 76, 0.06);
+  color: #c9a84c;
+}
+
+.ft-connect-dropdown {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  background: #1a1712;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 2200;
+  display: none;
+}
+
+.ft-connect-dropdown.open { display: block; }
+
+.ft-dropdown-item {
+  padding: 7px 12px;
+  font-size: .83rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background .1s;
+  display: flex;
+  flex-direction: column;
+}
+
+.ft-dropdown-item:hover { background: rgba(201, 168, 76, 0.1); }
+
+.ft-dropdown-item-name { font-weight: 500; }
+
+.ft-dropdown-item-dates {
+  font-size: .74rem;
+  color: var(--muted2);
+  margin-top: 1px;
+}
+
+.ft-dropdown-empty {
+  padding: 10px 12px;
+  font-size: .8rem;
+  color: var(--muted2);
+  text-align: center;
+}
+
+.ft-connect-clear {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .85rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color .12s;
+}
+
+.ft-connect-clear:hover { color: var(--text); }
+
+.ft-connect-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* Backdrop for connect panel and context menu */
+.ft-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  background: rgba(0,0,0,0.45);
+}

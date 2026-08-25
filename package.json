@@ -1,0 +1,30 @@
+{
+  "name": "legacy-research",
+  "version": "1.0.0",
+  "description": "AI-powered genealogy research platform",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "db:setup": "node server/setup-db.js",
+    "db:test": "node server/db-selftest.js"
+  },
+  "engines": {
+    "node": ">=20 <25"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "airtable": "^0.12.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.2.0",
+    "mysql2": "^3.11.0",
+    "nodemailer": "^9.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

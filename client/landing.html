@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krio Griot — homepage proposal v7</title>
+<style>
+:root{
+  --harbour:#062F58;--deep:#04223F;--blue:#2A6DB0;--pale:#C7DDF3;
+  --green:#3DDC84;--white:#FFFFFF;--body:#F0F6FC;--mango:#EF9F27;
+  --paper:#F4F2EC;--rule:rgba(160,200,240,.30);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--deep);color:var(--body);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+section{border-bottom:1px solid var(--rule)}
+.eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mango);margin:0 0 16px}
+
+.mast{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 0;border-bottom:1px solid var(--rule);position:relative}
+.brand{display:flex;align-items:center;gap:12px}
+.brand p{margin:0;font-size:18px;font-weight:600;color:var(--white);line-height:1.3}
+.brand span{display:block;font-size:11.5px;letter-spacing:.13em;color:var(--pale);margin-top:1px}
+.nav{display:flex;gap:22px;font-size:15px;color:var(--body);flex-wrap:wrap}
+.nav a{color:inherit;text-decoration:none}
+.nav a:hover{color:var(--green)}
+.nav a.navcta{border:1px solid var(--green);color:var(--green);padding:6px 14px;border-radius:2px}
+.nav a.navcta:hover{background:var(--green);color:#04321C}
+.ham-btn{display:none;background:none;border:0;color:var(--pale);cursor:pointer;padding:6px;line-height:0;margin-left:auto}
+.ham-btn:hover{color:var(--white)}
+.ham-drawer{display:none;position:absolute;top:100%;right:0;z-index:200;
+  background:#062F58;border:1px solid var(--rule);border-top:none;
+  min-width:200px;padding:8px 0}
+.ham-drawer.open{display:block}
+.ham-drawer a{display:block;padding:11px 20px;color:var(--body);text-decoration:none;font-size:15px}
+.ham-drawer a:hover{color:var(--green);background:rgba(255,255,255,.04)}
+.ham-drawer a.navcta{color:var(--green);font-weight:600}
+@media(max-width:720px){
+  .nav{display:none}
+  .ham-btn{display:flex;align-items:center}
+}
+html{scroll-behavior:smooth}
+section[id]{scroll-margin-top:20px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.recite{padding:46px 0 50px;overflow:hidden;position:relative}
+.recite > .wrap{position:relative;z-index:1}
+.heroGrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:44px;align-items:start}
+.vchain{padding-top:6px;position:relative}
+.mangoBG{position:absolute;top:8px;right:13%;width:min(840px,74vw);height:auto;z-index:0;pointer-events:none}
+.vchain .chain-lbl,.vchain .chainSVG{position:relative;z-index:1}
+.vchain .chainSVG{width:100%;height:auto;max-width:300px}
+h1{font-size:clamp(30px,4.1vw,45px);line-height:1.16;margin:0 0 16px;
+  font-weight:600;letter-spacing:-.015em;color:var(--white);text-wrap:balance}
+.lede{font-size:18px;line-height:1.6;color:var(--body);margin:0 0 36px;max-width:52ch}
+
+#stage{position:relative;min-height:250px;margin-bottom:10px}
+.nm{position:absolute;inset:0;opacity:0;visibility:hidden;
+  transition:opacity .3s ease,visibility 0s linear .3s}
+.nm.on{opacity:1;visibility:visible;
+  transition:opacity .5s ease .3s,visibility 0s}
+.nmL{border-left:3px solid var(--mango);padding-left:22px}
+.nm.absent .nmL{border-left-color:#6FA9E0}
+.who{font-size:clamp(32px,4.4vw,46px);line-height:1.05;font-weight:600;color:var(--white);margin:0 0 16px}
+.nm.absent .who{color:var(--pale)}
+.wv{width:100%;max-width:300px;height:auto;display:block;margin:0 0 16px}
+.wv rect{transform-box:fill-box;transform-origin:center}
+.meta{font-size:16.5px;color:var(--body);margin:0 0 16px}
+.det{opacity:0;transition:opacity .45s ease}
+.det .src{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px;letter-spacing:.06em;color:var(--pale);margin:0 0 10px}
+.gr{display:flex;align-items:center;gap:11px}
+.gr span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;letter-spacing:.07em;color:var(--pale)}
+
+.docwrap{position:relative}
+.doclbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;letter-spacing:.1em;color:var(--pale);margin:0 0 10px}
+.doc{width:100%;height:auto;display:block;transition:transform .5s ease}
+.doc .fld{opacity:0;transition:opacity .5s ease}
+
+#stage:hover .wv rect{animation:sp 1.1s ease-in-out infinite}
+#stage:hover .wv rect:nth-child(2n){animation-delay:.12s}
+#stage:hover .wv rect:nth-child(3n){animation-delay:.26s}
+#stage:hover .wv rect:nth-child(5n){animation-delay:.38s}
+#stage:hover .doc{transform:translateY(-5px)}
+#stage:hover .doc .fld{opacity:1}
+#stage:hover .doc .fld:nth-of-type(2){transition-delay:.15s}
+#stage:hover .doc .fld:nth-of-type(3){transition-delay:.3s}
+@keyframes sp{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.75)}}
+
+.navrow{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+#ticks{display:flex;gap:8px}
+#ticks button{width:34px;height:14px;padding:0;background:none;border:0;cursor:pointer;
+  display:flex;align-items:center}
+#ticks button::before{content:"";display:block;width:34px;height:2px;background:var(--blue);
+  transition:background .3s ease}
+#ticks button[aria-current="true"]::before{background:var(--green)}
+#ticks button:hover::before{background:var(--pale)}
+#ticks button:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.arw{background:none;border:1px solid var(--blue);color:var(--pale);width:34px;height:30px;
+  border-radius:2px;cursor:pointer;font-size:15px;line-height:1;display:flex;
+  align-items:center;justify-content:center}
+.arw:hover{border-color:var(--green);color:var(--white)}
+.arw:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+#stage{touch-action:pan-y}
+#stage:focus-visible{outline:2px solid var(--green);outline-offset:8px}
+.sndrow{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+.sndbtn{background:none;border:1px solid var(--blue);color:var(--pale);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;
+  letter-spacing:.1em;padding:7px 14px;border-radius:2px;cursor:pointer}
+.sndbtn:hover{border-color:var(--green);color:var(--white)}
+.sndbtn[aria-pressed="true"]{border-color:var(--green);color:var(--green)}
+.sndnote{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;color:var(--pale)}
+#ticks span{width:34px;height:2px;background:var(--blue);display:block;transition:background .4s ease}
+
+.chain-lbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;letter-spacing:.14em;color:var(--pale);margin:0 0 14px}
+.chain-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:34px}
+.chain-scroll svg{min-width:720px;width:100%;height:auto}
+
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:13px 26px;border-radius:2px;font-size:16px;font-weight:600;text-decoration:none}
+.btn-p{background:var(--green);color:#04321C}
+.btn-s{border:1px solid var(--blue);color:var(--white)}
+
+.rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule)}
+.rail div{background:var(--harbour);padding:22px}
+.rail .n{font-size:34px;font-weight:600;margin:0;color:var(--white);letter-spacing:-.02em;line-height:1.1}
+.rail .l{font-size:12.5px;letter-spacing:.1em;color:var(--pale);margin:8px 0 0;line-height:1.4}
+.rail .g{color:var(--green)}
+
+.sec{padding:52px 0}
+h2{font-size:clamp(27px,3.3vw,37px);line-height:1.15;margin:0 0 16px;
+  font-weight:600;letter-spacing:-.018em;color:var(--white)}
+p.body{font-size:17.5px;color:var(--body);max-width:62ch;margin:0}
+.legend{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;margin-top:30px}
+.legend figure{margin:0;text-align:center;min-width:0}
+.legend figure svg{width:clamp(36px,4.4vw,50px);height:auto}
+.legend figcaption{font-size:13.5px;color:var(--white);margin-top:10px;font-weight:600;
+  line-height:1.3}
+.legend small{display:block;font-size:11px;color:var(--pale);margin-top:5px;
+  letter-spacing:.04em;line-height:1.45}
+
+.wall{padding:52px 0 56px;background:var(--harbour)}
+.wall p.body{margin-bottom:30px}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;margin:30px 0 0}
+.tool{border-left:2px solid var(--green);padding:2px 0 2px 18px;margin:0}
+.tnum{font-size:11.5px;letter-spacing:.12em;color:var(--green);margin:0 0 6px}
+.tool h4{font-size:19px;margin:0 0 10px;color:var(--white);font-weight:600;line-height:1.25}
+.tool p{font-size:15.5px;line-height:1.6;color:var(--body);margin:0 0 14px;max-width:none}
+.tool .tags{gap:6px}
+.tool .tag{font-size:11.5px;padding:3px 9px}
+footer{padding:46px 0 34px;border-top:1px solid var(--rule)}
+.fgrid{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:34px}
+.fbrand{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.fbrand p{margin:0;font-size:17px;font-weight:600;color:var(--white)}
+.fblurb{font-size:14.5px;line-height:1.6;color:var(--body);margin:0 0 16px;max-width:38ch}
+.fkrio{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;letter-spacing:.08em;color:var(--pale);margin:0}
+.fcol h6{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;letter-spacing:.13em;color:var(--mango);margin:0 0 14px;font-weight:600}
+.fcol ul{list-style:none;margin:0;padding:0}
+.fcol li{margin-bottom:10px}
+.fcol a{font-size:14.5px;color:var(--body);text-decoration:none}
+.fcol a:hover{color:var(--green)}
+.fbot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-top:36px;padding-top:20px;border-top:1px solid var(--rule)}
+.fbot p{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;color:var(--pale);margin:0}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr;gap:28px}}
+@media(max-width:460px){.fgrid{grid-template-columns:1fr}}
+.cmp{margin-top:44px}
+.cmplbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;letter-spacing:.14em;color:var(--mango);margin:0 0 16px}
+.cmpwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.cmp-t{width:100%;min-width:640px;border-collapse:collapse;
+  background:var(--deep);font-size:14.5px}
+table.cmp-t th,table.cmp-t td{padding:13px 16px;text-align:left;
+  border-bottom:1px solid var(--rule);vertical-align:middle}
+table.cmp-t thead th{font-size:16px;color:var(--white);font-weight:600;
+  border-bottom:1px solid var(--rule)}
+table.cmp-t thead th small{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;font-weight:400;color:var(--pale);margin-top:3px;letter-spacing:.06em}
+table.cmp-t th.pk,table.cmp-t td.pk{background:#052A4E}
+table.cmp-t thead th.pk{border-top:2px solid var(--green)}
+table.cmp-t td.ft{color:var(--body)}
+table.cmp-t td.v{text-align:center;color:var(--body)}
+table.cmp-t td.v.dim{color:var(--pale)}
+table.cmp-t td.v.hi{color:var(--green);font-weight:600}
+table.cmp-t tr.grp td{background:var(--harbour);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;letter-spacing:.13em;color:var(--pale);padding:9px 16px}
+table.cmp-t tbody tr:last-child td{border-bottom:0}
+.price{padding:52px 0 60px;background:var(--harbour)}
+.bill{display:flex;align-items:center;gap:12px;margin:22px 0 30px;flex-wrap:wrap}
+.billbtn{background:none;border:1px solid var(--blue);color:var(--pale);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;
+  letter-spacing:.1em;padding:8px 16px;border-radius:2px;cursor:pointer}
+.billbtn[aria-pressed="true"]{border-color:var(--green);color:var(--green)}
+.billnote{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;color:var(--pale)}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--rule)}
+.plan{background:var(--deep);padding:26px 22px;display:flex;flex-direction:column}
+.plan.pick{background:#052A4E;border-top:2px solid var(--green)}
+.ptier{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;letter-spacing:.13em;color:var(--pale);margin:0 0 10px}
+.plan.pick .ptier{color:var(--green)}
+.plan h3{font-size:21px;margin:0 0 12px;color:var(--white);font-weight:600}
+.pamt{display:flex;align-items:baseline;gap:7px;margin:0 0 14px}
+.pamt strong{font-size:38px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1}
+.pamt span{font-size:14px;color:var(--pale)}
+.pdesc{font-size:14.5px;line-height:1.6;color:var(--body);margin:0 0 18px}
+.pinc{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;letter-spacing:.11em;color:var(--pale);margin:0 0 12px}
+.plist{list-style:none;margin:0 0 20px;padding:0}
+.plist li{display:flex;gap:10px;font-size:14.5px;line-height:1.55;color:var(--body);
+  margin-bottom:10px}
+.plist li svg{flex:none;margin-top:4px}
+.pout{list-style:none;margin:0 0 20px;padding:0}
+.pout li{font-size:13.5px;line-height:1.5;color:var(--pale);margin-bottom:7px;
+  padding-left:18px;position:relative}
+.pout li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:1px;
+  background:var(--blue)}
+.pbtn{display:block;text-align:center;padding:12px 18px;border-radius:2px;
+  font-size:15px;font-weight:600;text-decoration:none;margin-top:auto}
+.pbtn.solid{background:var(--green);color:#04321C}
+.pbtn.ghost{border:1px solid var(--blue);color:var(--white)}
+.pfine{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;color:var(--pale);text-align:center;margin:10px 0 0}
+@media(max-width:860px){.plans{grid-template-columns:1fr}}
+.brkS{padding:52px 0 56px}
+.band{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  gap:26px;align-items:center;border:1px solid var(--rule);padding:24px;margin:28px 0 34px}
+.band h3{font-size:12px;letter-spacing:.13em;margin:0 0 10px;font-weight:600}
+.band .b1 h3{color:#6FA9E0}
+.band .b2 h3{color:var(--green)}
+.band p{font-size:15px;line-height:1.6;color:var(--body);margin:0}
+.wallmark{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;letter-spacing:.14em;color:var(--pale);border:1px solid var(--rule);
+  padding:14px 10px;text-align:center;line-height:1.5}
+.recs{display:grid;gap:1px;background:var(--rule)}
+.recrow{background:var(--deep);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.6fr);
+  gap:26px;padding:22px 20px}
+.recrow h4{font-size:17.5px;margin:0 0 6px;color:var(--white);font-weight:600;line-height:1.3}
+.recyr{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;letter-spacing:.1em;color:var(--green);margin:0 0 12px}
+.recrow p.rd{font-size:15px;line-height:1.6;color:var(--body);margin:0 0 12px}
+.recgrade{display:flex;align-items:center;gap:9px;margin-top:2px}
+.recgrade span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;letter-spacing:.08em;color:var(--pale)}
+@media(max-width:820px){
+  .band{grid-template-columns:1fr;gap:20px}
+  .recrow{grid-template-columns:1fr;gap:12px}
+}
+.beds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;
+  background:var(--rule);margin-top:24px}
+.bed{background:var(--deep);padding:22px 20px}
+.bed h5{font-size:18px;margin:0 0 5px;color:var(--white);font-weight:600;line-height:1.3}
+.bsub{font-size:11px;letter-spacing:.11em;color:var(--green);margin:0 0 12px}
+.bed p{font-size:15px;line-height:1.6;color:var(--body);margin:0 0 14px}
+.bed .tags{gap:6px}
+.bed .tag{font-size:11.5px;padding:3px 9px}
+@media(max-width:820px){
+  .tools{grid-template-columns:1fr;gap:30px}
+  .beds{grid-template-columns:1fr}
+}
+.rec{border-top:1px solid var(--rule);padding:18px 0}
+.rec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.rec-h h4{font-size:17px;margin:0;font-weight:600;color:var(--white)}
+.rec-h span{font-size:12.5px;letter-spacing:.08em;color:var(--pale);white-space:nowrap}
+.rec p{font-size:15.5px;color:var(--body);margin:9px 0 12px;max-width:60ch}
+.tags{display:flex;gap:8px;flex-wrap:wrap}
+.tag{font-size:12.5px;padding:4px 11px;border:1px solid var(--blue);color:var(--body)}
+
+@media(max-width:520px){
+  .brk{display:none}
+}
+@media(max-width:760px){
+  .legend{grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:20px}
+}
+/* mangoBG-mobile: hidden on desktop, shown inside vchain on mobile */
+.mangoBG-mobile{display:none}
+
+@media(max-width:860px){
+  .heroGrid{grid-template-columns:1fr;gap:34px}
+  .vchain .chainSVG{max-width:320px}
+  .mangoBG{display:none}
+  .mangoBG-mobile{
+    display:block;
+    position:absolute;
+    top:38%;right:-4%;
+    width:min(480px,92vw);
+    height:auto;
+    z-index:0;
+    pointer-events:none;
+  }
+  .vchain{position:relative}
+  .vchain .chain-lbl,.vchain .chainSVG{position:relative;z-index:1}
+  #stage{min-height:270px}
+  .recite{padding:34px 0 40px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nm,.doc,.det{transition:none}
+  #stage:hover .wv rect{animation:none}
+  #stage:hover .doc{transform:none}
+}
+
+/* ── Griot's Mango modal ──────────────────────────────────────────────────── */
+.gmOv{position:fixed;inset:0;background:rgba(2,14,26,.72);z-index:900;
+  display:flex;align-items:center;justify-content:center;padding:18px;
+  opacity:0;pointer-events:none;transition:opacity .35s ease;overflow-y:auto}
+.gmOv.open{opacity:1;pointer-events:auto}
+.gmBox{background:#04223F;border:1px solid #2A6DB0;border-radius:4px;max-width:660px;width:100%;
+  padding:24px 22px;position:relative;transform:translateY(14px);transition:transform .35s ease;
+  max-height:92vh;overflow-y:auto}
+.gmOv.open .gmBox{transform:none}
+.gmX{position:absolute;top:12px;right:12px;background:none;border:0;color:#C7DDF3;
+  cursor:pointer;padding:6px;line-height:0}
+.gmX:hover{color:#FFFFFF}
+.gmHead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:18px;flex-wrap:wrap;padding-right:28px}
+.gmTag{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:10.5px;letter-spacing:.13em;color:#EF9F27}
+.gmStp{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:10.5px;letter-spacing:.1em;color:#C7DDF3}
+.gmSnd{background:none;border:1px solid #2A6DB0;color:#C7DDF3;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;
+  letter-spacing:.1em;padding:6px 10px;border-radius:2px;cursor:pointer}
+.gmQ{font-size:clamp(21px,2.6vw,25px);line-height:1.28;font-weight:600;color:#FFFFFF;margin:0 0 12px}
+.gmP{font-size:16px;line-height:1.6;color:#F0F6FC;margin:0 0 16px}
+.gmS{font-size:15px;line-height:1.6;color:#C7DDF3;margin:0 0 16px}
+.gmIn,.gmTa,.gmSel{width:100%;background:#062F58;border:1px solid #2A6DB0;color:#F0F6FC;
+  padding:12px;border-radius:2px;font-size:15.5px;font-family:inherit}
+.gmTa{line-height:1.55;resize:vertical}
+.gmSel{padding:12px 8px;font-size:15px}
+.gmLbl{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:10.5px;letter-spacing:.1em;color:#C7DDF3;margin-bottom:6px}
+.gmGo{background:#3DDC84;color:#04321C;border:0;padding:13px 26px;border-radius:2px;
+  font-size:15.5px;font-weight:600;cursor:pointer;margin-top:16px}
+.gmGo:disabled{opacity:.6;cursor:not-allowed}
+.gmChk{display:flex;gap:10px;align-items:flex-start;margin-bottom:9px;cursor:pointer}
+.gmChk input{margin-top:4px;flex:none;width:16px;height:16px}
+.gmChk span{font-size:13.5px;line-height:1.5;color:#F0F6FC}
+.gmChk.opt span{color:#C7DDF3}
+.gmFine{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;line-height:1.6;color:#C7DDF3;margin:0 0 18px}
+.gmBar{height:3px;background:#123E6B;margin-bottom:18px}
+.gmBar i{display:block;height:3px;width:0;background:#3DDC84;transition:width .35s linear}
+.gmRow{border-left:2px solid #3DDC84;padding:1px 0 1px 13px;opacity:0;transform:translateY(6px);
+  transition:opacity .35s ease,transform .35s ease}
+.gmRow.in{opacity:1;transform:none}
+.gmRow h5{font-size:15px;color:#FFFFFF;margin:0 0 2px;font-weight:600;line-height:1.3}
+.gmRow p{font-size:13.5px;color:#C7DDF3;margin:0;line-height:1.45}
+@media(prefers-reduced-motion:reduce){.gmOv,.gmBox,.gmRow{transition:none}}
+</style>
+</head>
+<body>
+<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+
+<div class="wrap">
+<div class="mast">
+  <div class="brand">
+    <svg viewBox="0 0 90 90" width="38" height="38" role="img" aria-hidden="true">
+      <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#EF9F27"/>
+      <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#D85A30"/>
+      <path d="M52 18 L55 9" stroke="#3DDC84" stroke-width="5" stroke-linecap="round"/>
+      <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#3DDC84"/>
+    </svg>
+    <p>Krio Griot<span class="mono">NAMED, NOT COUNTED</span></p>
+  </div>
+  <nav class="nav" id="main-nav">
+    <a href="/about.html">About</a><a href="#break">The 1870 break</a><a href="#knowing">How I know</a><a href="#work">What I do</a><a href="#plans">Plans</a><a href="#" onclick="openModal('login-modal'); return false;" id="loginLink">Log in</a>
+  </nav>
+  <button class="ham-btn" id="ham-btn" aria-label="Open menu" aria-expanded="false"
+    onclick="var d=document.getElementById('ham-drawer'),o=d.classList.toggle('open');this.setAttribute('aria-expanded',o)">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="ham-drawer" id="ham-drawer">
+    <a href="/about.html">About</a>
+    <a href="#break" onclick="document.getElementById('ham-drawer').classList.remove('open')">The 1870 break</a>
+    <a href="#knowing" onclick="document.getElementById('ham-drawer').classList.remove('open')">How I know</a>
+    <a href="#work" onclick="document.getElementById('ham-drawer').classList.remove('open')">What I do</a>
+    <a href="#plans" onclick="document.getElementById('ham-drawer').classList.remove('open')">Plans</a>
+    <a href="#" onclick="document.getElementById('ham-drawer').classList.remove('open');openModal('login-modal');return false;">Log in</a>
+  </div>
+</div>
+</div>
+
+<section class="recite">
+    <svg class="mangoBG" viewBox="0 0 90 90" aria-hidden="true">
+      <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#072C4D"/>
+      <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#083358"/>
+      <path d="M52 18 L55 9" stroke="#072C4D" stroke-width="5" stroke-linecap="round"/>
+      <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#072C4D"/>
+    </svg>
+<div class="wrap">
+  <p class="eyebrow">Names I hold</p>
+  <h1 lang="kri">Sidɔm,<br class="brk">a sabi usay yu kɔmɔt.</h1>
+  <p class="lede">I hold what survived of your line. I will say each name, and tell you every hand it passed through to reach you.</p>
+
+  <div class="heroGrid">
+  <div>
+  <div id="stage" tabindex="0" aria-roledescription="carousel" aria-label="Names, one at a time">
+
+    <div class="nm">
+      <div class="nmL">
+        <p class="who">Elias Perrin</p>
+        <svg class="wv" viewBox="0 0 300 32" role="img"><title>Name spoken aloud</title><desc>Waveform of the name being said.</desc>
+          <rect x="0" y="4" width="4" height="24" fill="#3DDC84"/><rect x="9" y="11" width="4" height="10" fill="#3DDC84"/><rect x="18" y="1" width="4" height="30" fill="#3DDC84"/><rect x="27" y="12" width="4" height="8" fill="#3DDC84"/><rect x="36" y="6" width="4" height="20" fill="#3DDC84"/><rect x="45" y="13" width="4" height="6" fill="#3DDC84"/><rect x="54" y="3" width="4" height="26" fill="#3DDC84"/><rect x="63" y="10" width="4" height="12" fill="#3DDC84"/><rect x="72" y="5" width="4" height="22" fill="#3DDC84"/><rect x="81" y="12" width="4" height="8" fill="#3DDC84"/><rect x="90" y="4" width="4" height="24" fill="#3DDC84"/><rect x="99" y="11" width="4" height="10" fill="#3DDC84"/>
+          <rect x="112" y="13" width="4" height="6" fill="#2A6DB0"/><rect x="121" y="10" width="4" height="12" fill="#2A6DB0"/><rect x="130" y="14" width="4" height="4" fill="#2A6DB0"/><rect x="139" y="8" width="4" height="16" fill="#2A6DB0"/><rect x="148" y="12" width="4" height="8" fill="#2A6DB0"/><rect x="157" y="14" width="4" height="4" fill="#2A6DB0"/><rect x="166" y="11" width="4" height="10" fill="#2A6DB0"/><rect x="175" y="13" width="4" height="6" fill="#2A6DB0"/>
+        </svg>
+        <p class="meta">c. 1848 — Alabama · enslaved, then free</p>
+        <div class="det">
+          <p class="src">FREEDMEN'S BUREAU LABOR CONTRACT · 1867</p>
+          <div class="gr">
+            <svg viewBox="0 0 60 60" width="21" height="21" role="img"><title>Documented</title><desc>Solid ring with filled centre.</desc>
+              <circle cx="30" cy="30" r="20" fill="none" stroke="#3DDC84" stroke-width="6"/><circle cx="30" cy="30" r="8" fill="#3DDC84"/></svg>
+            <span>DOCUMENTED · I HOLD THE RECORD</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+    <div class="nm">
+      <div class="nmL">
+        <p class="who">Charlotte Dixon</p>
+        <svg class="wv" viewBox="0 0 300 32" role="img"><title>Name spoken aloud</title><desc>Waveform of the name being said.</desc>
+          <rect x="0" y="6" width="4" height="20" fill="#3DDC84"/><rect x="9" y="2" width="4" height="28" fill="#3DDC84"/><rect x="18" y="12" width="4" height="8" fill="#3DDC84"/><rect x="27" y="5" width="4" height="22" fill="#3DDC84"/><rect x="36" y="1" width="4" height="30" fill="#3DDC84"/><rect x="45" y="11" width="4" height="10" fill="#3DDC84"/><rect x="54" y="7" width="4" height="18" fill="#3DDC84"/><rect x="63" y="3" width="4" height="26" fill="#3DDC84"/><rect x="72" y="13" width="4" height="6" fill="#3DDC84"/><rect x="81" y="6" width="4" height="20" fill="#3DDC84"/><rect x="90" y="10" width="4" height="12" fill="#3DDC84"/><rect x="99" y="4" width="4" height="24" fill="#3DDC84"/>
+          <rect x="112" y="12" width="4" height="8" fill="#2A6DB0"/><rect x="121" y="14" width="4" height="4" fill="#2A6DB0"/><rect x="130" y="10" width="4" height="12" fill="#2A6DB0"/><rect x="139" y="13" width="4" height="6" fill="#2A6DB0"/><rect x="148" y="9" width="4" height="14" fill="#2A6DB0"/><rect x="157" y="13" width="4" height="6" fill="#2A6DB0"/><rect x="166" y="14" width="4" height="4" fill="#2A6DB0"/><rect x="175" y="11" width="4" height="10" fill="#2A6DB0"/>
+        </svg>
+        <p class="meta">c. 1839 — South Carolina · named in a deed of freedom</p>
+        <div class="det">
+          <p class="src">MANUMISSION DEED · CHARLESTON, 1863</p>
+          <div class="gr">
+            <svg viewBox="0 0 60 60" width="21" height="21" role="img"><title>Documented</title><desc>Solid ring with filled centre.</desc>
+              <circle cx="30" cy="30" r="20" fill="none" stroke="#3DDC84" stroke-width="6"/><circle cx="30" cy="30" r="8" fill="#3DDC84"/></svg>
+            <span>DOCUMENTED · I HOLD THE RECORD</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+    <div class="nm">
+      <div class="nmL">
+        <p class="who">Mariama</p>
+        <svg class="wv" viewBox="0 0 300 32" role="img"><title>Name spoken aloud</title><desc>Waveform of the name being said.</desc>
+          <rect x="0" y="8" width="4" height="16" fill="#EF9F27"/><rect x="9" y="3" width="4" height="26" fill="#EF9F27"/><rect x="18" y="11" width="4" height="10" fill="#EF9F27"/><rect x="27" y="6" width="4" height="20" fill="#EF9F27"/><rect x="36" y="1" width="4" height="30" fill="#EF9F27"/><rect x="45" y="12" width="4" height="8" fill="#EF9F27"/><rect x="54" y="5" width="4" height="22" fill="#EF9F27"/><rect x="63" y="10" width="4" height="12" fill="#EF9F27"/><rect x="72" y="4" width="4" height="24" fill="#EF9F27"/><rect x="81" y="13" width="4" height="6" fill="#EF9F27"/>
+          <rect x="94" y="12" width="4" height="8" fill="#2A6DB0"/><rect x="103" y="14" width="4" height="4" fill="#2A6DB0"/><rect x="112" y="10" width="4" height="12" fill="#2A6DB0"/><rect x="121" y="13" width="4" height="6" fill="#2A6DB0"/><rect x="130" y="11" width="4" height="10" fill="#2A6DB0"/><rect x="139" y="14" width="4" height="4" fill="#2A6DB0"/>
+        </svg>
+        <p class="meta">No surname held — Sierra Leone · kept in speech for four generations</p>
+        <div class="det">
+          <p class="src">SPOKEN BY HER GRANDDAUGHTER · NO PAPER SURVIVES</p>
+          <div class="gr">
+            <svg viewBox="0 0 60 60" width="21" height="21" role="img"><title>Carried</title><desc>Ring drawn as long linked segments.</desc>
+              <circle cx="30" cy="30" r="20" fill="none" stroke="#EF9F27" stroke-width="6" stroke-dasharray="14 6"/></svg>
+            <span>CARRIED · HANDED TO ME BY MOUTH</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+    <div class="nm absent">
+      <div class="nmL">
+        <p class="who">Name not recorded</p>
+        <p class="meta" style="margin-top:18px">Female, age 14 — Alabama · counted, never named</p>
+        <div class="det">
+          <p class="src">SLAVE SCHEDULE · 1860</p>
+          <div class="gr">
+            <svg viewBox="0 0 60 60" width="21" height="21" role="img"><title>Absent</title><desc>Finely dotted open ring.</desc>
+              <circle cx="30" cy="30" r="20" fill="none" stroke="#6FA9E0" stroke-width="5" stroke-dasharray="3 8"/></svg>
+            <span>ABSENT · I WILL NOT INVENT HER</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+  </div>
+  <div class="navrow">
+    <button class="arw" id="prev" aria-label="Previous name">&#8592;</button>
+    <div id="ticks" role="tablist" aria-label="Ancestors"></div>
+    <button class="arw" id="next" aria-label="Next name">&#8594;</button>
+  </div>
+  <div class="sndrow">
+    <button class="sndbtn" id="snd" aria-pressed="false">SOUND OFF</button>
+    <span class="sndnote">a glimmer when a name is held</span>
+  </div>
+
+  <div class="cta">
+    <a class="btn btn-p" href="#" onclick="openSignupWithPlan('free'); return false;">Start building your record</a>
+    <a class="btn btn-s" href="#knowing">See how I know</a>
+  </div>
+  </div>
+
+  <div class="vchain">
+    <svg class="mangoBG-mobile" viewBox="0 0 90 90" aria-hidden="true">
+      <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#072C4D"/>
+      <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#083358"/>
+      <path d="M52 18 L55 9" stroke="#072C4D" stroke-width="5" stroke-linecap="round"/>
+      <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#072C4D"/>
+    </svg>
+    <p class="chain-lbl">WHO CARRIED THIS NAME TO YOU</p>
+    <svg class="chainSVG" viewBox="0 0 300 470" role="img">
+      <title>Chain of custody for one name</title>
+      <desc>Five points read top to bottom from 1860 to today: counted but not named on an 1860 slave schedule, the break in the record, the 1867 Freedmen's Bureau contract that named him, a personal letter kept in 1911, a granddaughter who kept the name in speech in 1974, and you in the present.</desc>
+
+      <line x1="30" y1="46" x2="30" y2="128" stroke="#6FA9E0" stroke-width="2" stroke-dasharray="3 7"/>
+      <line x1="30" y1="158" x2="30" y2="212" stroke="#3DDC84" stroke-width="2"/>
+      <line x1="30" y1="242" x2="30" y2="304" stroke="#3DDC84" stroke-width="2"/>
+      <line x1="30" y1="334" x2="30" y2="396" stroke="#EF9F27" stroke-width="2"/>
+
+      <circle cx="30" cy="30" r="14" fill="none" stroke="#6FA9E0" stroke-width="3" stroke-dasharray="3 8"/>
+      <text x="60" y="26" font-size="14" font-family="ui-monospace,monospace" fill="#C7DDF3">1860</text>
+      <text x="60" y="46" font-size="12.5" font-family="ui-monospace,monospace" fill="#C7DDF3">counted, not named</text>
+
+      <text x="60" y="94" font-size="12.5" font-family="ui-monospace,monospace" fill="#6FA9E0">the break</text>
+
+      <circle cx="30" cy="142" r="14" fill="none" stroke="#3DDC84" stroke-width="3"/><circle cx="30" cy="142" r="6" fill="#3DDC84"/>
+      <text x="60" y="138" font-size="14" font-family="ui-monospace,monospace" fill="#F0F6FC">1867</text>
+      <text x="60" y="158" font-size="12.5" font-family="ui-monospace,monospace" fill="#C7DDF3">bureau clerk names him</text>
+
+      <circle cx="30" cy="226" r="14" fill="none" stroke="#3DDC84" stroke-width="3"/><circle cx="30" cy="226" r="6" fill="#3DDC84"/>
+      <text x="60" y="222" font-size="14" font-family="ui-monospace,monospace" fill="#F0F6FC">1911</text>
+      <text x="60" y="242" font-size="12.5" font-family="ui-monospace,monospace" fill="#C7DDF3">a letter kept</text>
+
+      <circle cx="30" cy="318" r="14" fill="none" stroke="#EF9F27" stroke-width="3" stroke-dasharray="11 5"/>
+      <text x="60" y="314" font-size="14" font-family="ui-monospace,monospace" fill="#F0F6FC">1974</text>
+      <text x="60" y="334" font-size="12.5" font-family="ui-monospace,monospace" fill="#C7DDF3">granddaughter, spoken</text>
+
+      <circle cx="30" cy="412" r="16" fill="#EF9F27"/>
+      <text x="60" y="408" font-size="14" font-family="ui-monospace,monospace" fill="#F0F6FC">today</text>
+      <text x="60" y="428" font-size="12.5" font-family="ui-monospace,monospace" fill="#C7DDF3">you</text>
+    </svg>
+  </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="wrap" style="padding:0">
+  <div class="rail">
+    <div><p class="n g">100+</p><p class="l mono">PLACES I LOOK</p></div>
+    <div><p class="n">4</p><p class="l mono">RECORD SYSTEMS, LINKED</p></div>
+    <div><p class="n">1870</p><p class="l mono">THE BREAK, CROSSED</p></div>
+    <div><p class="n g">7</p><p class="l mono">WAYS OF KNOWING</p></div>
+  </div>
+</div>
+</section>
+
+
+<section class="brkS" id="break">
+<div class="wrap">
+  <p class="eyebrow">The hardest problem in American genealogy</p>
+  <h2>Where the census stops,<br class="brk"> I keep going.</h2>
+  <p class="body">In 1870 the federal census named formerly enslaved people as free individuals for the first time. Before that year, most tools go quiet. These are the record sets that name your people through the break — and where they name no one, I say so.</p>
+
+  <div class="band">
+    <div class="b1">
+      <h3>BEFORE 1870</h3>
+      <p>Enslaved people were counted and not named. Standard platforms have no path forward from here.</p>
+    </div>
+    <div class="wallmark">THE<br>WALL</div>
+    <div class="b2">
+      <h3>RECONSTRUCTION-ERA RECORDS</h3>
+      <p>Five record sets that do name them. I search, extract, and organize all five — and grade what each one can actually prove.</p>
+    </div>
+  </div>
+
+  <div class="recs">
+    <div class="recrow">
+      <div>
+        <h4>Freedmen's Bureau Records</h4>
+        <p class="recyr">1865 – 1872</p>
+        <div class="recgrade">
+          <svg viewBox="0 0 60 60" width="19" height="19" role="img"><title>Documented</title><desc>Solid ring with filled centre.</desc>
+            <circle cx="30" cy="30" r="20" fill="none" stroke="#3DDC84" stroke-width="6"/><circle cx="30" cy="30" r="8" fill="#3DDC84"/></svg>
+          <span>DOCUMENTED</span>
+        </div>
+      </div>
+      <div>
+        <p class="rd">Labor contracts, marriage registers, apprenticeship records, ration rolls, and medical logs from the Bureau of Refugees, Freedmen, and Abandoned Lands. Often the earliest paper anywhere to hold an ancestor's full name, family structure, and location.</p>
+        <div class="tags"><span class="tag">Full names</span><span class="tag">Family members</span><span class="tag">Plantation of origin</span><span class="tag">Labor terms</span></div>
+      </div>
+    </div>
+
+    <div class="recrow">
+      <div>
+        <h4>Antebellum Slave Schedules</h4>
+        <p class="recyr">1850 &amp; 1860 CENSUS</p>
+        <div class="recgrade">
+          <svg viewBox="0 0 60 60" width="19" height="19" role="img"><title>Inferred</title><desc>Dashed ring with hollow centre.</desc>
+            <circle cx="30" cy="30" r="20" fill="none" stroke="#C7DDF3" stroke-width="5" stroke-dasharray="7 5"/><circle cx="30" cy="30" r="8" fill="none" stroke="#C7DDF3" stroke-width="4"/></svg>
+          <span>INFERRED</span>
+        </div>
+      </div>
+      <div>
+        <p class="rd">These name no one. I read age, sex, and physical description against known slaveholders, neighbouring plantations, and post-war Bureau papers to bridge the anonymity — and every crossing is marked as reasoning, never as fact.</p>
+        <div class="tags"><span class="tag">Age matching</span><span class="tag">Slaveholder links</span><span class="tag">County cross-reference</span></div>
+      </div>
+    </div>
+
+    <div class="recrow">
+      <div>
+        <h4>Freedom Certificates &amp; Manumission Records</h4>
+        <p class="recyr">1780s – 1865</p>
+        <div class="recgrade">
+          <svg viewBox="0 0 60 60" width="19" height="19" role="img"><title>Documented</title><desc>Solid ring with filled centre.</desc>
+            <circle cx="30" cy="30" r="20" fill="none" stroke="#3DDC84" stroke-width="6"/><circle cx="30" cy="30" r="8" fill="#3DDC84"/></svg>
+          <span>DOCUMENTED</span>
+        </div>
+      </div>
+      <div>
+        <p class="rd">Court registries, deeds of freedom, and physical description records for free people of colour before emancipation. These often carry family relationships, ages, and the name of whoever granted freedom — a direct link into slaveholder records.</p>
+        <div class="tags"><span class="tag">Physical descriptions</span><span class="tag">Deed references</span><span class="tag">Grantor names</span></div>
+      </div>
+    </div>
+
+    <div class="recrow">
+      <div>
+        <h4>Freedman's Savings &amp; Trust Registers</h4>
+        <p class="recyr">1865 – 1874</p>
+        <div class="recgrade">
+          <svg viewBox="0 0 60 60" width="19" height="19" role="img"><title>Documented</title><desc>Solid ring with filled centre.</desc>
+            <circle cx="30" cy="30" r="20" fill="none" stroke="#3DDC84" stroke-width="6"/><circle cx="30" cy="30" r="8" fill="#3DDC84"/></svg>
+          <span>DOCUMENTED</span>
+        </div>
+      </div>
+      <div>
+        <p class="rd">The richest paper of the era. One depositor entry can list immediate family by name, military regiment, birthplace, former enslaver, and current address — a single record can open an entire branch.</p>
+        <div class="tags"><span class="tag">Immediate kinship</span><span class="tag">USCT regiment</span><span class="tag">Birthplace</span><span class="tag">Former enslaver</span></div>
+      </div>
+    </div>
+
+    <div class="recrow">
+      <div>
+        <h4>"Information Wanted" Advertisements</h4>
+        <p class="recyr">1865 – 1900</p>
+        <div class="recgrade">
+          <svg viewBox="0 0 60 60" width="19" height="19" role="img"><title>Oral</title><desc>Small ring flanked by two arcs.</desc>
+            <circle cx="30" cy="30" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/>
+            <g stroke="#FFFFFF" stroke-width="4" fill="none"><path d="M30 30 m-22 -11 a24 24 0 0 0 0 22"/><path d="M30 30 m22 -11 a24 24 0 0 1 0 22"/></g></svg>
+          <span>TESTIMONY</span>
+        </div>
+      </div>
+      <div>
+        <p class="rd">Placed in Black newspapers by freedpeople searching for family separated during slavery. Each one names individuals, former slaveholders, and last known locations — the closest thing we have to a migration and separation tracker, written by the people it happened to.</p>
+        <div class="tags"><span class="tag">Migration routes</span><span class="tag">Separation events</span><span class="tag">Last known location</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<section class="sec" id="knowing">
+<div class="wrap">
+  <p class="eyebrow">Seven ways of knowing</p>
+  <h2 style="max-width:24ch">I will always tell you how I know.</h2>
+  <p class="body">A griot who guesses is not a griot. Every name I give you carries the mark of how it reached me — held in a record, reasoned from evidence, spoken by kin, disputed between sources, carried across a gap where no paper survived, or missing entirely. I will not fill a silence to make you feel better.</p>
+
+  <div class="legend">
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Documented</title><desc>Solid ring with filled centre.</desc>
+        <circle cx="30" cy="30" r="20" fill="none" stroke="#3DDC84" stroke-width="3.5"/><circle cx="30" cy="30" r="9" fill="#3DDC84"/></svg>
+      <figcaption>Documented</figcaption><small class="mono">I HOLD THE RECORD</small>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Inferred</title><desc>Dashed ring with hollow centre.</desc>
+        <circle cx="30" cy="30" r="20" fill="none" stroke="#C7DDF3" stroke-width="3.5" stroke-dasharray="7 5"/><circle cx="30" cy="30" r="9" fill="none" stroke="#C7DDF3" stroke-width="2.5"/></svg>
+      <figcaption>Inferred</figcaption><small class="mono">I REASONED IT</small>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Oral</title><desc>Small ring flanked by two arcs.</desc>
+        <circle cx="30" cy="30" r="13" fill="none" stroke="#FFFFFF" stroke-width="3.5"/>
+        <g stroke="#FFFFFF" stroke-width="2.5" fill="none"><path d="M30 30 m-22 -11 a24 24 0 0 0 0 22"/><path d="M30 30 m22 -11 a24 24 0 0 1 0 22"/></g></svg>
+      <figcaption>Oral</figcaption><small class="mono">KIN TOLD ME</small>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Carried</title><desc>Ring drawn as long linked segments.</desc>
+        <circle cx="30" cy="30" r="20" fill="none" stroke="#EF9F27" stroke-width="3.5" stroke-dasharray="14 6"/></svg>
+      <figcaption>Carried</figcaption><small class="mono">HANDED DOWN</small>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Contested</title><desc>Two facing arcs that do not close.</desc>
+        <g stroke="#8FC0EC" stroke-width="3.5" fill="none"><path d="M26 10 A20 20 0 0 0 26 50"/><path d="M34 10 A20 20 0 0 1 34 50"/></g></svg>
+      <figcaption>Contested</figcaption><small class="mono">SOURCES DIFFER</small>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Absent</title><desc>Finely dotted open ring.</desc>
+        <circle cx="30" cy="30" r="20" fill="none" stroke="#6FA9E0" stroke-width="3.2" stroke-dasharray="2 6"/></svg>
+      <figcaption>Absent</figcaption><small class="mono">THE SILENCE NAMED</small>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 60 60" role="img"><title>Synthetic</title><desc>Ring crossed by an X.</desc>
+        <circle cx="30" cy="30" r="20" fill="none" stroke="#FFFFFF" stroke-width="3.5"/>
+        <g stroke="#FFFFFF" stroke-width="2.5"><line x1="16" y1="16" x2="44" y2="44"/><line x1="44" y1="16" x2="16" y2="44"/></g></svg>
+      <figcaption>Synthetic</figcaption><small class="mono">MACHINE-MADE</small>
+    </figure>
+  </div>
+</div>
+</section>
+
+<section class="wall" id="work">
+<div class="wrap">
+  <p class="eyebrow">What I do when you ask</p>
+  <h2>Three hands. One workspace.</h2>
+  <p class="body">I work three ways at once — searching, reading, and drawing the line. Each one feeds the others, so nothing you find has to be typed twice.</p>
+
+  <div class="tools">
+  <div class="tool">
+    <p class="tnum mono">01 · I SEARCH</p>
+    <h4>The research assistant</h4>
+    <p>Give me a name and what little you know. I look through over a hundred collections at once — Bureau papers, census archives, USCT rolls, newspapers, state repositories — and I write down every place I looked and whether it answered. The log is kept whether I find someone or not.</p>
+    <div class="tags"><span class="tag">100+ collections</span><span class="tag">Every search logged</span><span class="tag">Negative results kept</span></div>
+  </div>
+
+  <div class="tool">
+    <p class="tnum mono">02 · I READ</p>
+    <h4>The archive scanner</h4>
+    <p>Bring me a scan, a photograph, a letter, a deed. I read the hand, pull the names, dates, and places, and file them to archival standard without you typing a word. A box of loose paper becomes a collection you can search.</p>
+    <div class="tags"><span class="tag">Handwriting read</span><span class="tag">Metadata filled</span><span class="tag">Linked to kin</span></div>
+  </div>
+
+  <div class="tool">
+    <p class="tnum mono">03 · I DRAW THE LINE</p>
+    <h4>The family tree</h4>
+    <p>Bring your GEDCOM from anywhere and the whole line loads at once — every person, every connection, every date. Move through it, search it, open anyone to edit without leaving the view. Where a parent is missing, connect them and the branch redraws.</p>
+    <div class="tags"><span class="tag">GEDCOM import</span><span class="tag">Edit in place</span><span class="tag">Connect on the canvas</span></div>
+  </div>
+  </div>
+
+  <p class="body" style="margin-top:34px">Four databases sit underneath all of it. Every table is editable in the cell — filter, sort, bulk-select — and every record is linked to every other.</p>
+
+  <div class="beds">
+    <div class="bed">
+      <h5>Ancestors Directory</h5>
+      <p class="bsub mono">ONE ROW PER PERSON</p>
+      <p>The central directory for everyone in your tree — names and spellings, life status, birth and death, family connections, and DNA matches with shared cMs.</p>
+      <div class="tags"><span class="tag">Name &amp; aliases</span><span class="tag">Life status</span><span class="tag">Birth / death / burial</span><span class="tag">Family links</span><span class="tag">DNA cM values</span><span class="tag">Generation &amp; line</span></div>
+    </div>
+    <div class="bed">
+      <h5>Historical Events Timeline</h5>
+      <p class="bsub mono">ONE ROW PER LIFE EVENT</p>
+      <p>Each moment gets its own row — a birth, a land deed, an enlistment, an emancipation filing, a marriage. Rows stack chronologically with a citation on every one.</p>
+      <div class="tags"><span class="tag">Event type</span><span class="tag">Event date</span><span class="tag">Location</span><span class="tag">Source citation</span><span class="tag">Linked ancestor</span><span class="tag">Evidence grade</span></div>
+    </div>
+    <div class="bed">
+      <h5>Research Log</h5>
+      <p class="bsub mono">CONTINUOUS AUDIT TRAIL</p>
+      <p>A permanent record of every search — which databases, which keywords, what date, and the result: found, not found, or inconclusive. Negative results are kept, not discarded.</p>
+      <div class="tags"><span class="tag">Research question</span><span class="tag">Databases searched</span><span class="tag">Keywords used</span><span class="tag">Result status</span><span class="tag">Linked ancestor</span><span class="tag">GPS checklist</span></div>
+    </div>
+    <div class="bed">
+      <h5>Digital Archive</h5>
+      <p class="bsub mono">SCANNED FILES + EXTRACTED METADATA</p>
+      <p>Where your uploads live as archival records — the original file, the text read from it, the metadata filed to standard, and links to every ancestor the document names.</p>
+      <div class="tags"><span class="tag">Uploaded file</span><span class="tag">OCR transcript</span><span class="tag">Metadata tags</span><span class="tag">Format &amp; condition</span><span class="tag">Linked ancestors</span><span class="tag">Collection</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  if(!stage) return;
+  var cards=[].slice.call(stage.querySelectorAll('.nm'));
+  var ticks=document.getElementById('ticks');
+  var i=0,timer=null,held=false;
+  cards.forEach(function(c,x){
+    var b=document.createElement('button');
+    var nm=c.querySelector('.who');
+    b.setAttribute('aria-label', nm ? nm.textContent : ('Name '+(x+1)));
+    b.setAttribute('aria-current','false');
+    b.addEventListener('click',function(){ manual(); i=x; show(i); });
+    ticks.appendChild(b);
+  });
+  var tk=[].slice.call(ticks.children);
+  function show(n){
+    cards.forEach(function(c,x){
+      if(x===n){ c.classList.add('on'); } else { c.classList.remove('on'); }
+      c.style.pointerEvents = x===n ? 'auto' : 'none';
+    });
+    tk.forEach(function(t,x){ t.setAttribute('aria-current', x===n ? 'true' : 'false'); });
+  }
+  function next(){ i=(i+1)%cards.length; show(i); }
+  function prev(){ i=(i-1+cards.length)%cards.length; show(i); }
+  var userTook=false;
+  function manual(){ userTook=true; stop(); }
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  show(0);
+  function start(){ if(!reduce && !userTook && !held && !timer) timer=setInterval(next,4800); }
+  function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+  var ac=null,sndOn=false,lastPlay=0;
+  var btn=document.getElementById('snd');
+  if(btn){
+    btn.addEventListener('click',function(){
+      sndOn=!sndOn;
+      btn.setAttribute('aria-pressed',sndOn?'true':'false');
+      btn.textContent=sndOn?'SOUND ON':'SOUND OFF';
+      if(sndOn){
+        try{
+          if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)();
+          if(ac.state==='suspended') ac.resume();
+          glimmer();
+        }catch(e){ sndOn=false; btn.textContent='SOUND UNAVAILABLE'; }
+      }
+    });
+  }
+  function glimmer(){
+    if(!ac) return;
+    var t=ac.currentTime;
+    if(t-lastPlay<0.25) return;
+    lastPlay=t;
+    var master=ac.createGain();
+    master.gain.value=0.07;
+    master.connect(ac.destination);
+    [2093,3136,4186].forEach(function(f,n){
+      var o=ac.createOscillator(), g=ac.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(f*0.992,t);
+      o.frequency.exponentialRampToValueAtTime(f,t+0.09);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(1/(n+1.4),t+0.012+n*0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.42+n*0.06);
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t+0.6);
+    });
+  }
+  function hold(){
+    held=true; stop();
+    var d=cards[i].querySelector('.det'); if(d) d.style.opacity='1';
+    if(sndOn && ac){ if(ac.state==='suspended') ac.resume(); glimmer(); }
+  }
+  function release(){ held=false; var d=cards[i].querySelector('.det'); if(d) d.style.opacity='0'; start(); }
+  var pv=document.getElementById('prev'), nx=document.getElementById('next');
+  if(pv) pv.addEventListener('click',function(){ manual(); prev(); });
+  if(nx) nx.addEventListener('click',function(){ manual(); next(); });
+  stage.addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft'){ e.preventDefault(); manual(); prev(); }
+    if(e.key==='ArrowRight'){ e.preventDefault(); manual(); next(); }
+  });
+  var x0=null,y0=null;
+  stage.addEventListener('touchstart',function(e){
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY;
+  },{passive:true});
+  stage.addEventListener('touchend',function(e){
+    if(x0===null) return;
+    var dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>44 && Math.abs(dx)>Math.abs(dy)){
+      manual(); if(dx<0){ next(); } else { prev(); }
+      if(sndOn && ac) glimmer();
+    }
+    x0=null; y0=null;
+  },{passive:true});
+  stage.addEventListener('mouseenter',hold);
+  stage.addEventListener('mouseleave',release);
+  stage.addEventListener('focusin',hold);
+  stage.addEventListener('focusout',release);
+  start();
+})();
+</script>
+
+<section class="price" id="plans">
+<div class="wrap">
+  <p class="eyebrow">Plans</p>
+  <h2>Start free. Go deeper when you are ready.</h2>
+  <p class="body">Every account begins as a free workspace. Build your tree, enter what you have, and see what the research engine does before you pay anything.</p>
+
+  <div class="bill">
+    <button class="billbtn" id="bmo" aria-pressed="true">MONTHLY</button>
+    <button class="billbtn" id="ban" aria-pressed="false">ANNUAL</button>
+    <span class="billnote" id="bnote">Annual billing saves about 17%</span>
+  </div>
+
+  <div class="plans">
+
+    <div class="plan">
+      <p class="ptier">STARTER</p>
+      <h3>Free</h3>
+      <div class="pamt"><strong>$0</strong><span>forever</span></div>
+      <p class="pdesc">The digital replacement for paper worksheets. Build your tree, enter records by hand, and see firsthand what the engine can do.</p>
+      <p class="pinc">WHAT YOU GET</p>
+      <ul class="plist">
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Interactive family tree with GEDCOM import</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Edit and connect relationships on the tree</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>DNA match entry forms, entered manually</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>5–10 public-domain database searches</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>3–5 Archive Scanner scans, lifetime</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>View exhibits others have published</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>250–500 MB storage</span></li>
+      </ul>
+      <p class="pinc">NOT INCLUDED</p>
+      <ul class="pout">
+        <li>Automated research logging</li>
+        <li>Persistent research log and source database</li>
+        <li>Unlimited Archive Scanner scans</li>
+        <li>Creating or publishing exhibits</li>
+      </ul>
+      <a class="pbtn ghost" href="#" onclick="openSignupWithPlan('free'); return false;">Start for free</a>
+    </div>
+
+    <div class="plan pick">
+      <p class="ptier">ACTIVE RESEARCHER · MOST CHOSEN</p>
+      <h3>Basic</h3>
+      <div class="pamt"><strong class="amt" data-mo="$25" data-an="$21">$25</strong><span class="per">per month</span></div>
+      <p class="pdesc">Automates the paperwork and organizes the research process. Built for one family historian working a specific lineage.</p>
+      <p class="pinc">EVERYTHING IN FREE, PLUS</p>
+      <ul class="plist">
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>50 core historical and African American databases</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Automated research log, unlimited</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Full pedigree and DNA match tracking</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sources and citations database</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Research questions tracker, GPS standard</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>100 Archive Scanner scans each month</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Create private digital exhibits</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>5 GB secure storage</span></li>
+      </ul>
+      <a class="pbtn solid" href="#" onclick="openSignupWithPlan('basic-paid'); return false;">Get Basic</a>
+      <p class="pfine">No contracts · cancel anytime</p>
+    </div>
+
+    <div class="plan">
+      <p class="ptier">POWER RESEARCHER &amp; ARCHIVIST</p>
+      <h3>Upgrade</h3>
+      <div class="pamt"><strong class="amt" data-mo="$49" data-an="$41">$49</strong><span class="per">per month</span></div>
+      <p class="pdesc">Deep analysis, unlimited bulk processing, and public exhibits — for professional genealogists and large family collections.</p>
+      <p class="pinc">EVERYTHING IN BASIC, PLUS</p>
+      <ul class="plist">
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>All 100+ databases, including deep-web state and local archives</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Advanced analytics: spelling variants, naming patterns, brick-wall strategies</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Unlimited Archive Scanner, bulk PDF and ZIP uploads</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Publish exhibits publicly and privately</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Multi-tree and client project management</span></li>
+        <li><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>100 GB – 1 TB storage</span></li>
+      </ul>
+      <a class="pbtn ghost" href="#" onclick="openSignupWithPlan('upgrade'); return false;">Get Upgrade</a>
+      <p class="pfine">No contracts · cancel anytime</p>
+    </div>
+
+  </div>
+
+  <div class="cmp">
+    <p class="cmplbl">FULL COMPARISON</p>
+    <div class="cmpwrap">
+    <table class="cmp-t">
+      <caption class="sr-only">Feature comparison across the Free, Basic, and Upgrade plans</caption>
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Free<small>$0</small></th>
+          <th scope="col" class="pk">Basic<small>$25/MO</small></th>
+          <th scope="col">Upgrade<small>$49/MO</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp"><td colspan="4">RESEARCH TOOLS</td></tr>
+        <tr><td class="ft">Pedigree chart and DNA tree</td><td class="v hi">Unlimited</td><td class="v hi pk">Unlimited</td><td class="v hi">Unlimited</td></tr>
+        <tr><td class="ft">Relationship calculator</td><td class="v"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></td><td class="v pk"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></td><td class="v"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+        <tr><td class="ft">Search databases</td><td class="v dim">5–10 public</td><td class="v hi pk">50+ core</td><td class="v hi">100+ complete</td></tr>
+        <tr><td class="ft">Automated research log</td><td class="v dim">Manual entry</td><td class="v hi pk">Fully automated</td><td class="v hi">Analytics and variants</td></tr>
+        <tr class="grp"><td colspan="4">ARCHIVE SCANNER</td></tr>
+        <tr><td class="ft">Metadata scans</td><td class="v dim">3–5 lifetime</td><td class="v hi pk">100 per month</td><td class="v hi">Unlimited</td></tr>
+        <tr><td class="ft">Bulk PDF and ZIP upload</td><td class="v dim"><span aria-label="not included">&#8212;</span></td><td class="v dim pk"><span aria-label="not included">&#8212;</span></td><td class="v"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 12.5 L9.5 18 L20 6" fill="none" stroke="#3DDC84" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+        <tr class="grp"><td colspan="4">EXHIBITS AND COLLECTIONS</td></tr>
+        <tr><td class="ft">Digital exhibits</td><td class="v dim">View only</td><td class="v hi pk">Create private</td><td class="v hi">Public and private</td></tr>
+        <tr class="grp"><td colspan="4">STORAGE</td></tr>
+        <tr><td class="ft">Cloud storage</td><td class="v dim">250–500 MB</td><td class="v hi pk">5 GB</td><td class="v hi">100 GB – 1 TB</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+</section>
+
+<script>
+(function(){
+  var mo=document.getElementById('bmo'), an=document.getElementById('ban'),
+      note=document.getElementById('bnote');
+  if(!mo||!an) return;
+  var amts=[].slice.call(document.querySelectorAll('.amt')),
+      pers=[].slice.call(document.querySelectorAll('.per'));
+  function set(annual){
+    mo.setAttribute('aria-pressed', annual?'false':'true');
+    an.setAttribute('aria-pressed', annual?'true':'false');
+    amts.forEach(function(a){ a.textContent = annual ? a.dataset.an : a.dataset.mo; });
+    pers.forEach(function(p){ p.textContent = annual ? 'per month, billed yearly' : 'per month'; });
+    note.textContent = annual ? 'Basic $250 a year · Upgrade $490 a year' : 'Annual billing saves about 17%';
+  }
+  mo.addEventListener('click',function(){ set(false); });
+  an.addEventListener('click',function(){ set(true); });
+})();
+</script>
+
+<footer>
+<div class="wrap">
+  <div class="fgrid">
+    <div>
+      <div class="fbrand">
+        <svg viewBox="0 0 90 90" width="34" height="34" role="img" aria-hidden="true">
+          <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#EF9F27"/>
+          <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#D85A30"/>
+          <path d="M52 18 L55 9" stroke="#3DDC84" stroke-width="5" stroke-linecap="round"/>
+          <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#3DDC84"/>
+        </svg>
+        <p>Krio Griot</p>
+      </div>
+      <p class="fblurb">Genealogy and archival research for African American and diaspora family lines. Every name carries the mark of how it is known.</p>
+      <p class="fkrio" lang="kri">Sid&#596;m, a sabi usay yu k&#596;m&#596;t.</p>
+    </div>
+
+    <div class="fcol">
+      <h6>THE WORK</h6>
+      <ul>
+        <li><a href="#break">The 1870 break</a></li>
+        <li><a href="#knowing">How I know</a></li>
+        <li><a href="#work">What I do</a></li>
+        <li><a href="#plans">Plans</a></li>
+      </ul>
+    </div>
+
+    <div class="fcol">
+      <h6>HELP</h6>
+      <ul>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/docs/getting-started.html">Getting started</a></li>
+        <li><a href="/docs/documentation.html">Documentation</a></li>
+        <li><a href="/docs/what-i-cannot-do.html">What I cannot do</a></li>
+        <li><a href="#" onclick="openBugReport(); return false;">Report a problem</a></li>
+      </ul>
+    </div>
+
+    <div class="fcol">
+      <h6>YOUR ACCOUNT</h6>
+      <ul>
+        <li><a href="#" onclick="openModal('login-modal'); return false;">Log in</a></li>
+        <li><a href="#plans">Start free</a></li>
+        <li><a href="#plans">Change plan</a></li>
+        <li><a href="/docs/privacy.html">Your data and privacy</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="fbot">
+    <p>&copy; 2026 Krio Griot &middot; built by <a href="https://www.aishaladon.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">Aisha LaDon Abdul Rahman</a>, archivist and genealogist</p>
+    <p>Freetown &middot; Sacramento</p>
+  </div>
+</div>
+</footer>
+
+
+<!-- ── Modal & toast styles ─────────────────────────────────────────────── -->
+<style>
+/* Modal base */
+.modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(2,17,32,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.auth-modal{background:#062F58;border:1px solid rgba(160,200,240,.25);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.auth-modal-header{padding:28px 28px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.auth-modal-header h2{font-size:1.4rem;font-weight:700;color:#fff;margin:0}
+.auth-modal-header p{font-size:.85rem;color:#C7DDF3;margin:6px 0 0}
+.modal-close-btn{background:rgba(160,200,240,.1);border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#C7DDF3;font-size:.85rem;margin-left:12px;margin-top:4px;transition:all .15s}
+.modal-close-btn:hover{background:rgba(160,200,240,.2);color:#fff}
+.auth-modal-body{padding:24px 28px 32px}
+.form-section-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#EF9F27;margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.form-section-label::after{content:'';flex:1;height:1px;background:rgba(160,200,240,.2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-group label{font-size:.78rem;font-weight:600;color:#C7DDF3}
+.form-group input,.form-group textarea,.form-group select{background:#04223F;border:1px solid rgba(160,200,240,.25);border-radius:8px;padding:10px 13px;color:#F0F6FC;font-size:.9rem;font-family:inherit;outline:none;transition:border-color .15s;width:100%}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:#EF9F27}
+.form-group input::placeholder,.form-group textarea::placeholder{color:rgba(199,221,243,.4)}
+.form-group textarea{resize:vertical}
+/* Plan selector */
+.plan-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.plan-selector-3{grid-template-columns:repeat(3,1fr)}
+.plan-option{border:1.5px solid rgba(160,200,240,.2);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;text-align:left;background:#04223F}
+.plan-option:hover{border-color:rgba(239,159,39,.5)}
+.plan-option.selected{border-color:#EF9F27;background:rgba(239,159,39,.07)}
+.plan-option-name{font-size:.85rem;font-weight:700;color:#F0F6FC;margin-bottom:3px}
+.plan-option-price{font-size:.76rem;color:#C7DDF3}
+.plan-option.selected .plan-option-name{color:#EF9F27}
+.plan-option-check{display:none;float:right;color:#EF9F27;font-size:.85rem}
+.plan-option.selected .plan-option-check{display:inline}
+.plan-option-upgrade{border-color:rgba(61,220,132,.2)!important}
+.plan-option-upgrade.selected{border-color:#3DDC84!important;background:rgba(61,220,132,.07)!important}
+.plan-option-upgrade.selected .plan-option-name{color:#3DDC84!important}
+/* Billing collapse */
+.billing-section{overflow:hidden;max-height:0;opacity:0;transition:max-height .3s ease,opacity .25s ease}
+.billing-section.visible{max-height:600px;opacity:1}
+.card-input-wrapper{position:relative}
+.card-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none;color:#C7DDF3}
+/* Submit / switch */
+.auth-submit-btn{width:100%;justify-content:center;margin-top:8px;padding:13px;font-size:.95rem;background:#EF9F27;color:#062F58;border:none;border-radius:8px;font-weight:700;cursor:pointer;transition:background .15s}
+.auth-submit-btn:hover{background:#d98e20}
+.auth-switch{text-align:center;margin-top:18px;font-size:.84rem;color:#C7DDF3}
+.auth-switch button{background:none;border:none;cursor:pointer;color:#EF9F27;font-weight:600;font-size:.84rem;padding:0;transition:color .15s}
+.auth-switch button:hover{color:#d98e20}
+/* Alerts */
+.auth-alert{padding:10px 14px;border-radius:8px;font-size:.84rem;margin-bottom:14px;display:none}
+.auth-alert.error{background:rgba(224,85,85,.12);border:1px solid rgba(224,85,85,.35);color:#f0a0a0;display:block}
+.auth-alert.success{background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.3);color:#7de8b2;display:block}
+/* Plan detail box */
+.plan-detail-box{padding:9px 13px;border-radius:8px;margin-bottom:10px;background:rgba(239,159,39,.06);border:1px solid rgba(239,159,39,.18);font-size:.8rem;color:#C7DDF3;line-height:1.5}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:3000;background:#062F58;border:1px solid rgba(160,200,240,.25);border-radius:12px;padding:14px 18px;box-shadow:0 12px 40px rgba(0,0,0,.6);display:flex;align-items:center;gap:12px;font-size:.88rem;color:#F0F6FC;max-width:340px;transform:translateY(80px);opacity:0;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1;pointer-events:auto}
+@media(max-width:520px){.form-row{grid-template-columns:1fr}.plan-selector-3{grid-template-columns:1fr}}
+</style>
+
+<!-- ── Login modal ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="login-modal" onclick="handleOverlayClick(event,'login-modal')">
+  <div class="auth-modal" onclick="event.stopPropagation()">
+    <div class="auth-modal-header">
+      <div><h2>Welcome Back</h2><p>Log in to continue your research</p></div>
+      <button class="modal-close-btn" onclick="closeModal('login-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="auth-modal-body">
+      <div class="auth-alert" id="login-alert"></div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Your password" autocomplete="current-password"/></div>
+      <button class="auth-submit-btn" onclick="handleLogin()">Log In to Krio Griot</button>
+      <div class="auth-switch" style="margin-top:14px;"><a href="/login" style="color:rgba(192,220,248,.45);font-size:.82rem;text-decoration:none;">Forgot your password? <span style="text-decoration:underline;">Visit the sign in page</span></a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Signup modal ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="signup-modal" onclick="handleOverlayClick(event,'signup-modal')">
+  <div class="auth-modal" onclick="event.stopPropagation()">
+    <div class="auth-modal-header">
+      <div><h2>Create Your Account</h2><p>Start uncovering your family history today</p></div>
+      <button class="modal-close-btn" onclick="closeModal('signup-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="auth-modal-body">
+      <div class="auth-alert" id="signup-alert"></div>
+      <div class="form-section-label">Contact Information</div>
+      <div class="form-row">
+        <div class="form-group"><label>First Name</label><input type="text" id="signup-first" placeholder="First" autocomplete="given-name"/></div>
+        <div class="form-group"><label>Last Name</label><input type="text" id="signup-last" placeholder="Last" autocomplete="family-name"/></div>
+      </div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Password</label><input type="password" id="signup-pass" placeholder="Create a password" autocomplete="new-password"/></div>
+        <div class="form-group"><label>Confirm Password</label><input type="password" id="signup-pass2" placeholder="Confirm password" autocomplete="new-password"/></div>
+      </div>
+      <div class="form-section-label">Choose Your Plan</div>
+      <div class="plan-selector plan-selector-3">
+        <div class="plan-option selected" id="plan-free" onclick="selectPlan('free')"><span class="plan-option-check">✓</span><div class="plan-option-name">Free</div><div class="plan-option-price">$0 · Forever</div></div>
+        <div class="plan-option" id="plan-basic-paid" onclick="selectPlan('basic-paid')"><span class="plan-option-check">✓</span><div class="plan-option-name">Basic</div><div class="plan-option-price">$25 / month</div></div>
+        <div class="plan-option plan-option-upgrade" id="plan-upgrade" onclick="selectPlan('upgrade')"><span class="plan-option-check">✓</span><div class="plan-option-name">Upgrade</div><div class="plan-option-price">$49 / month</div></div>
+      </div>
+      <div class="plan-detail-box"><span id="plan-detail-text">Get started free — explore the platform with no commitment.</span></div>
+      <div class="billing-section" id="billing-section">
+        <div class="form-section-label">Billing Information</div>
+        <div class="form-group"><label>Cardholder Name</label><input type="text" id="billing-name" placeholder="Name on card" autocomplete="cc-name"/></div>
+        <div class="form-group"><label>Card Number</label><div class="card-input-wrapper"><input type="text" id="billing-card" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number"/><span class="card-icon">💳</span></div></div>
+        <div class="form-row">
+          <div class="form-group"><label>Expiration</label><input type="text" id="billing-exp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)" autocomplete="cc-exp"/></div>
+          <div class="form-group"><label>CVC</label><input type="text" id="billing-cvc" placeholder="123" maxlength="4" oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="cc-csc"/></div>
+        </div>
+        <div class="form-group"><label>Billing Address</label><input type="text" id="billing-addr" placeholder="Street address" autocomplete="street-address"/></div>
+        <div class="form-row">
+          <div class="form-group"><label>City</label><input type="text" id="billing-city" placeholder="City" autocomplete="address-level2"/></div>
+          <div class="form-group"><label>ZIP / Postal Code</label><input type="text" id="billing-zip" placeholder="ZIP" autocomplete="postal-code"/></div>
+        </div>
+      </div>
+      <button class="auth-submit-btn" id="signup-submit-btn" onclick="handleSignup()">Create Free Account</button>
+      <div class="auth-switch">Already have an account? <button onclick="switchModal('signup-modal','login-modal')">Log in here</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Bug report modal ─────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="bug-modal" onclick="handleOverlayClick(event,'bug-modal')">
+  <div class="auth-modal" onclick="event.stopPropagation()">
+    <div class="auth-modal-header">
+      <div><h2>Report a Problem</h2><p>Help us improve Krio Griot</p></div>
+      <button class="modal-close-btn" onclick="closeModal('bug-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="auth-modal-body">
+      <div class="form-group"><label>What were you trying to do?</label><input type="text" id="bug-action" placeholder="e.g. Add a new ancestor, run a search…"/></div>
+      <div class="form-group"><label>What happened instead?</label><textarea id="bug-desc" rows="4" placeholder="Describe the problem in as much detail as possible…"></textarea></div>
+      <div class="form-group"><label>Your Email (for follow-up)</label><input type="email" id="bug-email" placeholder="you@example.com"/></div>
+      <button class="auth-submit-btn" onclick="handleBugReport()">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ────────────────────────────────────────────────────────────── -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-icon">✓</span><span id="toast-msg">Done</span>
+</div>
+
+<!-- ── Modal + auth JS ──────────────────────────────────────────────────── -->
+<script>
+// Modal helpers
+function openModal(id){document.getElementById(id).classList.remove('hidden');document.body.style.overflow='hidden'}
+function closeModal(id){document.getElementById(id).classList.add('hidden');document.body.style.overflow=''}
+function handleOverlayClick(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+function switchModal(from,to){closeModal(from);openModal(to)}
+function openSignupWithPlan(plan){openModal('signup-modal');setTimeout(()=>selectPlan(plan),50)}
+function openBugReport(){openModal('bug-modal')}
+function showComingSoon(label){showToast('→',label+' coming soon!')}
+
+// Toast
+var toastTimer=null;
+function showToast(icon,msg,ms){
+  ms=ms||3500;
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  var t=document.getElementById('toast');t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+// Plan selection
+var selectedPlan='free';
+var PLAN_DETAILS={
+  'free':'Get started free — explore the platform with no commitment.',
+  'basic-paid':'Automates your research workflow with 50+ databases, full logging, and 100 AI scans per month.',
+  'upgrade':'Full access to all 100+ databases, unlimited AI scanning, bulk processing, and public exhibits.'
+};
+function selectPlan(plan){
+  selectedPlan=plan;
+  document.querySelectorAll('.plan-option').forEach(function(el){el.classList.remove('selected')});
+  var el=document.getElementById('plan-'+plan);if(el)el.classList.add('selected');
+  var d=document.getElementById('plan-detail-text');if(d)d.textContent=PLAN_DETAILS[plan]||'';
+  var billing=document.getElementById('billing-section');
+  var btn=document.getElementById('signup-submit-btn');
+  if(plan==='free'){
+    billing.classList.remove('visible');
+    if(btn)btn.textContent='Create Free Account';
+  }else{
+    billing.classList.add('visible');
+    if(btn)btn.textContent=plan==='upgrade'?'Create Account — $49/month':'Create Account — $25/month';
+  }
+}
+
+// Card formatters
+function fmtCard(inp){var v=inp.value.replace(/\D/g,'').substring(0,16);inp.value=v.replace(/(.{4})/g,'$1 ').trim()}
+function fmtExp(inp){var v=inp.value.replace(/\D/g,'').substring(0,4);if(v.length>=3)v=v.substring(0,2)+' / '+v.substring(2);inp.value=v}
+
+// Login (real API)
+async function handleLogin(){
+  var email=document.getElementById('login-email').value.trim();
+  var pass=document.getElementById('login-password').value;
+  var al=document.getElementById('login-alert');
+  al.className='auth-alert';al.textContent='';
+  if(!email||!pass){al.className='auth-alert error';al.textContent='Please enter your email and password.';return}
+  try{
+    var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    var data=await r.json();
+    if(!r.ok){al.className='auth-alert error';al.textContent=data.error||'Login failed. Please try again.';return}
+    localStorage.setItem('kg_token',data.token);
+    localStorage.setItem('kg_user',JSON.stringify(data.user));
+    al.className='auth-alert success';al.textContent='✓ Logged in! Redirecting…';
+    setTimeout(()=>{window.location.href='/app'},1200);
+  }catch(e){al.className='auth-alert error';al.textContent='Connection error. Please try again.'}
+}
+
+// Signup (real API)
+async function handleSignup(){
+  var first=document.getElementById('signup-first').value.trim();
+  var last=document.getElementById('signup-last').value.trim();
+  var email=document.getElementById('signup-email').value.trim();
+  var pass=document.getElementById('signup-pass').value;
+  var pass2=document.getElementById('signup-pass2').value;
+  var al=document.getElementById('signup-alert');
+  al.className='auth-alert';al.textContent='';
+  if(!first||!last){al.className='auth-alert error';al.textContent='Please enter your first and last name.';return}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){al.className='auth-alert error';al.textContent='Please enter a valid email address.';return}
+  if(pass.length<8){al.className='auth-alert error';al.textContent='Password must be at least 8 characters.';return}
+  if(pass!==pass2){al.className='auth-alert error';al.textContent='Passwords do not match.';return}
+  if(selectedPlan!=='free'){
+    var card=document.getElementById('billing-card').value.replace(/\s/g,'');
+    var exp=document.getElementById('billing-exp').value;
+    var cvc=document.getElementById('billing-cvc').value;
+    if(!card||card.length<15||!exp||!cvc){al.className='auth-alert error';al.textContent='Please complete your billing information.';return}
+  }
+  try{
+    var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName:first,lastName:last,email,password:pass,plan:selectedPlan})});
+    var data=await r.json();
+    if(!r.ok){al.className='auth-alert error';al.textContent=data.error||'Registration failed. Please try again.';return}
+    localStorage.setItem('kg_token',data.token);
+    localStorage.setItem('kg_user',JSON.stringify(data.user));
+    al.className='auth-alert success';
+    var lbl=selectedPlan==='free'?'Free account':selectedPlan==='basic-paid'?'Basic plan':'Upgrade plan';
+    al.textContent='✓ '+lbl+' created! Taking you to your workspace…';
+    setTimeout(()=>{window.location.href='/app'},1400);
+  }catch(e){al.className='auth-alert error';al.textContent='Connection error. Please try again.'}
+}
+
+// Bug report
+function handleBugReport(){
+  var action=document.getElementById('bug-action').value.trim();
+  var desc=document.getElementById('bug-desc').value.trim();
+  if(!action||!desc){showToast('!','Please describe the problem before submitting.');return}
+  closeModal('bug-modal');showToast('✓','Problem report submitted — thank you!');
+}
+
+// Check if user already logged in — update nav
+(function(){
+  var token=localStorage.getItem('kg_token');
+  var user=null;try{user=JSON.parse(localStorage.getItem('kg_user'))}catch(e){}
+  if(token&&user){
+    var displayName=(user.firstName||(user.name||'').trim().split(/\s+/)[0])||'';
+    var greeting=displayName?'Hi, '+displayName+' →':'Open app →';
+    // Update both desktop nav and mobile drawer
+    [document.querySelector('.nav'), document.getElementById('ham-drawer')].forEach(function(container){
+      if(!container) return;
+      var link=container.querySelector('a[onclick*="login-modal"]')||container.querySelector('a[onclick*="openModal"]');
+      if(link){
+        link.textContent=greeting;
+        link.href='/app';
+        link.removeAttribute('onclick');
+      }
+    });
+  }
+})();
+
+// Close ham-drawer when clicking outside
+document.addEventListener('click',function(e){
+  var drawer=document.getElementById('ham-drawer');
+  var btn=document.getElementById('ham-btn');
+  if(drawer&&drawer.classList.contains('open')&&!drawer.contains(e.target)&&e.target!==btn&&!btn.contains(e.target)){
+    drawer.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+  }
+});
+
+// Escape key closes any open modal
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    ['login-modal','signup-modal','bug-modal'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el&&!el.classList.contains('hidden'))closeModal(id);
+    });
+  }
+});
+</script>
+
+
+<!-- Griot's Mango opt-in modal -->
+<div class="gmOv" id="gmOv" role="dialog" aria-modal="true" aria-labelledby="gmT" hidden>
+<div class="gmBox">
+  <button class="gmX" id="gmX" aria-label="Close">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+  </button>
+
+  <div class="gmHead">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <svg viewBox="0 0 90 90" width="24" height="24" aria-hidden="true">
+        <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#EF9F27"/>
+        <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#D85A30"/>
+        <path d="M52 18 L55 9" stroke="#3DDC84" stroke-width="5" stroke-linecap="round"/>
+        <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#3DDC84"/>
+      </svg>
+      <span class="gmTag">A GRIOT&rsquo;S MANGO</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="gmStp" id="gmStp"></span>
+      <button class="gmSnd" id="gmSnd" aria-pressed="false">SOUND ON</button>
+    </div>
+  </div>
+
+  <div id="gm0">
+    <p class="gmQ" id="gmT" style="max-width:24ch">What can&rsquo;t you answer about your family?</p>
+    <p class="gmS" style="max-width:44ch">That is where this starts. That is where it always starts. Tell me the question and I will show you where the answer might be kept.</p>
+    <button class="gmGo" id="gmBegin">Begin</button>
+  </div>
+
+  <div id="gm1" style="display:none;">
+    <p class="gmQ" style="font-size:20px;">Say it plainly. I have heard worse gaps than yours.</p>
+    <textarea id="gmAsk" class="gmTa" rows="3" placeholder="Who held my fourth great-grandmother before 1865?"></textarea>
+    <button class="gmGo" id="gmG1">Continue</button>
+  </div>
+
+  <div id="gm2" style="display:none;">
+    <p class="gmQ" style="font-size:20px;">Who is she, and where does the record put her?</p>
+    <input id="gmNm" class="gmIn" type="text" placeholder="Her name as you know it" style="margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <select id="gmSt" class="gmSel" aria-label="State">
+        <option value="">State</option>
+        <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+        <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+        <option>District of Columbia</option><option>Florida</option><option>Georgia</option><option>Hawaii</option>
+        <option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option>
+        <option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option>
+        <option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option>
+        <option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option>
+        <option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option>
+        <option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option>
+        <option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option>
+        <option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option>
+        <option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option>
+        <option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+        <option>I don't know</option><option>Outside the United States</option>
+      </select>
+      <select id="gmEr" class="gmSel" aria-label="Period">
+        <option value="">She was alive</option>
+        <option>before 1865</option>
+        <option>1865&ndash;1880</option>
+        <option>after 1880</option>
+        <option>I don't know</option>
+      </select>
+    </div>
+    <button class="gmGo" id="gmG2">Look for her</button>
+  </div>
+
+  <div id="gm3" style="display:none;">
+    <p class="gmQ" id="gmHd" style="font-size:20px;margin-bottom:6px;">Looking&hellip;</p>
+    <p class="gmStp" id="gmStat" style="margin:0 0 12px;">OPENING COLLECTIONS</p>
+    <div class="gmBar"><i id="gmBar"></i></div>
+    <div id="gmPlan" style="display:grid;gap:10px;margin-bottom:18px;"></div>
+    <button class="gmGo" id="gmG3" style="display:none;margin-top:0;">I want the rest</button>
+  </div>
+
+  <div id="gm4" style="display:none;">
+    <p class="gmQ" style="font-size:21px;max-width:30ch;">That is where anyone can start. I will go further.</p>
+    <p class="gmP" style="max-width:48ch;">I will read the records myself, write her life as they tell it, mark what is proven and what is missing, and find the places you can stand and the books written about her county. Free. Two to three weeks. I send the file on WhatsApp and keep your email in case I need to ask you something about your family.</p>
+    <label class="gmLbl" for="gmEm">EMAIL &middot; REQUIRED</label>
+    <input id="gmEm" class="gmIn" type="email" name="email" autocomplete="email" required aria-required="true" placeholder="you@example.com" style="margin-bottom:14px;">
+    <label class="gmLbl" for="gmPh">WHATSAPP NUMBER &middot; REQUIRED</label>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <select id="gmCc" class="gmSel" aria-label="Country code" style="width:auto;">
+        <option>+1</option><option>+232</option><option>+44</option><option>+233</option><option>+234</option>
+      </select>
+      <input id="gmPh" class="gmIn" type="tel" name="phone" inputmode="tel" autocomplete="tel-national" required aria-required="true" placeholder="555 014 8827" style="flex:1;min-width:0;">
+    </div>
+    <label class="gmChk"><input id="gmC1" type="checkbox"><span>Send my Mango to this number on WhatsApp.</span></label>
+    <label class="gmChk opt" style="margin-bottom:14px;"><input id="gmC2" type="checkbox"><span>Add me to Roots Reclaimed, where Aisha answers questions every week. About two messages a week. Reply STOP to leave. Optional &mdash; you get your Mango either way.</span></label>
+    <p class="gmFine">I use your email only if I have a question about your family. No newsletters. No spam. I do not sell either one.</p>
+    <button class="gmGo" id="gmG4" style="margin-top:0;">Send it to me</button>
+  </div>
+
+  <div id="gm5" style="display:none;">
+    <p class="gmStp" style="color:#3DDC84;margin:0 0 12px;">RECEIVED &middot; THE FILE IS OPEN</p>
+    <p class="gmQ" style="max-width:26ch;">Your question is in my hands.</p>
+    <p class="gmP">Your record list is already on its way. Start tonight if you want to.</p>
+    <p class="gmS">If I cannot get past the wall in your family, I will say so and show you exactly where it stands. A documented silence is not a failure. It is testimony.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-s" id="gmDone" style="cursor:pointer;background:none;font-family:inherit;">Back to the page</button>
+    </div>
+  </div>
+
+</div>
+</div>
+<script src="/mango-optin.js"></script>
+
+<!-- Scroll to top -->
+<button id="back-top" aria-label="Back to top"
+  onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  style="position:fixed;bottom:28px;right:28px;z-index:300;width:44px;height:44px;border-radius:50%;
+         background:#062F58;border:1px solid rgba(160,200,240,.22);color:#C7DDF3;cursor:pointer;
+         display:flex;align-items:center;justify-content:center;
+         opacity:0;transform:translateY(12px);transition:opacity .2s,transform .2s,background .15s;pointer-events:none">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+<script>
+(function(){
+  var bt=document.getElementById('back-top');
+  if(!bt)return;
+  window.addEventListener('scroll',function(){
+    if(window.scrollY>400){bt.style.opacity='1';bt.style.transform='translateY(0)';bt.style.pointerEvents='auto';}
+    else{bt.style.opacity='0';bt.style.transform='translateY(12px)';bt.style.pointerEvents='none';}
+  },{passive:true});
+})();
+</script>
+</body>
+</html>
+

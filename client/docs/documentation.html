@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation — Krio Griot</title>
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<nav class="doc-nav">
+  <div class="doc-nav-inner">
+    <a href="/" class="doc-nav-brand">
+      <svg viewBox="0 0 90 90" width="26" height="26" role="img" aria-hidden="true">
+        <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#EF9F27"/>
+        <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#D85A30"/>
+        <path d="M52 18 L55 9" stroke="#3DDC84" stroke-width="5" stroke-linecap="round"/>
+        <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#3DDC84"/>
+      </svg>
+      Krio Griot
+    </a>
+    <div class="doc-nav-links">
+      <a href="/about.html">About</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="documentation.html" class="active">Documentation</a>
+      <a href="what-i-cannot-do.html">What I cannot do</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+    <button class="doc-nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false"
+      onclick="var d=document.getElementById('nav-drawer'),o=d.classList.toggle('open');this.setAttribute('aria-expanded',o)">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="doc-nav-drawer" id="nav-drawer">
+    <a href="/about.html">About</a>
+      <a href="getting-started.html">Getting started</a>
+    <a href="documentation.html" class="active">Documentation</a>
+    <a href="what-i-cannot-do.html">What I cannot do</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+  </div>
+</nav>
+
+<div class="doc-wrap">
+  <header class="doc-header">
+    <p class="doc-eyebrow">Documentation</p>
+    <h1 class="doc-title">Full reference for every module</h1>
+    <p class="doc-lead">How each part of the platform works, what it stores, and how it connects to everything else.</p>
+  </header>
+
+  <!-- People -->
+  <div class="doc-section" id="people">
+    <p class="doc-section-label">Module 01</p>
+    <h2>People</h2>
+    <p>The People module is your <span class="term">biographical database</span>. Every person in your research — known ancestors, DNA matches, witnesses, enslavers, neighbors — can be added here. Records are private to your account and not shared with any public tree.</p>
+
+    <h3>Person record fields</h3>
+    <div class="feature-list">
+      <div class="feature-row">
+        <span class="feature-name">Name</span>
+        <span class="feature-desc">Full name as it appears in records. If the name is unknown, enter a description: <em>Female, age 14, Alabama, 1860</em>. The platform will never invent a name for an unnamed person.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Dates</span>
+        <span class="feature-desc">Birth, death, and other life events. All dates can be marked as <span class="term">exact</span>, <span class="term">approximate</span> (c.), or <span class="term">estimated range</span> — the distinction matters and is preserved in exports.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Places</span>
+        <span class="feature-desc">Where a person was born, lived, and died. County-level specificity is more useful than state-level when searching most 19th-century records.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Sources</span>
+        <span class="feature-desc">Every fact should be linked to a source. Enter the record type, repository, date, and any relevant citation details. Unsourced assertions are tracked separately as hypotheses.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Notes</span>
+        <span class="feature-desc">Free-text field for anything that doesn't fit a structured field. Oral history, researcher commentary, conflicting information — write it here.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Relationships</span>
+        <span class="feature-desc">Parent, child, spouse, sibling. Relationship certainty can be flagged as <span class="term">documented</span>, <span class="term">probable</span>, or <span class="term">hypothetical</span>.</span>
+      </div>
+    </div>
+
+    <h3>Photos and documents</h3>
+    <p>Upload a photograph to any person record. Documents from the <span class="term">Archives</span> module can be linked here — a census record, a deed, a photograph can be attached to every person named in it.</p>
+  </div>
+
+  <!-- Research -->
+  <div class="doc-section" id="research">
+    <p class="doc-section-label">Module 02</p>
+    <h2>Research</h2>
+    <p>The Research module holds your <span class="term">active questions</span> and the AI-assisted sessions that work on them. Every session is logged automatically. Nothing is discarded — a search that returned nothing is still evidence of what was searched.</p>
+
+    <h3>Research questions</h3>
+    <p>A research question is a specific, answerable statement: <em>What county in Alabama was James Perrin living in at the time of the 1867 Freedmen's Bureau labor contracts?</em> The more specific, the better the AI can direct its search strategy.</p>
+    <p>Questions have a <span class="term">status</span>: Open, In progress, Answered, or Abandoned (with notes on why). Answered questions are archived, not deleted — they remain searchable.</p>
+
+    <h3>AI research sessions</h3>
+    <p>When you open a research question and click <span class="term">Research this</span>, the AI assistant:</p>
+    <div class="callout">
+      <strong>1. Identifies the relevant record sets</strong> — which databases, archives, and record types are most likely to contain evidence for this question in this time and place.<br><br>
+      <strong>2. Proposes a search strategy</strong> — the order in which to search, what name variations to try, what geographic scope to use.<br><br>
+      <strong>3. Interprets what it finds</strong> — reads record language in context, flags conflicts, and explains what a result does and does not prove.
+    </div>
+    <p>The session transcript is saved in full and linked to the research question. You can continue any session at any time.</p>
+
+    <h3>The research log</h3>
+    <p>Every database searched, every result reviewed, and every AI session is written to the <span class="term">research log</span> automatically. The log is exportable as a dated PDF — useful when collaborating with other researchers or when submitting findings for publication.</p>
+  </div>
+
+  <!-- Archives -->
+  <div class="doc-section" id="archives">
+    <p class="doc-section-label">Module 03</p>
+    <h2>Archives</h2>
+    <p>The Archives module is your <span class="term">document collection</span>. Upload any file — a photograph, a scanned letter, a downloaded census image, a PDF from a state archive — and it becomes part of your permanent research record.</p>
+
+    <h3>Uploading documents</h3>
+    <p>Supported formats: <code>JPEG</code>, <code>PNG</code>, <code>PDF</code>, <code>TIFF</code>. Maximum file size is 50 MB per document on the Free plan, 250 MB on Basic, and unlimited on Upgrade. Storage limits are listed on the <a href="/#plans" style="color:var(--green);text-decoration:none;">pricing page</a>.</p>
+
+    <h3>Archive scanner <span class="term">(Basic, Upgrade)</span></h3>
+    <p>The archive scanner reads document metadata and attempts to extract names, dates, and places from uploaded files. It does not alter the original document — it creates a separate structured record that you can review, correct, and confirm. Extracted information is offered as a suggestion, never written directly to a person record without your approval.</p>
+    <p><span class="term">Free plan</span> accounts receive 3–5 lifetime scans. <span class="term">Basic</span> accounts receive 100 scans per month. <span class="term">Upgrade</span> accounts have unlimited scanning plus bulk ZIP and PDF upload.</p>
+
+    <h3>Linking documents to people</h3>
+    <p>Any document can be linked to one or more people in your tree. A Freedmen's Bureau labor contract might name a husband, wife, and three children — link it to all five. The link appears in each person's record and in the document's own detail view.</p>
+  </div>
+
+  <!-- DNA -->
+  <div class="doc-section" id="dna">
+    <p class="doc-section-label">Module 04</p>
+    <h2>DNA Testing &amp; Matches</h2>
+    <p>The DNA module helps you manage and interpret <span class="term">autosomal DNA matches</span> from consumer testing platforms. It does not process raw DNA files — it works with the match data you export from your testing company's website.</p>
+
+    <h3>Importing match data</h3>
+    <p>Export your match list from AncestryDNA, 23andMe, FamilyTreeDNA, or MyHeritage as a CSV file. Upload it to the DNA module. Matches are sorted by shared centimorgans (cM) and estimated relationship range.</p>
+
+    <h3>Working with matches</h3>
+    <div class="feature-list">
+      <div class="feature-row">
+        <span class="feature-name">cM value</span>
+        <span class="feature-desc">The total shared DNA in centimorgans. This determines the range of possible relationships. The platform uses the Shared cM Project data to calculate relationship probabilities.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Clusters</span>
+        <span class="feature-desc">Group matches by which line they likely descend from. Clustering helps identify unknown branches and confirm hypothetical connections.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Notes</span>
+        <span class="feature-desc">Add research notes to each match. What you know about their family. What line they appear to connect through. What you've already asked them.</span>
+      </div>
+      <div class="feature-row">
+        <span class="feature-name">Link to tree</span>
+        <span class="feature-desc">Link a DNA match to a person in your People database when the connection is confirmed or hypothesized. The link is directional — it doesn't modify the match record.</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>A note on DNA and the 1870 break:</strong> Autosomal DNA is most useful for 5th cousins and closer — roughly 150–200 years. For lines that disappear before 1870, DNA can point you toward living cousins whose family lines have better documentation than yours. That paper trail is then the bridge.
+    </div>
+  </div>
+
+  <!-- Collections -->
+  <div class="doc-section" id="collections">
+    <p class="doc-section-label">Module 05</p>
+    <h2>Collections</h2>
+    <p>A <span class="term">collection</span> is a private archival grouping — people, documents, research logs, oral interviews, and primary sources organized around a theme: a family line, a migration, a specific generation, a set of photographs from a single household. Collections are not public-facing. They are a preservation and organization layer for material your family has gathered, digitized, and brought into the research workspace.</p>
+
+    <h3>Creating a collection</h3>
+    <p>Go to Collections in the sidebar and click <em>New collection</em>. Give it a title and a curatorial statement — one or two sentences that explain what this collection holds and why it matters to your research. Then add items: people from your tree, documents from your archives, research log entries, oral history recordings.</p>
+
+    <h3>Archival standards</h3>
+    <p>Collections apply the same sourcing discipline as the rest of the workspace — every item carries its origin, date, and chain of custody. The goal is a family archive that meets the standard a future researcher would need to trust and build on: not just organized, but documented.</p>
+  </div>
+
+  <footer class="doc-footer">
+    <span>&copy; 2026 Krio Griot</span>
+    <span>built by <a href="https://www.aishaladon.com" target="_blank" rel="noopener">Aisha LaDon Abdul Rahman</a>, archivist and genealogist</span>
+  </footer>
+</div>
+
+
+<button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+<script>
+var bt=document.getElementById('back-top');
+window.addEventListener('scroll',function(){
+  if(window.scrollY>300)bt.classList.add('visible');
+  else bt.classList.remove('visible');
+},{passive:true});
+</script>
+</body>
+</html>

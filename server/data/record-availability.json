@@ -1,0 +1,143 @@
+{
+  "states": {
+    "Alabama":                    { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Alaska":                     { "tags": ["general"] },
+    "Arizona":                    { "tags": ["migration_destination"] },
+    "Arkansas":                   { "tags": ["former_slaveholding","bureau_confederate"] },
+    "California":                 { "tags": ["migration_destination"] },
+    "Colorado":                   { "tags": ["migration_destination"] },
+    "Connecticut":                { "tags": ["northern_slavery","migration_destination"] },
+    "Delaware":                   { "tags": ["former_slaveholding","bureau_border"] },
+    "District of Columbia":       { "tags": ["former_slaveholding","bureau_border"] },
+    "Florida":                    { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Georgia":                    { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Hawaii":                     { "tags": ["general"] },
+    "Idaho":                      { "tags": ["general"] },
+    "Illinois":                   { "tags": ["northern_slavery","migration_destination"] },
+    "Indiana":                    { "tags": ["northern_slavery","migration_destination"] },
+    "Iowa":                       { "tags": ["migration_destination"] },
+    "Kansas":                     { "tags": ["migration_destination"] },
+    "Kentucky":                   { "tags": ["former_slaveholding","bureau_border"] },
+    "Louisiana":                  { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Maine":                      { "tags": ["general"] },
+    "Maryland":                   { "tags": ["former_slaveholding","bureau_border"] },
+    "Massachusetts":              { "tags": ["migration_destination"] },
+    "Michigan":                   { "tags": ["migration_destination"] },
+    "Minnesota":                  { "tags": ["migration_destination"] },
+    "Mississippi":                { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Missouri":                   { "tags": ["former_slaveholding","bureau_border"] },
+    "Montana":                    { "tags": ["general"] },
+    "Nebraska":                   { "tags": ["migration_destination"] },
+    "Nevada":                     { "tags": ["migration_destination"] },
+    "New Hampshire":              { "tags": ["northern_slavery"] },
+    "New Jersey":                 { "tags": ["northern_slavery","migration_destination"] },
+    "New Mexico":                 { "tags": ["general"] },
+    "New York":                   { "tags": ["northern_slavery","migration_destination"] },
+    "North Carolina":             { "tags": ["former_slaveholding","bureau_confederate"] },
+    "North Dakota":               { "tags": ["general"] },
+    "Ohio":                       { "tags": ["migration_destination"] },
+    "Oklahoma":                   { "tags": ["general"] },
+    "Oregon":                     { "tags": ["migration_destination"] },
+    "Pennsylvania":               { "tags": ["northern_slavery","migration_destination"] },
+    "Rhode Island":               { "tags": ["northern_slavery"] },
+    "South Carolina":             { "tags": ["former_slaveholding","bureau_confederate"] },
+    "South Dakota":               { "tags": ["general"] },
+    "Tennessee":                  { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Texas":                      { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Utah":                       { "tags": ["general"] },
+    "Vermont":                    { "tags": ["northern_slavery"] },
+    "Virginia":                   { "tags": ["former_slaveholding","bureau_confederate"] },
+    "Washington":                 { "tags": ["migration_destination"] },
+    "West Virginia":              { "tags": ["former_slaveholding","bureau_border"] },
+    "Wisconsin":                  { "tags": ["migration_destination"] },
+    "Wyoming":                    { "tags": ["general"] },
+    "I don't know":               { "tags": ["unknown"] },
+    "Outside the United States":  { "tags": ["foreign"] }
+  },
+  "recordSets": {
+    "census_1870": {
+      "label": "1870 federal census",
+      "note": "the first to name formerly enslaved people as free individuals",
+      "grade": "documented",
+      "tags": ["former_slaveholding","northern_slavery","migration_destination","general"],
+      "eras": ["1865-1880","after 1880","unknown"]
+    },
+    "census_1880": {
+      "label": "1880 federal census",
+      "note": "states relationships — says who is whose",
+      "grade": "documented",
+      "tags": ["former_slaveholding","northern_slavery","migration_destination","general"],
+      "eras": ["1865-1880","after 1880","unknown"]
+    },
+    "slave_schedules": {
+      "label": "1850 and 1860 slave schedules",
+      "note": "ages and sex only, no names — a silence with a shape",
+      "grade": "absent",
+      "tags": ["former_slaveholding"],
+      "eras": ["before 1865","unknown"]
+    },
+    "slaveholder_xref": {
+      "label": "slaveholder cross-reference",
+      "note": "neighbours, wills, county probate — reasoning, never proof",
+      "grade": "inferred",
+      "tags": ["former_slaveholding"],
+      "eras": ["before 1865","unknown"]
+    },
+    "freedmens_bureau": {
+      "label": "Freedmen's Bureau records",
+      "note": "labour contracts and marriage registers, 1865 to 1872",
+      "grade": "documented",
+      "tags": ["bureau_confederate","bureau_border"],
+      "eras": ["before 1865","1865-1880","unknown"]
+    },
+    "freedmans_savings": {
+      "label": "Freedman's Savings and Trust ledgers",
+      "note": "names kin, regiment, birthplace, former enslaver",
+      "grade": "documented",
+      "tags": ["bureau_confederate","bureau_border"],
+      "eras": ["1865-1880","unknown"]
+    },
+    "state_vitals": {
+      "label": "state death records",
+      "note": "an informant names the mother — start dates vary by state",
+      "grade": "documented",
+      "tags": ["former_slaveholding","northern_slavery","migration_destination","general"],
+      "eras": ["1865-1880","after 1880","unknown"]
+    },
+    "manumission_north": {
+      "label": "manumission and gradual-abolition registers",
+      "note": "northern states recorded emancipations by name",
+      "grade": "documented",
+      "tags": ["northern_slavery"],
+      "eras": ["before 1865","unknown"]
+    },
+    "draft_registrations": {
+      "label": "WWI and WWII draft registrations",
+      "note": "birth date and place in the man's own words",
+      "grade": "documented",
+      "tags": ["migration_destination","general","northern_slavery","former_slaveholding"],
+      "eras": ["after 1880","unknown"]
+    },
+    "city_directories": {
+      "label": "city directories",
+      "note": "year-by-year addresses between censuses",
+      "grade": "documented",
+      "tags": ["migration_destination"],
+      "eras": ["after 1880","unknown"]
+    },
+    "migration_note": {
+      "label": "the line likely runs south",
+      "note": "most Black families here arrived during the Great Migration — the search continues in another state",
+      "grade": "inferred",
+      "tags": ["migration_destination"],
+      "eras": ["after 1880","1865-1880","unknown"]
+    }
+  },
+  "fallbackItems": [
+    { "label": "1870 federal census (nationwide)", "note": "the first to name formerly enslaved people as free individuals", "grade": "documented" },
+    { "label": "1880 federal census (nationwide)", "note": "states relationships — says who is whose", "grade": "documented" },
+    { "label": "Freedmen's Bureau records (former Confederate and border states)", "note": "labour contracts, marriage registers, 1865 to 1872 — if your ancestor was in a Bureau state", "grade": "documented" },
+    { "label": "Freedman's Savings and Trust ledgers", "note": "names kin, regiment, birthplace, former enslaver", "grade": "documented" },
+    { "label": "WWI and WWII draft registrations (nationwide)", "note": "birth date and place in the man's own words", "grade": "documented" }
+  ]
+}

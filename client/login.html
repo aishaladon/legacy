@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Krio Griot — Sign In</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background: #04223F;
+      color: #F0F6FC;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #062F58;
+      border: 1px solid rgba(160,200,240,.22);
+      border-radius: 8px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    .logo { text-align: center; margin-bottom: 2rem; }
+    .logo svg { display: block; margin: 0 auto 10px; }
+    .logo h1 { font-size: 1.5rem; font-weight: 700; color: #F0F6FC; letter-spacing: -.02em; }
+    .logo p  { font-size: .82rem; color: rgba(192,220,248,.5); margin-top: 4px; }
+    label { display: block; font-size: .82rem; color: rgba(192,220,248,.7); margin-bottom: 6px; font-weight: 500; }
+    input {
+      width: 100%; padding: 10px 13px; border-radius: 5px;
+      border: 1px solid rgba(160,200,240,.22); background: #04223F; color: #F0F6FC;
+      font-size: .95rem; margin-bottom: 1rem; font-family: inherit; outline: none;
+      transition: border-color .15s;
+    }
+    input:focus { border-color: #EF9F27; }
+    .btn {
+      width: 100%; padding: 11px; border-radius: 5px; border: none;
+      background: #EF9F27; color: #04223F; font-size: .95rem; font-weight: 700;
+      cursor: pointer; transition: opacity .2s; font-family: inherit; letter-spacing: .01em;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .error   { color: #e57373; font-size: .83rem; margin-bottom: 1rem; display: none; }
+    .success { color: #3DDC84; font-size: .83rem; margin-bottom: 1rem; display: none; }
+    .forgot-link {
+      display: block; text-align: center; font-size: .85rem;
+      color: #EF9F27; background: none; border: none; cursor: pointer;
+      margin-top: 14px; font-family: inherit; text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .forgot-link:hover { opacity: .8; }
+    .reset-url-box {
+      background: rgba(61,220,132,.08); border: 1px solid #3DDC84; border-radius: 6px;
+      padding: 14px; font-size: .8rem; color: #3DDC84; word-break: break-all;
+      margin-top: 1rem; display: none; line-height: 1.6;
+    }
+    .reset-url-box a { color: #3DDC84; }
+    .beta-note { text-align: center; font-size: .78rem; color: rgba(192,220,248,.35); margin-top: 1.5rem; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .83rem; color: rgba(192,220,248,.5); cursor: pointer;
+      margin-bottom: 1.5rem; background: none; border: none;
+      padding: 0; font-family: inherit;
+    }
+    .back-link:hover { color: #EF9F27; }
+    .section-title { font-size: 1.05rem; font-weight: 700; color: #F0F6FC; margin-bottom: .3rem; }
+    .section-sub   { font-size: .83rem; color: rgba(192,220,248,.5); margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <a href="/" style="display:inline-block;text-decoration:none;color:inherit;">
+      <svg viewBox="0 0 90 90" width="36" height="36" role="img" aria-label="Krio Griot">
+        <path d="M52 18 C68 22 76 40 71 56 C66 72 50 80 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 C47 18 49 17 52 18 Z" fill="#EF9F27"/>
+        <path d="M44 19 C31 26 22 40 22 53 C22 64 27 71 36 75 C22 70 15 55 19 42 C23 30 33 22 44 19 Z" fill="#D85A30"/>
+        <path d="M52 18 L55 9" stroke="#3DDC84" stroke-width="5" stroke-linecap="round"/>
+        <path d="M55 11 C64 6 72 8 74 12 C67 18 58 17 55 12" fill="#3DDC84"/>
+      </svg>
+      <h1>Krio Griot</h1>
+    </a>
+    <p>Legacy Research &amp; Genealogy</p>
+  </div>
+
+  <!-- ── Sign in ── -->
+  <div id="view-auth" class="view active">
+    <div id="error-msg" class="error"></div>
+    <div id="success-msg" class="success"></div>
+
+    <form id="form-login" onsubmit="doLogin(event)">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email" />
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" />
+      <button class="btn" type="submit" id="btn-login">Sign In</button>
+    </form>
+
+    <button class="forgot-link" onclick="showView('forgot')">Forgot your password?</button>
+    <div id="reset-url-box" class="reset-url-box"></div>
+    <p class="beta-note">Krio Griot is currently in private beta.</p>
+  </div>
+
+  <!-- ── Forgot password ── -->
+  <div id="view-forgot" class="view">
+    <button class="back-link" onclick="showView('auth')">&#8592; Back to Sign In</button>
+    <div class="section-title">Forgot Password</div>
+    <div class="section-sub">Enter your email and we'll send you a reset link.</div>
+
+    <div id="forgot-error" class="error"></div>
+    <div id="forgot-success" class="success"></div>
+
+    <form onsubmit="doForgot(event)">
+      <label>Email</label>
+      <input type="email" id="forgot-email" placeholder="you@example.com" required autocomplete="email" />
+      <button class="btn" type="submit" id="btn-forgot">Send Reset Link</button>
+    </form>
+    <div id="forgot-url-box" class="reset-url-box"></div>
+  </div>
+
+  <!-- ── Reset password ── -->
+  <div id="view-reset" class="view">
+    <button class="back-link" onclick="showView('auth')">&#8592; Back to Sign In</button>
+    <div class="section-title">Reset Password</div>
+    <div class="section-sub">Enter your new password below.</div>
+
+    <div id="reset-error" class="error"></div>
+    <div id="reset-success" class="success"></div>
+
+    <form onsubmit="doReset(event)">
+      <label>New Password</label>
+      <input type="password" id="reset-password" placeholder="Min 8 characters" required autocomplete="new-password" />
+      <label>Confirm Password</label>
+      <input type="password" id="reset-confirm" placeholder="Re-enter password" required autocomplete="new-password" />
+      <button class="btn" type="submit" id="btn-reset">Set New Password</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+}
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+}
+function clearMessages() {
+  ['error-msg','success-msg','forgot-error','forgot-success','reset-error','reset-success']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  ['reset-url-box','forgot-url-box'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  clearMessages();
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:    document.getElementById('login-email').value,
+        password: document.getElementById('login-password').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError('error-msg', data.error || 'Login failed.'); return; }
+    localStorage.setItem('kg_token', data.token);
+    localStorage.setItem('kg_user',  JSON.stringify(data.user));
+    window.location.href = '/app';
+  } catch (err) {
+    showError('error-msg', 'Network error. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+async function doForgot(e) {
+  e.preventDefault();
+  clearMessages();
+  const box = document.getElementById('forgot-url-box');
+  const btn = document.getElementById('btn-forgot');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('forgot-email').value }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError('forgot-error', data.error || 'Something went wrong.'); return; }
+    if (data.resetUrl) {
+      const msg = data.emailError
+        ? '&#9888; Email delivery failed. Click the link below to reset your password:'
+        : '&#9888; Email not yet configured. Click the link below to reset your password:';
+      box.innerHTML = msg + '<br><br><a href="' + data.resetUrl + '">' + data.resetUrl + '</a>';
+      box.style.display = 'block';
+    } else {
+      showSuccess('forgot-success', 'Reset link sent — check your inbox.');
+    }
+  } catch (err) {
+    showError('forgot-error', 'Network error. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send Reset Link';
+  }
+}
+
+async function doReset(e) {
+  e.preventDefault();
+  clearMessages();
+  const password = document.getElementById('reset-password').value;
+  const confirm  = document.getElementById('reset-confirm').value;
+  if (password !== confirm) { showError('reset-error', 'Passwords do not match.'); return; }
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) { showError('reset-error', 'Invalid reset link. Please request a new one.'); return; }
+  const btn = document.getElementById('btn-reset');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError('reset-error', data.error || 'Reset failed.'); return; }
+    showSuccess('reset-success', 'Password updated. Redirecting to sign in…');
+    setTimeout(() => { window.location.href = '/login'; }, 2000);
+  } catch (err) {
+    showError('reset-error', 'Network error. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Set New Password';
+  }
+}
+
+const path   = window.location.pathname;
+const params = new URLSearchParams(window.location.search);
+if (params.get('token')) {
+  showView('reset');
+} else if (path === '/forgot-password') {
+  showView('forgot');
+} else {
+  showView('auth');
+}
+
+if (localStorage.getItem('kg_token') && !params.get('token')) {
+  window.location.href = '/app';
+}
+</script>
+</body>
+</html>
