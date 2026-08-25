@@ -468,10 +468,21 @@ app.get('/api/ancestors', async (req, res) => {
 
 app.get('/api/ancestor/:id', async (req, res) => {
   try {
-    const profile = await db.getAncestorProfile(req.user.userId, req.params.id);
-    if (!profile) return res.status(404).json({ error: 'Not found.' });
+    const ancestor = await db.getAncestorProfile(req.user.userId, req.params.id);
+    if (!ancestor) return res.status(404).json({ error: 'Not found.' });
     const relationships = await getRelationshipsFor(req.user.userId, req.params.id);
-    res.json({ ...profile, relationships });
+    res.json({
+      ancestor,
+      relationships,
+      questions: [],
+      sources: [],
+      evidence: [],
+      dnaTests: [],
+      dnaMatches: [],
+      archives: [],
+      collections: [],
+      researchLog: [],
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
