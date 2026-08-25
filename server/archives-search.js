@@ -1,10 +1,11 @@
 // External archive search integrations
-// Sources: NARA Catalog, Slave Voyages, Enslaved.org, Chronicling America (LoC)
+// Sources: NARA Catalog, Slave Voyages, Enslaved.org, Chronicling America (LoC), DPLA
 
 const NARA_BASE = 'https://catalog.archives.gov/api/v2';
 const SLAVEVOYAGES_BASE = 'https://www.slavevoyages.org/voyage/api';
 const ENSLAVED_SPARQL = 'https://api.enslaved.org/sparql';
 const CHRONICLING_BASE = 'https://chroniclingamerica.loc.gov';
+const DPLA_BASE = 'https://api.dp.la/v2';
 
 // ── NARA Catalog ───────────────────────────────────────────────────────────────
 async function searchNARA(query, { limit = 10 } = {}) {
@@ -124,7 +125,7 @@ async function searchEnslaved(query, { limit = 10 } = {}) {
 }
 
 // ── Chronicling America (Library of Congress) ──────────────────────────────────
-// Free, no API key required. Searches historic US newspapers.
+// Free, no API key required. Searches historic US newspapers 1860-1920.
 async function searchChroniclingAmerica(query, { limit = 10 } = {}) {
   const params = new URLSearchParams({
     andtext: query,
@@ -160,6 +161,45 @@ async function searchChroniclingAmerica(query, { limit = 10 } = {}) {
   }));
 }
 
+// ── DPLA (Digital Public Library of America) ─────────────────────────────────
+async function searchDPLA(query, { limit = 10 } = {}) {
+  const apiKey = process.env.DPLA_API_KEY;
+  if (!apiKey) throw new Error('DPLA_API_KEY not set');
+
+  const params = new URLSearchParams({
+    q: query,
+    page_size: limit,
+    api_key: apiKey,
+  });
+
+  const url = `${DPLA_BASE}/items?${params}`;
+  const res = await fetch(url, {
+    headers: { 'Accept': 'application/json' },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!res.ok) throw new Error(`DPLA API error: ${res.status}`);
+  const data = await res.json();
+
+  return (data.docs || []).map(doc => {
+    const src = doc.sourceResource || {};
+    return {
+      source: 'DPLA',
+      sourceLabel: 'Digital Public Library of America',
+      how_known: 'documented',
+      id: doc.id || '',
+      title: Array.isArray(src.title) ? src.title[0] : (src.title || 'Untitled'),
+      date: src.date?.displayDate || src.date?.begin || null,
+      creator: Array.isArray(src.creator) ? src.creator[0] : (src.creator || null),
+      type: Array.isArray(src.type) ? src.type[0] : (src.type || null),
+      provider: doc.provider?.name || null,
+      description: Array.isArray(src.description) ? src.description[0]?.slice(0, 300) : null,
+      url: doc.isShownAt || null,
+      thumbnailUrl: doc.object || null,
+    };
+  });
+}
+
 // ── Fan-out search across all sources ─────────────────────────────────────────
 async function searchAllArchives(query, options = {}) {
   const results = {
@@ -167,6 +207,7 @@ async function searchAllArchives(query, options = {}) {
     slaveVoyages: [],
     enslaved: [],
     chroniclingAmerica: [],
+    dpla: [],
     errors: [],
   };
 
@@ -175,6 +216,7 @@ async function searchAllArchives(query, options = {}) {
     searchSlaveVoyages(query, options).then(r => { results.slaveVoyages = r; }),
     searchEnslaved(query, options).then(r => { results.enslaved = r; }),
     searchChroniclingAmerica(query, options).then(r => { results.chroniclingAmerica = r; }),
+    searchDPLA(query, options).then(r => { results.dpla = r; }),
   ];
 
   await Promise.allSettled(tasks.map(p => p.catch(err => { results.errors.push(err.message); })));
@@ -192,4 +234,5 @@ module.exports = {
   searchSlaveVoyages,
   searchEnslaved,
   searchChroniclingAmerica,
+  searchDPLA,
 };
