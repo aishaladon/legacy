@@ -1,0 +1,86 @@
+<div class="page-header">
+  <h2>Contacts</h2>
+  <a href="/contacts/new" class="btn btn-primary">+ Add</a>
+</div>
+<p class="page-desc">Key people in your network — contracting officers, program managers, grant officers, and partners you work with across institutions.</p>
+
+<details class="how-to">
+  <summary>How to use Contacts</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Add people you interact with during the BD process — contracting officers, program managers, grant officers, teaming partners, and agency staff.</li>
+      <li>Always <strong>link a contact to an institution</strong> so you can see everyone at a given agency or organization in one place. Add the institution first if it doesn't exist yet.</li>
+      <li>Use the <strong>Institution filter</strong> to pull up all contacts at a specific agency or foundation before a meeting or call.</li>
+      <li>On a contact's detail page, you can add relationship notes — track warm/cold status, how you met, and any commitments made.</li>
+    </ol>
+    <p>Strong contact records are a competitive advantage — knowing the contracting officer's priorities before you write a proposal gives you a significant edge.</p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/contacts">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name or title…" class="filter-input">
+  <select name="institution_id" class="filter-select">
+    <option value="">All Institutions</option>
+    <% institutions.forEach(function(i) { %>
+      <option value="<%= i.id %>" <%= filters.institution_id == i.id ? 'selected' : '' %>><%= i.name %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/contacts" class="btn-link">Clear</a>
+</form>
+
+<% if (contacts.length === 0) { %>
+  <p class="empty-state">No contacts found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Name</th><th>Title</th><th>Institution</th><th>Email</th><th>Phone</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% contacts.forEach(function(c) { %>
+          <tr>
+            <td><a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a></td>
+            <td><%= c.title || '—' %></td>
+            <td><%= c.institution_name || '—' %></td>
+            <td><% if (c.email) { %><a href="mailto:<%= c.email %>"><%= c.email %></a><% } else { %>—<% } %></td>
+            <td><%= c.phone || '—' %></td>
+            <td>
+              <form action="/contacts/<%= c.id %>/delete" method="POST" onsubmit="return confirm('Delete this contact?')">
+                <button type="submit" class="btn-link btn-link--danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<section class="card" id="import" style="margin-top:2rem">
+  <h3>Import Contacts from CSV</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:.75rem;">
+    Upload a .csv file or paste CSV text to bulk-import contacts. Required columns: <code>first_name</code>, <code>last_name</code>, and <code>institution</code> (matched by name — every contact needs an institution, so rows with a blank or non-matching institution are skipped).
+    Optional: <code>title</code>, <code>email</code>, <code>phone</code>, <code>linkedin</code>, <code>notes</code>.
+  </p>
+  <details style="margin-bottom:.85rem;">
+    <summary style="font-size:.85rem;cursor:pointer;color:var(--text-muted);">Show CSV template</summary>
+    <pre style="font-size:.78rem;background:var(--bg-subtle,#f5f5f5);padding:.6rem .85rem;border-radius:4px;margin-top:.4rem;overflow-x:auto;">first_name,last_name,title,email,phone,linkedin,institution,notes
+Jane,Smith,Contracting Officer,jsmith@agency.gov,202-555-0100,,National Archives,Met at conference
+John,Doe,Program Manager,jdoe@neh.gov,,,NEH,</pre>
+  </details>
+  <form action="/contacts/import-csv" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label style="font-weight:600;">Upload CSV file</label>
+      <input type="file" name="csv_file" accept=".csv,text/csv,text/plain" style="display:block;margin-top:.35rem;">
+      <span style="font-size:.8rem;color:var(--text-muted);">Max 5 MB · .csv or .txt</span>
+    </div>
+    <div style="text-align:center;margin:.5rem 0;font-size:.85rem;color:var(--text-muted);">— or paste CSV text below —</div>
+    <div class="form-group">
+      <textarea name="csv_data" rows="7" placeholder="Paste CSV here (first row must be column headers)…" style="width:100%;font-family:monospace;font-size:.82rem;resize:vertical;"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Import Contacts</button>
+    </div>
+  </form>
+</section>

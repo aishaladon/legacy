@@ -1,0 +1,62 @@
+<div class="page-header">
+  <h2>Award History</h2>
+  <a href="/award-history/new" class="btn btn-primary">+ Add</a>
+</div>
+<p class="page-desc">Historical record of won and lost bids — analyze past performance to sharpen future pursuit strategy and document past performance for proposals.</p>
+
+<details class="how-to">
+  <summary>How to use Award History</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Record every contract and grant you have <strong>won or lost</strong> — this builds your official past performance record, which is required in most government proposals.</li>
+      <li>For <strong>won awards</strong>: include the contract/grant number, agency or funder, period of performance, award amount, and a brief description of the work performed.</li>
+      <li>For <strong>lost bids</strong>: record the reason if known (e.g. price, past performance gap, wrong set-aside) — this helps you improve future proposals.</li>
+      <li>When writing a new proposal, filter by Type to quickly find relevant past performance references to include.</li>
+    </ol>
+    <p>Federal proposals often require 3–5 past performance references. Keeping this list current means you're always ready to pull them without searching old emails or contracts.</p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/award-history">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title or agency…" class="filter-input">
+  <select name="award_type" class="filter-select">
+    <option value="">All Types</option>
+    <% ['Government Contract','Grant','Subcontract','Other'].forEach(function(t) { %>
+      <option value="<%= t %>" <%= filters.award_type === t ? 'selected' : '' %>><%= t %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/award-history" class="btn-link">Clear</a>
+</form>
+
+<% if (awards.length === 0) { %>
+  <p class="empty-state">No award history found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Title</th><th>Type</th><th>Agency / Funder</th><th>Institution</th><th>Amount</th><th>Period</th><th>Set-Aside</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% awards.forEach(function(a) { %>
+          <tr>
+            <td><%= a.title %></td>
+            <td><span class="badge badge--<%= a.award_type.toLowerCase().replace(' ','-') %>"><%= a.award_type %></span></td>
+            <td><%= a.agency_funder || '—' %></td>
+            <td><%= a.institution_name || '—' %></td>
+            <td><%= a.amount ? '$' + Number(a.amount).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+            <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) : '—' %><% if (a.period_start && a.period_end) { %> – <%= new Date(a.period_end).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %><% } %></td>
+            <td><%= a.set_aside || '—' %></td>
+            <td style="white-space:nowrap;">
+              <a href="/award-history/<%= a.id %>/edit" class="btn-link">Edit</a>
+              &nbsp;&middot;&nbsp;
+              <form action="/award-history/<%= a.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this award history entry?')">
+                <button type="submit" class="btn-link btn-link--danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

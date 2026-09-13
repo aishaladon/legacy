@@ -1,0 +1,132 @@
+<div class="page-header">
+  <h2>All Opportunities</h2>
+  <a href="/opportunities/new" class="btn btn-primary">+ Add</a>
+</div>
+<p class="page-desc">Every government contract, grant, freelance gig, and professional opportunity tracked in one place — from first discovery through award.</p>
+
+<details class="how-to">
+  <summary>How to use All Opportunities</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Click <strong>+ Add</strong> to manually enter an opportunity, or use <strong>Email Inbox</strong> to import directly from BidMatch, GovExpert, ArchiveGig, or similar bid/gig alert emails.</li>
+      <li>Use the <strong>Type</strong> filter to separate government contracts, grants, subcontracts, and freelance/gig work. Use <strong>Status</strong> to focus on what's active.</li>
+      <li>Click any opportunity title to open its detail page — this is where you add notes, link contacts and institutions, and move it into the Pipeline.</li>
+      <li>Star important opportunities (&#9733;) to pin them to the top of the list.</li>
+      <li>Once you decide to pursue, open the detail page and click <strong>Add to Pipeline</strong> to begin tracking stages and win probability.</li>
+      <li>Select multiple rows with the checkboxes to <strong>bulk-update Status</strong> or <strong>bulk-add to Pipeline</strong> at once — handy right after a batch import or a SAM.gov/Grants.gov pull, instead of opening each record one at a time. An opportunity already in the Pipeline just gets its stage moved, not duplicated.</li>
+    </ol>
+    <p>Statuses: <strong>New</strong> → just discovered &nbsp;|&nbsp; <strong>Reviewing</strong> → evaluating fit &nbsp;|&nbsp; <strong>Pursuing</strong> → actively working it &nbsp;|&nbsp; <strong>Submitted</strong> → proposal sent &nbsp;|&nbsp; <strong>Awarded / Not Pursuing / Closed</strong></p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/opportunities">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title, description, agency, or NAICS…" class="filter-input">
+  <select name="type" class="filter-select">
+    <option value="">All Types</option>
+    <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>
+      <option value="<%= t %>" <%= filters.type === t ? 'selected' : '' %>><%= t === 'Job' ? 'Freelance/Gig' : t %></option>
+    <% }); %>
+  </select>
+  <select name="status" class="filter-select">
+    <option value="">All Statuses</option>
+    <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/opportunities" class="btn-link">Clear</a>
+</form>
+
+<% if (opportunities.length === 0) { %>
+  <p class="empty-state">No opportunities found. <a href="/opportunities/new">Add one</a>.</p>
+<% } else { %>
+  <form id="bulkDeleteForm" method="POST" action="/opportunities/bulk-delete">
+    <div class="bulk-toolbar" style="display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;margin-bottom:.5rem;">
+      <button type="submit" class="btn btn-secondary btn-sm bulk-action-btn" id="bulkDeleteBtn" disabled
+        onclick="return confirm('Delete ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies)? This cannot be undone.');">Delete Selected</button>
+
+      <span class="bulk-group" style="display:flex;align-items:center;gap:.4rem;">
+        <select name="bulk_status" class="filter-select filter-input--sm">
+          <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+            <option value="<%= s %>"><%= s %></option>
+          <% }); %>
+        </select>
+        <button type="submit" formaction="/opportunities/bulk-status" class="btn btn-secondary btn-sm bulk-action-btn" id="bulkStatusBtn" disabled
+          onclick="return confirm('Set Status to \'' + document.querySelector('[name=bulk_status]').value + '\' for ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies)?');">Update Status</button>
+      </span>
+
+      <span class="bulk-group" style="display:flex;align-items:center;gap:.4rem;">
+        <select name="bulk_stage" class="filter-select filter-input--sm">
+          <% ['Identified','Qualified','Pursuing','Proposal In Progress','Submitted','Negotiating','Awarded','Lost','Withdrawn'].forEach(function(s) { %>
+            <option value="<%= s %>"><%= s %></option>
+          <% }); %>
+        </select>
+        <button type="submit" formaction="/opportunities/bulk-add-pipeline" class="btn btn-secondary btn-sm bulk-action-btn" id="bulkPipelineBtn" disabled
+          onclick="return confirm('Add ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies) to Pipeline at stage \'' + document.querySelector('[name=bulk_stage]').value + '\'? Opportunities already in the Pipeline will have their stage moved instead of getting a duplicate entry.');">Add to Pipeline</button>
+      </span>
+
+      <span id="bulkSelectedCount" style="font-size:.85rem;color:var(--text-muted);"></span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAllOpps"></th>
+            <th></th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Due</th>
+            <th>Amount</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Institution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% opportunities.forEach(function(o) { %>
+            <tr>
+              <td><input type="checkbox" class="opp-check" name="ids" value="<%= o.id %>"></td>
+              <td><% if (o.is_starred) { %><span class="star">&#9733;</span><% } %></td>
+              <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
+              <td><span class="badge badge--<%= o.opportunity_type.toLowerCase().replace(' ','-') %>"><%= o.opportunity_type === 'Job' ? 'Freelance/Gig' : o.opportunity_type %></span></td>
+              <td class="<%= o.due_date && new Date(o.due_date) < new Date(Date.now() + 14*86400000) ? 'due-date--urgent' : '' %>">
+                <%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %>
+              </td>
+              <td>
+                <% if (o.amount_max) { %>
+                  $<%= Number(o.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %>
+                <% } else if (o.amount_min) { %>
+                  $<%= Number(o.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+
+                <% } else { %> — <% } %>
+              </td>
+              <td><%= o.alignment_score ? Number(o.alignment_score).toFixed(1) : '—' %></td>
+              <td><span class="badge badge--<%= o.status.toLowerCase().replace(' ','-') %>"><%= o.status %></span></td>
+              <td><%= o.institution_name || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </form>
+  <script>
+    (function() {
+      const selectAll = document.getElementById('selectAllOpps');
+      const checks = Array.from(document.querySelectorAll('.opp-check'));
+      const btns = Array.from(document.querySelectorAll('.bulk-action-btn'));
+      const countLabel = document.getElementById('bulkSelectedCount');
+
+      function refresh() {
+        const n = checks.filter(c => c.checked).length;
+        btns.forEach(b => { b.disabled = n === 0; });
+        countLabel.textContent = n > 0 ? n + ' selected' : '';
+      }
+
+      selectAll.addEventListener('change', function() {
+        checks.forEach(c => { c.checked = selectAll.checked; });
+        refresh();
+      });
+      checks.forEach(c => c.addEventListener('change', refresh));
+      refresh();
+    })();
+  </script>
+<% } %>

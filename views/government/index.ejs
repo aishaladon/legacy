@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h2>Government Contracts</h2>
+  <a href="/government/new" class="btn btn-primary">+ Add</a>
+</div>
+<p class="page-desc">Federal, state, and local government contracting opportunities — RFPs, sole-source contracts, and task orders tracked with full contract details.</p>
+
+<details class="how-to">
+  <summary>How to use Government Contracts</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Click <strong>+ Add</strong> to enter a federal, state, or local contract opportunity. Fill in the solicitation number, NAICS code, agency, and set-aside type if known.</li>
+      <li><strong>Set-aside types</strong> determine eligibility — WOSB (Women-Owned Small Business), EDWOSB (Economically Disadvantaged WOSB), 8(a), HUBZone, SDVOSB, or open Small Business. Filter by set-aside to find opportunities you qualify for.</li>
+      <li>Use the <strong>solicitation number</strong> to search SAM.gov for the full posting and any amendments.</li>
+      <li>Click the title to open the detail page, where you can add contract-specific fields and link it to your Pipeline.</li>
+    </ol>
+    <p>Sources for new entries: BidMatch digests (Email Inbox), SAM.gov direct search, or GovExpert daily emails.</p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/government">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title, agency, solicitation #, or NAICS…" class="filter-input">
+  <select name="status" class="filter-select">
+    <option value="">All Statuses</option>
+    <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <select name="set_aside" class="filter-select">
+    <option value="">Any Set-Aside</option>
+    <% ['WOSB','EDWOSB','8(a)','HUBZone','SDVOSB','Small Business'].forEach(function(sa) { %>
+      <option value="<%= sa %>" <%= filters.set_aside === sa ? 'selected' : '' %>><%= sa %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/government" class="btn-link">Clear</a>
+</form>
+
+<% if (contracts.length === 0) { %>
+  <p class="empty-state">No government contracts found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Title</th>
+          <th>Agency</th>
+          <th>Sol. #</th>
+          <th>NAICS</th>
+          <th>Set-Aside</th>
+          <th>Due</th>
+          <th>Amount</th>
+          <th>Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% contracts.forEach(function(c) { %>
+          <tr>
+            <td><% if (c.is_starred) { %><span class="star">&#9733;</span><% } %></td>
+            <td><a href="/opportunities/<%= c.id %>"><%= c.title %></a></td>
+            <td><%= c.agency || '—' %></td>
+            <td><%= c.solicitation_number || '—' %></td>
+            <td><%= c.naics_code || '—' %></td>
+            <td><%= c.set_aside || '—' %></td>
+            <td><%= c.due_date ? new Date(c.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><% if (c.amount_max) { %>$<%= Number(c.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else { %>—<% } %></td>
+            <td><%= c.alignment_score ? Number(c.alignment_score).toFixed(1) : '—' %></td>
+            <td><span class="badge badge--<%= c.status.toLowerCase().replace(' ','-') %>"><%= c.status %></span></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

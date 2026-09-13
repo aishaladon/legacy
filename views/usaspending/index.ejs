@@ -1,0 +1,134 @@
+<div class="page-header">
+  <h2>USASpending Research</h2>
+</div>
+<p class="page-desc">Search past federal award data to understand the market, identify teaming partners, and research agency spending patterns before you write a proposal.</p>
+
+<details class="how-to">
+  <summary>How to use USASpending Research</summary>
+  <div class="how-to-body">
+    <ol>
+      <li><strong>This is a research tool, not a bids board</strong> — it shows contracts and grants that have already been awarded, not open opportunities. Use it before writing a proposal.</li>
+      <li>Search by your <strong>NAICS code</strong> to see every company that has won federal work in your category — these are your competitors and potential teaming partners.</li>
+      <li>Search by <strong>agency name</strong> (e.g. "National Park Service") to understand how much they spend, what they buy, and who they've bought from.</li>
+      <li>Click <strong>Save as Teaming Partner</strong> on any recipient to add them to your Institutions list for future outreach.</li>
+      <li>Use the results to calibrate your pricing — if similar contracts average $250K, you know the market rate before submitting.</li>
+    </ol>
+    <p>Key insight: the companies winning contracts in your space are not just your competition — they are also your best teaming partners for larger vehicles you can't pursue alone.</p>
+  </div>
+</details>
+
+<form class="sam-search-form" method="GET" action="/usaspending">
+  <div class="sam-search-row">
+    <div class="form-group sam-search-wide">
+      <label>Keyword / Description</label>
+      <input type="text" name="q" value="<%= filters.q %>" placeholder="e.g. historic preservation, archival, museum collections">
+    </div>
+    <div class="form-group">
+      <label>NAICS Code</label>
+      <input type="text" name="naics" value="<%= filters.naics %>" placeholder="e.g. 712110" style="width:9rem;">
+    </div>
+  </div>
+  <div class="sam-search-row">
+    <div class="form-group sam-search-wide">
+      <label>Awarding Agency (optional)</label>
+      <input type="text" name="agency" value="<%= filters.agency %>" placeholder="e.g. Department of the Interior, National Endowment for the Arts">
+    </div>
+    <div class="form-group">
+      <label>Award Type</label>
+      <select name="award_type">
+        <option value="contracts" <%= filters.award_type === 'contracts' ? 'selected' : '' %>>Contracts</option>
+        <option value="grants"    <%= filters.award_type === 'grants'    ? 'selected' : '' %>>Grants</option>
+        <option value="idv"       <%= filters.award_type === 'idv'       ? 'selected' : '' %>>IDVs (IDIQ / BPA)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label title="Matches award activity (e.g. transactions/modifications) in this range — an award's period of performance shown on its card can extend outside it.">Years (award activity)</label>
+      <div style="display:flex;gap:.4rem;align-items:center;">
+        <input type="number" name="year_from" value="<%= filters.year_from %>" min="2000" max="2030" style="width:5.5rem;">
+        <span style="font-size:.8rem;color:var(--text-muted);">to</span>
+        <input type="number" name="year_to"   value="<%= filters.year_to %>"   min="2000" max="2030" style="width:5.5rem;">
+      </div>
+    </div>
+    <div class="form-group sam-search-btn-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary">Search Awards</button>
+      <a href="/usaspending" class="btn-link">Clear</a>
+    </div>
+  </div>
+</form>
+
+<% if (error) { %>
+  <div class="inbox-error"><strong>USASpending API error.</strong><br><%= error %></div>
+<% } else if (searched && results !== null) { %>
+
+  <% if (results.length === 0) { %>
+    <p class="empty-state">No awards found. Try broader keywords, a different NAICS code, or a wider year range.</p>
+  <% } else { %>
+
+    <div class="sam-results-header">
+      <span>
+        <strong><%= results.length %></strong> awards found
+        — showing page <%= page %><%= meta.hasNext ? ' (more results available)' : '' %>
+        <span class="usas-total-value">
+          <% const pageTotal = results.reduce((s,r) => s + (r.amount || 0), 0); %>
+          &nbsp;|&nbsp; Page total: <strong>$<%= pageTotal.toLocaleString('en-US',{maximumFractionDigits:0}) %></strong>
+        </span>
+      </span>
+      <div class="sam-pagination">
+        <% if (page > 1) { %>
+          <a href="/usaspending?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&agency=<%= encodeURIComponent(filters.agency) %>&award_type=<%= filters.award_type %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">&#8592; Prev</a>
+        <% } %>
+        <% if (meta.hasNext) { %>
+          <a href="/usaspending?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&agency=<%= encodeURIComponent(filters.agency) %>&award_type=<%= filters.award_type %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">Next &#8594;</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="sam-results">
+      <% results.forEach(function(r) { %>
+        <div class="sam-card">
+          <div class="usas-card-header">
+            <div class="usas-recipient"><%= r.recipient %></div>
+            <div class="usas-amount">$<%= Number(r.amount).toLocaleString('en-US',{maximumFractionDigits:0}) %></div>
+          </div>
+          <div class="sam-card-meta">
+            <% if (r.agency) { %><span class="sam-meta-item"><strong>Agency:</strong> <%= r.agency %></span><% } %>
+            <% if (r.subAgency && r.subAgency !== r.agency) { %><span class="sam-meta-item"><strong>Office:</strong> <%= r.subAgency %></span><% } %>
+            <% if (r.naicsCode) { %><span class="sam-meta-item"><strong>NAICS:</strong> <%= r.naicsCode %></span><% } %>
+            <% if (r.state) { %><span class="sam-meta-item"><strong>Location:</strong> <%= r.state %></span><% } %>
+            <% if (r.awardId) { %><span class="sam-meta-item"><strong>Award ID:</strong> <%= r.awardId %></span><% } %>
+          </div>
+          <% if (r.description) { %>
+            <div class="usas-description"><%= r.description.slice(0, 200) %><%= r.description.length > 200 ? '…' : '' %></div>
+          <% } %>
+          <div class="sam-card-dates">
+            <% if (r.startDate) { %><span>Start: <%= new Date(r.startDate).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %></span><% } %>
+            <% if (r.endDate) { %><span>End: <%= new Date(r.endDate).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %></span><% } %>
+          </div>
+          <div class="sam-card-actions">
+            <form action="/usaspending/save-institution" method="POST" style="display:inline;">
+              <input type="hidden" name="name" value="<%= r.recipient %>">
+              <input type="hidden" name="state" value="<%= r.state %>">
+              <input type="hidden" name="naics_code" value="<%= r.naicsCode %>">
+              <input type="hidden" name="agency" value="<%= r.agency %>">
+              <button type="submit" class="btn btn-sm btn-secondary">Save as Teaming Partner</button>
+            </form>
+            <a href="https://www.usaspending.gov/search/?hash=<%- encodeURIComponent(JSON.stringify({filters:{recipient_search_text:[r.recipient]}})) %>"
+               target="_blank" rel="noopener" class="btn btn-sm btn-secondary">View on USASpending &#8599;</a>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <% if (meta.hasNext || page > 1) { %>
+    <div class="sam-pagination sam-pagination--bottom">
+      <% if (page > 1) { %>
+        <a href="/usaspending?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&agency=<%= encodeURIComponent(filters.agency) %>&award_type=<%= filters.award_type %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">&#8592; Previous Page</a>
+      <% } %>
+      <% if (meta.hasNext) { %>
+        <a href="/usaspending?q=<%= encodeURIComponent(filters.q) %>&naics=<%= filters.naics %>&agency=<%= encodeURIComponent(filters.agency) %>&award_type=<%= filters.award_type %>&year_from=<%= filters.year_from %>&year_to=<%= filters.year_to %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">Next Page &#8594;</a>
+      <% } %>
+    </div>
+    <% } %>
+  <% } %>
+<% } %>

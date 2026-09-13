@@ -1,0 +1,50 @@
+<div class="page-header">
+  <h2>Review Suggested Keywords &amp; NAICS Codes</h2>
+  <a href="/settings#profile" class="btn-link">Cancel</a>
+</div>
+
+<p class="page-desc">Claude read your capability statement and suggested these. Uncheck anything that doesn't fit — only what's checked gets added. Anything already in your Keywords or NAICS list is skipped automatically.</p>
+
+<form action="/settings/capability-review/apply" method="POST">
+  <section class="card">
+    <h3>Suggested Keywords (<%= (suggestions.keywords || []).length %>)</h3>
+    <% if (!suggestions.keywords || suggestions.keywords.length === 0) { %>
+      <p class="empty-state">No keyword suggestions.</p>
+    <% } else { %>
+      <ul class="item-list">
+        <% suggestions.keywords.forEach(function(kw, i) { %>
+          <li class="item-row">
+            <label style="display:flex;align-items:center;gap:.5rem;flex:1;">
+              <input type="checkbox" name="keywords" value="<%= i %>" checked>
+              <span class="item-title"><%= kw.keyword %></span>
+              <span class="badge badge--<%= (kw.priority || 'medium').toLowerCase() %>"><%= kw.priority || 'Medium' %></span>
+            </label>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="card" style="margin-top:1rem">
+    <h3>Suggested NAICS Codes (<%= (suggestions.naics_codes || []).length %>)</h3>
+    <% if (!suggestions.naics_codes || suggestions.naics_codes.length === 0) { %>
+      <p class="empty-state">No NAICS suggestions.</p>
+    <% } else { %>
+      <ul class="item-list">
+        <% suggestions.naics_codes.forEach(function(n, i) { %>
+          <li class="item-row">
+            <label style="display:flex;align-items:center;gap:.5rem;flex:1;">
+              <input type="checkbox" name="naics" value="<%= i %>" checked>
+              <span class="item-title"><strong><%= n.code %></strong> — <%= n.description %></span>
+            </label>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
+  <div class="form-actions" style="margin-top:1.25rem;">
+    <button type="submit" class="btn btn-primary">Add Selected</button>
+    <a href="/settings#profile" class="btn-link">Skip — don't add anything</a>
+  </div>
+</form>

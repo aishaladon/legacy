@@ -1,0 +1,23 @@
+<div class="page-header">
+  <h2>Digest — <%= new Date(digest.sent_at).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}) %></h2>
+  <a href="/digest-log" class="btn-link">Back</a>
+</div>
+
+<section class="card">
+  <dl class="detail-list">
+    <dt>Sent to</dt><dd><%= digest.recipient || '—' %></dd>
+    <dt>Subject</dt><dd><%= digest.subject || '—' %></dd>
+    <dt>Opportunities</dt><dd><%= digest.opportunities_count %></dd>
+    <dt>Status</dt><dd><span class="badge badge--<%= digest.status.toLowerCase() %>"><%= digest.status %></span></dd>
+    <% if (digest.error_message) { %>
+      <dt>Error</dt><dd class="text-error"><%= digest.error_message %></dd>
+    <% } %>
+  </dl>
+</section>
+
+<% if (digest.body_html) { %>
+  <section class="card" style="margin-top:1rem">
+    <h3>Email Body</h3>
+    <div class="digest-preview"><%- digest.body_html %></div>
+  </section>
+<% } %>

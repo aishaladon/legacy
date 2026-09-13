@@ -1,0 +1,71 @@
+<div class="page-header">
+  <h2>Pipeline</h2>
+  <p class="page-desc">Active pursuits staged through the BD lifecycle — track win probability, expected value, and next actions for every open opportunity.</p>
+  <div class="stat-inline">
+    <span><strong><%= totals.count || 0 %></strong> active</span>
+    <span><strong>$<%= totals.total_value ? Number(totals.total_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '0' %></strong> total value</span>
+  </div>
+</div>
+
+<details class="how-to">
+  <summary>How to use Pipeline</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Opportunities move into the Pipeline when you decide to actively pursue them. Open any opportunity's detail page and click <strong>Add to Pipeline</strong>.</li>
+      <li>Set the <strong>Stage</strong> to reflect where you are: Identified → Qualified → Pursuing → Proposal In Progress → Submitted → Negotiating → Awarded (or Lost / Withdrawn if it ends early).</li>
+      <li><strong>Probability</strong> (0–100%) is your estimated chance of winning. <strong>Expected Value</strong> is entered manually, not calculated — it is <em>not</em> automatically weighted by probability. The "total value" shown above is the raw sum of Expected Value across active items. If you want a probability-weighted forecast, calculate it yourself from Probability × Expected Value.</li>
+      <li>Set a <strong>Next Action</strong> and <strong>Next Action Date</strong> so you always know what to do and when — this prevents opportunities from going stale.</li>
+      <li>Click <strong>Edit</strong> to update the stage, probability, or next action as the pursuit progresses.</li>
+    </ol>
+    <p>Review your pipeline weekly — update stages, adjust probabilities, and make sure every active item has a next action date in the future.</p>
+    <p><strong>Why doesn't Stage match the opportunity's Status?</strong> Pipeline <strong>Stage</strong> and the opportunity's own <strong>Status</strong> field (New / Reviewing / Pursuing / Submitted / Awarded / Not Pursuing / Closed) are intentionally independent and do not sync with each other. Stage tracks where the pursuit is in your BD process; Status is a simpler top-level flag used for opportunity list filtering. Keeping them separate lets you, for example, mark an opportunity's Status as "Pursuing" while its Stage moves through the finer-grained steps of actually writing and negotiating the proposal — but it means you must update both fields yourself when something changes.</p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/pipeline">
+  <select name="stage" class="filter-select">
+    <option value="">Active Stages</option>
+    <% stages.forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.stage === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/pipeline" class="btn-link">Clear</a>
+</form>
+
+<% if (items.length === 0) { %>
+  <p class="empty-state">Nothing in the pipeline. Add opportunities to tracking from their detail page.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Opportunity</th>
+          <th>Type</th>
+          <th>Stage</th>
+          <th>Prob.</th>
+          <th>Expected Value</th>
+          <th>Next Action</th>
+          <th>Next Action Date</th>
+          <th>Due</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.forEach(function(item) { %>
+          <tr>
+            <td><a href="/opportunities/<%= item.opportunity_id %>"><%= item.title %></a></td>
+            <td><span class="badge badge--<%= item.opportunity_type.toLowerCase().replace(' ','-') %>"><%= item.opportunity_type === 'Job' ? 'Freelance/Gig' : item.opportunity_type %></span></td>
+            <td><span class="badge"><%= item.stage %></span></td>
+            <td><%= item.probability != null ? item.probability + '%' : '—' %></td>
+            <td><%= item.expected_value ? '$' + Number(item.expected_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+            <td><%= item.next_action || '—' %></td>
+            <td><%= item.next_action_date ? new Date(item.next_action_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><%= item.due_date ? new Date(item.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><a href="/pipeline/<%= item.id %>/edit" class="btn-link">Edit</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

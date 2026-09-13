@@ -1,0 +1,104 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <a href="/government" class="btn-link">Cancel</a>
+</div>
+
+<form action="/government" method="POST" class="form-card">
+  <h3 class="form-section-title">Basic Info</h3>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" name="title" required value="<%= opp ? opp.title : '' %>">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+          <option value="<%= s %>"><%= s %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Region</label>
+      <input type="text" name="region" value="">
+    </div>
+    <div class="form-group">
+      <label>Posted Date</label>
+      <input type="date" name="posted_date">
+    </div>
+    <div class="form-group">
+      <label>Due Date</label>
+      <input type="date" name="due_date">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Amount Min ($)</label>
+      <input type="number" name="amount_min">
+    </div>
+    <div class="form-group">
+      <label>Amount Max ($)</label>
+      <input type="number" name="amount_max">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Source URL</label>
+      <input type="url" name="source_url">
+    </div>
+  </div>
+
+  <h3 class="form-section-title">Contract Details</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Solicitation Number</label>
+      <input type="text" name="solicitation_number">
+    </div>
+    <div class="form-group">
+      <label>Agency</label>
+      <input type="text" name="agency">
+    </div>
+    <div class="form-group">
+      <label>Sub-Agency / Office</label>
+      <input type="text" name="sub_agency">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>NAICS Code</label>
+      <input type="text" name="naics_code" placeholder="519120">
+    </div>
+    <div class="form-group">
+      <label>Set-Aside</label>
+      <select name="set_aside">
+        <option value="">None / Full & Open</option>
+        <% ['WOSB','EDWOSB','8(a)','HUBZone','SDVOSB','Small Business','Other'].forEach(function(sa) { %>
+          <option value="<%= sa %>"><%= sa %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Contract Type</label>
+      <input type="text" name="contract_type" placeholder="FFP, T&M, IDIQ…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Place of Performance</label>
+      <input type="text" name="place_of_performance">
+    </div>
+    <div class="form-group">
+      <label>SAM Notice ID</label>
+      <input type="text" name="sam_notice_id">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Description / Notes</label>
+    <textarea name="description" rows="5"></textarea>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

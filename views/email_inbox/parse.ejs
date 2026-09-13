@@ -1,0 +1,115 @@
+<div class="page-header">
+  <h2>Import Opportunities from Email</h2>
+  <a href="/email-inbox" class="btn-link">Back to Inbox</a>
+</div>
+
+<div class="parse-email-meta">
+  <strong><%= email.subject %></strong>
+  <span class="parse-email-from">from <%= email.from %></span>
+</div>
+
+<% if (opportunities.length === 0) { %>
+  <div class="empty-state">
+    <p>Could not automatically detect separate opportunities in this email.</p>
+    <a href="/email-inbox/<%= email.uid %>/convert" class="btn btn-primary">Convert as Single Opportunity</a>
+  </div>
+<% } else { %>
+  <p class="page-desc">
+    Found <strong><%= opportunities.length %></strong> opportunities in this email. Claude AI has scored each for fit to your business — sorted high to low. All are checked by default — uncheck any you don't want to import, then click Save.
+  </p>
+  <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">
+    <strong>Fit Scores:</strong>
+    <span class="badge badge--high">7-10</span> Strong match ·
+    <span class="badge badge--medium">5-6</span> Possible fit ·
+    <span class="badge badge--low">1-4</span> Low priority
+  </div>
+
+  <form action="/email-inbox/<%= email.uid %>/parse-save" method="POST">
+    <div class="parse-toolbar">
+      <label class="parse-select-all">
+        <input type="checkbox" id="selectAll" checked> Select / Deselect All
+      </label>
+      <button type="submit" class="btn btn-primary">
+        Save Selected Opportunities
+      </button>
+    </div>
+
+    <div class="parse-list">
+      <% opportunities.forEach(function(opp, i) { %>
+        <div class="parse-card" id="parse-card-<%= i %>" data-score="<%= opp.fit_score || 0 %>">
+          <div class="parse-card-header">
+            <label class="parse-checkbox-label">
+              <input type="checkbox" name="opps[<%= i %>][selected]" value="1"
+                     class="parse-cb" checked
+                     onchange="document.getElementById('parse-card-<%= i %>').classList.toggle('parse-card--unchecked', !this.checked)">
+              <span class="parse-num">#<%= i + 1 %></span>
+            </label>
+            <% if (opp.fit_score != null) { %>
+              <span class="fit-score badge badge--<%= opp.fit_score >= 7 ? 'high' : opp.fit_score >= 5 ? 'medium' : 'low' %>" title="Claude AI fit score">
+                <%= opp.fit_score %>/10 fit
+              </span>
+              <% if (opp.fit_reasoning) { %>
+                <span class="fit-reasoning" style="font-size:.8rem;color:var(--text-muted);margin-left:.5rem;">(<%= opp.fit_reasoning %>)</span>
+              <% } %>
+            <% } %>
+            <input type="text" name="opps[<%= i %>][title]" value="<%= opp.title %>"
+                   class="parse-title-input" placeholder="Opportunity title">
+          </div>
+
+          <div class="parse-card-fields">
+            <div class="form-group">
+              <label>Type</label>
+              <select name="opps[<%= i %>][opportunity_type]">
+                <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>
+                  <option value="<%= t %>" <%= t === opp.opportunityType ? 'selected' : '' %>><%= t === 'Job' ? 'Freelance/Gig' : t %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Due Date</label>
+              <input type="date" name="opps[<%= i %>][due_date]" value="<%= opp.dueDate %>">
+            </div>
+
+            <div class="form-group form-group--wide">
+              <label>Source URL</label>
+              <input type="url" name="opps[<%= i %>][source_url]" value="<%= opp.sourceUrl %>" placeholder="https://">
+              <% if (opp.sourceUrl) { %>
+                <a href="<%= opp.sourceUrl %>" target="_blank" rel="noopener noreferrer" style="font-size:.8rem;">Open link &#8599;</a>
+              <% } %>
+            </div>
+
+            <div class="form-group form-group--wide">
+              <label>Source / Agency</label>
+              <input type="text" name="opps[<%= i %>][source]" value="<%= opp.agency || email.fromAddress %>">
+            </div>
+          </div>
+
+          <% if (opp.preview) { %>
+          <details class="parse-preview">
+            <summary>View parsed text</summary>
+            <pre class="email-body-text"><%= opp.body %></pre>
+          </details>
+          <% } %>
+
+          <input type="hidden" name="opps[<%= i %>][description]" value="<%= opp.body %>">
+        </div>
+      <% }); %>
+    </div>
+
+    <div class="parse-footer">
+      <button type="submit" class="btn btn-primary">Save Selected Opportunities</button>
+      <a href="/email-inbox" class="btn-link">Cancel</a>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('selectAll').addEventListener('change', function() {
+      document.querySelectorAll('.parse-cb').forEach(function(cb) {
+        cb.checked = document.getElementById('selectAll').checked;
+        document.getElementById('parse-card-' + cb.closest('.parse-card').id.split('-')[2])
+          .classList.toggle('parse-card--unchecked', !cb.checked);
+      });
+    });
+  </script>
+<% } %>

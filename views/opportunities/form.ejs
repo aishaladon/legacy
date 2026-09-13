@@ -1,0 +1,100 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (opportunity) { %><a href="/opportunities/<%= opportunity.id %>" class="btn-link">Cancel</a><% } else { %><a href="/opportunities" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= opportunity ? '/opportunities/' + opportunity.id + '/edit' : '/opportunities' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" name="title" value="<%= opportunity ? opportunity.title : '' %>" required>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Institution / Organization</label>
+      <select name="institution_id">
+        <option value="">— Not linked —</option>
+        <% institutions.forEach(function(i) { %>
+          <option value="<%= i.id %>" <%= (opportunity && opportunity.institution_id == i.id) ? 'selected' : '' %>><%= i.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Contact</label>
+      <select name="contact_id">
+        <option value="">— Not linked —</option>
+        <% contacts.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= (opportunity && opportunity.contact_id == c.id) ? 'selected' : '' %>><%= c.first_name %> <%= c.last_name %><%= c.institution_name ? ' (' + c.institution_name + ')' : '' %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Type</label>
+      <select name="opportunity_type">
+        <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>
+          <option value="<%= t %>" <%= (opportunity && opportunity.opportunity_type === t) ? 'selected' : '' %>><%= t === 'Job' ? 'Freelance/Gig' : t %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+          <option value="<%= s %>" <%= (opportunity && opportunity.status === s) ? 'selected' : '' %>><%= s %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Region</label>
+      <input type="text" name="region" value="<%= opportunity ? (opportunity.region || '') : '' %>" placeholder="e.g. California, National">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Source</label>
+      <input type="text" name="source" value="<%= opportunity ? (opportunity.source || '') : '' %>" placeholder="SAM.gov, IMLS, etc.">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Source URL</label>
+      <input type="url" name="source_url" value="<%= opportunity ? (opportunity.source_url || '') : '' %>">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Posted Date</label>
+      <input type="date" name="posted_date" value="<%= opportunity && opportunity.posted_date && !isNaN(new Date(opportunity.posted_date)) ? new Date(opportunity.posted_date).toISOString().split('T')[0] : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Due Date</label>
+      <input type="date" name="due_date" value="<%= opportunity && opportunity.due_date && !isNaN(new Date(opportunity.due_date)) ? new Date(opportunity.due_date).toISOString().split('T')[0] : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Amount Min ($)</label>
+      <input type="number" name="amount_min" value="<%= opportunity ? (opportunity.amount_min || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Amount Max ($)</label>
+      <input type="number" name="amount_max" value="<%= opportunity ? (opportunity.amount_max || '') : '' %>">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Description / Notes</label>
+    <textarea name="description" rows="6"><%= opportunity ? (opportunity.description || '') : '' %></textarea>
+  </div>
+
+  <div class="form-group form-check">
+    <label><input type="checkbox" name="is_starred" value="1" <%= (opportunity && opportunity.is_starred) ? 'checked' : '' %>> Star this opportunity</label>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

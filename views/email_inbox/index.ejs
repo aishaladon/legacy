@@ -1,0 +1,127 @@
+<div class="page-header">
+  <h2>Email Inbox</h2>
+  <div class="page-header-actions">
+    <% if (lastEmailSync) { %>
+      <span class="sync-timestamp">Last synced: <%= new Date(lastEmailSync).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) %></span>
+    <% } %>
+    <% if (showAll) { %>
+      <a href="/email-inbox" class="btn btn-secondary btn-sm">Show Opportunities Only</a>
+    <% } else { %>
+      <a href="/email-inbox?show=all" class="btn btn-secondary btn-sm">Show All Emails</a>
+    <% } %>
+  </div>
+</div>
+<p class="page-desc">
+  <% if (showAll) { %>
+    Showing all emails from your inbox.
+  <% } else { %>
+    Showing opportunity-related emails only — bid alerts, daily digests, grants, and contract notices.
+  <% } %>
+</p>
+
+<details class="how-to" open>
+  <summary>How to use Email Inbox</summary>
+  <div class="how-to-body">
+    <ol>
+      <li><strong><span style="color:var(--success);font-weight:700;">$</span> / <span style="color:var(--text-muted);font-weight:700;">#</span></strong> next to each email — Claude's read on whether it's worth opening (<span style="color:var(--success);font-weight:700;">$</span> = plausibly relevant, <span style="color:var(--text-muted);font-weight:700;">#</span> = safe to archive unread). Hover the mark for its reason. New emails get classified the first time they load here.</li>
+      <li><strong>Regular emails</strong> (single opportunity) — click <strong>Convert</strong> to open a pre-filled opportunity form. Review, edit if needed, then click Save.</li>
+      <li><strong>Digest emails</strong> (BidMatch, GovExpert with 20+ listings) — click <strong>Convert</strong> and a blue banner will appear. Click <strong>Parse &amp; Import All</strong> to split the email into individual opportunity cards.</li>
+      <li>On the Parse page, all opportunities are checked by default. <strong>Uncheck</strong> any you don't want, edit titles or due dates, then click <strong>Save Selected Opportunities</strong> — they all import at once.</li>
+      <li>After converting, the email shows a green <strong>Converted</strong> badge. Click <strong>Hide</strong> to remove it from view, or <strong>Archive</strong> to dismiss an email you don't want to convert.</li>
+      <li>Use <strong>Show All Emails</strong> (top right) to see your full inbox — helpful if a relevant email was filtered out.</li>
+    </ol>
+    <p>Only opportunity-related emails are shown by default — bid alerts, grant digests, contract notices, and emails from known sources like GovExpert and BidMatch.</p>
+  </div>
+</details>
+
+<% if (error) { %>
+  <div class="inbox-error">
+    <strong>Could not connect to mailbox.</strong><br>
+    <span><%= error %></span><br>
+    <small>Check that IMAP_HOST, IMAP_USERNAME, and IMAP_PASSWORD are set in your Hostinger environment variables.</small>
+  </div>
+<% } else if (messages.length === 0) { %>
+  <div class="empty-state">
+    <p>No opportunity-related emails found. <a href="/email-inbox?show=all">Show all emails</a> instead.</p>
+  </div>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table inbox-table">
+      <thead>
+        <tr>
+          <th style="width:1.75rem;"></th>
+          <th style="width:1.75rem;" title="Claude's read on whether this is worth reviewing">&#9670;</th>
+          <th>From</th>
+          <th>Subject</th>
+          <th>Date</th>
+          <th style="width:13rem;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% messages.forEach(function(msg) {
+          const isConverted = msg.action && msg.action.action === 'converted';
+        %>
+          <tr class="<%= msg.seen ? '' : 'inbox-unread' %> <%= isConverted ? 'inbox-converted' : '' %>">
+            <td class="inbox-dot-cell">
+              <% if (!msg.seen && !isConverted) { %><span class="inbox-unread-dot"></span><% } %>
+              <% if (isConverted) { %><span class="inbox-converted-dot" title="Converted">&#10003;</span><% } %>
+            </td>
+            <td class="inbox-relevance-cell">
+              <% if (msg.relevance) { %>
+                <span class="inbox-relevance inbox-relevance--<%= msg.relevance.marker === '$' ? 'yes' : 'no' %>" title="<%= msg.relevance.reason %>"><%= msg.relevance.marker %></span>
+              <% } %>
+            </td>
+            <td class="inbox-from"><%= msg.from %></td>
+            <td class="inbox-subject">
+              <div class="inbox-subject-line">
+                <a href="/email-inbox/<%= msg.uid %>/convert"><%= msg.subject %></a>
+              </div>
+              <% if (msg.previewCount !== undefined) { %>
+                <div class="inbox-preview">
+                  <strong><%= msg.previewCount %></strong> opportunit<%= msg.previewCount === 1 ? 'y' : 'ies' %> found
+                  <% if (msg.previewTitles && msg.previewTitles.length) { %>
+                    — e.g. &ldquo;<%= msg.previewTitles.join('”, “') %>&rdquo;
+                  <% } %>
+                  <% if (msg.previewUrl) { %>
+                    — <a href="<%= msg.previewUrl %>" target="_blank" rel="noopener noreferrer">View full list &rarr;</a>
+                  <% } %>
+                </div>
+              <% } else if (msg.previewText) { %>
+                <div class="inbox-preview">
+                  <%= msg.previewText %>
+                  <% if (msg.previewUrl) { %>
+                    — <a href="<%= msg.previewUrl %>" target="_blank" rel="noopener noreferrer">Read more &rarr;</a>
+                  <% } %>
+                </div>
+              <% } else if (msg.previewError) { %>
+                <div class="inbox-preview inbox-preview--error">Preview unavailable — click the subject to view the full email.</div>
+              <% } %>
+            </td>
+            <td class="inbox-date">
+              <% if (msg.date) { %>
+                <%= new Date(msg.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              <% } %>
+            </td>
+            <td class="inbox-action">
+              <% if (isConverted) { %>
+                <span class="badge badge-success">Converted</span>
+                <form action="/email-inbox/<%= msg.uid %>/archive" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-link btn-link--muted" title="Remove from list">Hide</button>
+                </form>
+              <% } else { %>
+                <a href="/email-inbox/<%= msg.uid %>/convert" class="btn btn-sm btn-primary">Convert</a>
+                <form action="/email-inbox/<%= msg.uid %>/archive" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-secondary" title="Remove from inbox list">Archive</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <p class="inbox-note">
+    Showing <%= messages.length %> email(s). Newest first.
+    <% if (previewTruncated) { %> Content previews are limited to the most recent 40 opportunity emails.<% } %>
+  </p>
+<% } %>

@@ -1,0 +1,74 @@
+<div class="page-header">
+  <h2>Grant Opportunities</h2>
+  <a href="/grants/new" class="btn btn-primary">+ Add</a>
+</div>
+<p class="page-desc">Grant funding opportunities from federal agencies, foundations, and institutions — track eligibility, award ranges, and application deadlines.</p>
+
+<details class="how-to">
+  <summary>How to use Grant Opportunities</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Click <strong>+ Add</strong> to enter a grant. Add the funder from the <strong>Funders</strong> list — if the funder isn't there yet, add them first.</li>
+      <li><strong>Match Required</strong> means the grant requires you to contribute a percentage of your own funds alongside the award — factor this into whether to pursue.</li>
+      <li>Set the <strong>due date</strong> accurately — grant deadlines are firm and missing them disqualifies your application.</li>
+      <li>Use the <strong>Funder</strong> filter to see all grants from a specific foundation or agency.</li>
+      <li>Click the title to open the detail page, add eligibility notes, and link to your Pipeline when you decide to apply.</li>
+    </ol>
+    <p>Sources: Grants.gov (federal), California state grants portal, foundation websites, and email alerts from funders you follow.</p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/grants">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search title, description, or funder…" class="filter-input">
+  <select name="funder_id" class="filter-select">
+    <option value="">All Funders</option>
+    <% funders.forEach(function(f) { %>
+      <option value="<%= f.id %>" <%= filters.funder_id == f.id ? 'selected' : '' %>><%= f.name %></option>
+    <% }); %>
+  </select>
+  <select name="status" class="filter-select">
+    <option value="">All Statuses</option>
+    <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/grants" class="btn-link">Clear</a>
+</form>
+
+<% if (grants.length === 0) { %>
+  <p class="empty-state">No grant opportunities found.</p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Title</th>
+          <th>Funder</th>
+          <th>Program</th>
+          <th>Due</th>
+          <th>Amount</th>
+          <th>Match?</th>
+          <th>Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% grants.forEach(function(g) { %>
+          <tr>
+            <td><% if (g.is_starred) { %><span class="star">&#9733;</span><% } %></td>
+            <td><a href="/opportunities/<%= g.id %>"><%= g.title %></a></td>
+            <td><%= g.funder_name || '—' %></td>
+            <td><%= g.program_name || '—' %></td>
+            <td><%= g.due_date ? new Date(g.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><% if (g.amount_max) { %>$<%= Number(g.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else if (g.amount_min) { %>$<%= Number(g.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+<% } else { %>—<% } %></td>
+            <td><%= g.match_required ? 'Yes' : 'No' %></td>
+            <td><%= g.alignment_score ? Number(g.alignment_score).toFixed(1) : '—' %></td>
+            <td><span class="badge badge--<%= g.status.toLowerCase().replace(' ','-') %>"><%= g.status %></span></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
