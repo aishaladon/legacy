@@ -63,6 +63,7 @@ router.get('/', async (req, res) => {
   const page = parseInt(rawPage) || 1;
   const rows = 25;
   const startRecord = (page - 1) * rows;
+  const GRANTS_MAX_ROWS = 500; // generous cap on how far this workaround will fetch in one call
 
   if (searched) {
     try {
@@ -71,12 +72,19 @@ router.get('/', async (req, res) => {
       // requires pipe-separated instead ("posted|forecasted"). The UI's
       // filter values stay comma-separated (readable in the query string);
       // translate here at the API boundary.
+      // Same class of bug as SAM.gov Search: this API's own startRecordNum
+      // pagination can come back empty on a later page even though it
+      // reports the same (correct) total hit count — an upstream backend
+      // quirk, not a request problem on our end. Work around it the same
+      // way: always fetch from record 0 through the current page, then
+      // slice out the window we want locally.
+      const fetchRows = Math.min(GRANTS_MAX_ROWS, page * rows);
       const body = {
         keyword: q || '',
         cfda: cfda || '',
         oppStatuses: (oppStatus || 'posted,forecasted').replace(/,/g, '|'),
-        rows,
-        startRecordNum: startRecord,
+        rows: fetchRows,
+        startRecordNum: 0,
         sortBy: 'openDate|desc'
       };
 
@@ -102,7 +110,7 @@ router.get('/', async (req, res) => {
       // silently returned zero results for every search.
       total = data.hitCount || 0;
 
-      results = (data.oppHits || []).map(o => ({
+      const allResults = (data.oppHits || []).map(o => ({
         id:          o.id || '',
         number:      o.number || '',
         title:       o.title ? decodeHtmlEntities(o.title) : '(untitled)',
@@ -117,6 +125,10 @@ router.get('/', async (req, res) => {
         cfdaTitle:   '',
         grantsUrl:   `https://www.grants.gov/search-results-detail/${o.id}`
       }));
+
+      // allResults already starts at record 0, so slice out just this
+      // page's window — this is the actual pagination now, not the API's.
+      results = allResults.slice(startRecord, startRecord + rows);
     } catch (err) {
       error = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     }

@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
   let error = null;
   const pageOffset = parseInt(rawOffset) || 0;
   const pageSize = 25;
+  const SAM_MAX_LIMIT = 1000; // SAM.gov's own documented ceiling on records per call
 
   const apiKey = process.env.SAM_API_KEY;
   const relayUrl = process.env.SAM_RELAY_URL;
@@ -44,9 +45,19 @@ router.get('/', async (req, res) => {
       const now = new Date();
       const from = new Date(now.getTime() - daysBack * 86400000);
 
+      // SAM.gov's own offset+limit pagination is unreliable past page 1 — it
+      // can report the correct totalRecords while returning a zero-length
+      // opportunitiesData array for a perfectly valid non-zero offset (seen
+      // live: 113 total, offset=25, empty page). This isn't anything wrong
+      // with our request; it's a known instability in SAM.gov's own search
+      // backend. Work around it by always fetching from offset 0 through
+      // the current page in one call, then slicing out the window we want
+      // locally — SAM.gov supports up to 1000 records per call, which
+      // covers virtually every real search here.
+      const fetchLimit = Math.min(SAM_MAX_LIMIT, pageOffset + pageSize);
       const params = new URLSearchParams({
-        limit: String(pageSize),
-        offset: String(pageOffset),
+        limit: String(fetchLimit),
+        offset: '0',
         postedFrom: formatDateParam(from),
         postedTo: formatDateParam(now)
       });
@@ -86,7 +97,7 @@ router.get('/', async (req, res) => {
       const data = await resp.json();
       total = data.totalRecords || 0;
 
-      results = (data.opportunitiesData || []).map(o => ({
+      const allResults = (data.opportunitiesData || []).map(o => ({
         noticeId: o.noticeId || '',
         title: o.title || '(untitled)',
         solicitationNumber: o.solicitationNumber || '',
@@ -99,6 +110,10 @@ router.get('/', async (req, res) => {
         dueDate: o.responseDeadLine ? o.responseDeadLine.split('T')[0] : '',
         samUrl: o.uiLink || `https://sam.gov/opp/${o.noticeId}/view`
       }));
+
+      // allResults already starts at offset 0, so slice out just this page's
+      // window — this is the actual pagination now, not SAM.gov's.
+      results = allResults.slice(pageOffset, pageOffset + pageSize);
     } catch (err) {
       error = err.cause ? `${err.message} (${err.cause.message || err.cause})` : err.message;
     }
