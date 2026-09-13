@@ -380,4 +380,71 @@ router.post('/bulk-delete', async (req, res) => {
   res.redirect('/opportunities');
 });
 
+const VALID_STATUSES = ['New', 'Reviewing', 'Pursuing', 'Submitted', 'Awarded', 'Not Pursuing', 'Closed'];
+const VALID_STAGES = [
+  'Identified', 'Qualified', 'Pursuing', 'Proposal In Progress',
+  'Submitted', 'Negotiating', 'Awarded', 'Lost', 'Withdrawn'
+];
+
+router.post('/bulk-status', async (req, res) => {
+  let ids = req.body.ids || [];
+  if (!Array.isArray(ids)) ids = [ids];
+  ids = ids.map(id => parseInt(id, 10)).filter(Number.isInteger);
+  const { bulk_status } = req.body;
+
+  if (ids.length === 0) {
+    req.flash('error', 'No opportunities selected.');
+    return res.redirect('/opportunities');
+  }
+  if (!VALID_STATUSES.includes(bulk_status)) {
+    req.flash('error', 'Choose a status to apply.');
+    return res.redirect('/opportunities');
+  }
+
+  await db.query('UPDATE opportunities SET status = ? WHERE id IN (?)', [bulk_status, ids]);
+
+  await db.query(
+    `INSERT INTO activity_log (record_type, record_id, action, description)
+     VALUES ${ids.map(() => '(?,?,?,?)').join(',')}`,
+    ids.flatMap(id => ['opportunity', id, 'status_changed', `Status bulk-updated to ${bulk_status}`])
+  );
+
+  req.flash('success', `Status set to "${bulk_status}" for ${ids.length} opportunity(ies). Remember this doesn't change Pipeline Stage — update that separately if needed.`);
+  res.redirect('/opportunities');
+});
+
+router.post('/bulk-add-pipeline', async (req, res) => {
+  let ids = req.body.ids || [];
+  if (!Array.isArray(ids)) ids = [ids];
+  ids = ids.map(id => parseInt(id, 10)).filter(Number.isInteger);
+  const { bulk_stage } = req.body;
+
+  if (ids.length === 0) {
+    req.flash('error', 'No opportunities selected.');
+    return res.redirect('/opportunities');
+  }
+  if (!VALID_STAGES.includes(bulk_stage)) {
+    req.flash('error', 'Choose a stage to apply.');
+    return res.redirect('/opportunities');
+  }
+
+  // Same upsert-by-opportunity_id behavior as the single Add to Pipeline
+  // form — an opportunity already in the pipeline just gets its stage
+  // moved, not a duplicate row (opportunity_id is UNIQUE on pipeline).
+  await db.query(
+    `INSERT INTO pipeline (opportunity_id, stage) VALUES ${ids.map(() => '(?,?)').join(',')}
+     ON DUPLICATE KEY UPDATE stage = VALUES(stage)`,
+    ids.flatMap(id => [id, bulk_stage])
+  );
+
+  await db.query(
+    `INSERT INTO activity_log (record_type, record_id, action, description)
+     VALUES ${ids.map(() => '(?,?,?,?)').join(',')}`,
+    ids.flatMap(id => ['opportunity', id, 'pipeline_updated', `Added to Pipeline at stage "${bulk_stage}" (bulk)`])
+  );
+
+  req.flash('success', `${ids.length} opportunity(ies) added to Pipeline at stage "${bulk_stage}".`);
+  res.redirect('/pipeline');
+});
+
 module.exports = router;

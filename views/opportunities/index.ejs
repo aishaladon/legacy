@@ -13,6 +13,7 @@
       <li>Click any opportunity title to open its detail page — this is where you add notes, link contacts and institutions, and move it into the Pipeline.</li>
       <li>Star important opportunities (&#9733;) to pin them to the top of the list.</li>
       <li>Once you decide to pursue, open the detail page and click <strong>Add to Pipeline</strong> to begin tracking stages and win probability.</li>
+      <li>Select multiple rows with the checkboxes to <strong>bulk-update Status</strong> or <strong>bulk-add to Pipeline</strong> at once — handy right after a batch import or a SAM.gov/Grants.gov pull, instead of opening each record one at a time. An opportunity already in the Pipeline just gets its stage moved, not duplicated.</li>
     </ol>
     <p>Statuses: <strong>New</strong> → just discovered &nbsp;|&nbsp; <strong>Reviewing</strong> → evaluating fit &nbsp;|&nbsp; <strong>Pursuing</strong> → actively working it &nbsp;|&nbsp; <strong>Submitted</strong> → proposal sent &nbsp;|&nbsp; <strong>Awarded / Not Pursuing / Closed</strong></p>
   </div>
@@ -39,9 +40,31 @@
 <% if (opportunities.length === 0) { %>
   <p class="empty-state">No opportunities found. <a href="/opportunities/new">Add one</a>.</p>
 <% } else { %>
-  <form id="bulkDeleteForm" method="POST" action="/opportunities/bulk-delete" onsubmit="return confirm('Delete ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies)? This cannot be undone.');">
-    <div class="bulk-toolbar" style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
-      <button type="submit" class="btn btn-secondary btn-sm" id="bulkDeleteBtn" disabled>Delete Selected</button>
+  <form id="bulkDeleteForm" method="POST" action="/opportunities/bulk-delete">
+    <div class="bulk-toolbar" style="display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;margin-bottom:.5rem;">
+      <button type="submit" class="btn btn-secondary btn-sm bulk-action-btn" id="bulkDeleteBtn" disabled
+        onclick="return confirm('Delete ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies)? This cannot be undone.');">Delete Selected</button>
+
+      <span class="bulk-group" style="display:flex;align-items:center;gap:.4rem;">
+        <select name="bulk_status" class="filter-select filter-input--sm">
+          <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+            <option value="<%= s %>"><%= s %></option>
+          <% }); %>
+        </select>
+        <button type="submit" formaction="/opportunities/bulk-status" class="btn btn-secondary btn-sm bulk-action-btn" id="bulkStatusBtn" disabled
+          onclick="return confirm('Set Status to \'' + document.querySelector('[name=bulk_status]').value + '\' for ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies)?');">Update Status</button>
+      </span>
+
+      <span class="bulk-group" style="display:flex;align-items:center;gap:.4rem;">
+        <select name="bulk_stage" class="filter-select filter-input--sm">
+          <% ['Identified','Qualified','Pursuing','Proposal In Progress','Submitted','Negotiating','Awarded','Lost','Withdrawn'].forEach(function(s) { %>
+            <option value="<%= s %>"><%= s %></option>
+          <% }); %>
+        </select>
+        <button type="submit" formaction="/opportunities/bulk-add-pipeline" class="btn btn-secondary btn-sm bulk-action-btn" id="bulkPipelineBtn" disabled
+          onclick="return confirm('Add ' + document.querySelectorAll('.opp-check:checked').length + ' selected opportunity(ies) to Pipeline at stage \'' + document.querySelector('[name=bulk_stage]').value + '\'? Opportunities already in the Pipeline will have their stage moved instead of getting a duplicate entry.');">Add to Pipeline</button>
+      </span>
+
       <span id="bulkSelectedCount" style="font-size:.85rem;color:var(--text-muted);"></span>
     </div>
     <div class="table-wrap">
@@ -89,12 +112,12 @@
     (function() {
       const selectAll = document.getElementById('selectAllOpps');
       const checks = Array.from(document.querySelectorAll('.opp-check'));
-      const btn = document.getElementById('bulkDeleteBtn');
+      const btns = Array.from(document.querySelectorAll('.bulk-action-btn'));
       const countLabel = document.getElementById('bulkSelectedCount');
 
       function refresh() {
         const n = checks.filter(c => c.checked).length;
-        btn.disabled = n === 0;
+        btns.forEach(b => { b.disabled = n === 0; });
         countLabel.textContent = n > 0 ? n + ' selected' : '';
       }
 
