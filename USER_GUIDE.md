@@ -304,7 +304,21 @@ invented specifics.
 
 ### Draft Outreach Email
 On any institution page. Uses your capability statement and the
-institution's profile.
+institution's profile. Once you've reviewed and edited the draft, you have
+three ways to act on it:
+- **💾 Save as Draft in Inbox** — writes a real draft into the
+  info@legacypnp.ltd mailbox over IMAP (into whatever folder that mailbox
+  flags as its Drafts folder), so it shows up ready to send in any mail
+  client logged into that account. No length limit.
+- **✉️ Open in Gmail** — opens a pre-filled Gmail compose window via a URL.
+  Convenient, but it can truncate long bodies since it's just a link, not a
+  saved draft — nothing is actually saved until you interact with that
+  window.
+- **📋 Copy to Clipboard** — paste it in manually anywhere.
+
+**Log as Sent** records the outreach in that institution's Communication
+Log — do this after you've actually sent it, regardless of which of the
+three options above you used to get it out the door.
 
 ### Claude Assistant
 Full-page chat at **Claude Assistant** in the sidebar. It has your company

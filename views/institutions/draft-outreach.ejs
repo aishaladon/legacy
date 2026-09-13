@@ -3,7 +3,7 @@
   <a href="/institutions/<%= institution.id %>" class="btn btn-secondary">← Back</a>
 </div>
 
-<p class="page-desc">Claude will draft a personalized introduction to <strong><%= institution.name %></strong> using your capability statement, NAICS codes, and certifications. Review and edit before sending — nothing is sent from here, you'll open it in Gmail (or copy/paste) to send it yourself.</p>
+<p class="page-desc">Claude will draft a personalized introduction to <strong><%= institution.name %></strong> using your capability statement, NAICS codes, and certifications. Review and edit before sending — nothing is sent automatically. You can save it as a real Draft in the info@legacypnp.ltd inbox, open it in Gmail, or copy/paste it yourself.</p>
 
 <section class="card">
   <h3><%= institution.name %></h3>
@@ -51,13 +51,15 @@
     </div>
 
     <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;">
-      <button id="gmailBtn" class="btn btn-primary">✉️ Open in Gmail</button>
+      <button id="saveDraftBtn" class="btn btn-primary">💾 Save as Draft in Inbox</button>
+      <button id="gmailBtn" class="btn btn-secondary">✉️ Open in Gmail</button>
       <button id="copyBtn" class="btn btn-secondary">📋 Copy to Clipboard</button>
       <button id="logBtn" class="btn btn-secondary">Log as Sent</button>
     </div>
+    <p id="saveDraftStatus" style="font-size:.85rem;margin-top:.5rem;"></p>
 
     <p style="font-size:.85rem;color:var(--text-muted);margin-top:1rem;">
-      💡 If the body is long, "Open in Gmail" may truncate it — Copy to Clipboard and paste manually is more reliable for longer drafts.
+      💡 <strong>Save as Draft in Inbox</strong> writes a real draft into the info@legacypnp.ltd mailbox (via IMAP) — open it from any mail client logged into that account to review and send. "Open in Gmail" may truncate long bodies since it's just a pre-filled compose link; Save as Draft doesn't have that limit.
     </p>
   </section>
 </div>
@@ -106,6 +108,40 @@
     } catch (err) {
       document.getElementById('loadingSpinner').style.display = 'none';
       alert('Error: ' + err.message);
+    }
+  });
+
+  document.getElementById('saveDraftBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const btn = e.target;
+    const status = document.getElementById('saveDraftStatus');
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    status.textContent = '';
+    status.style.color = '';
+
+    try {
+      const res = await fetch('/institutions/<%= institution.id %>/draft-outreach-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: document.getElementById('draftTo').value,
+          subject: document.getElementById('draftSubject').value,
+          body: document.getElementById('draftBody').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save the draft.');
+
+      status.style.color = 'var(--success, #166534)';
+      status.textContent = '✓ Saved to the info@legacypnp.ltd Drafts folder.';
+    } catch (err) {
+      status.style.color = 'var(--danger, #c53030)';
+      status.textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
     }
   });
 

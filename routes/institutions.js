@@ -6,6 +6,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
 const { extractResponseText } = require('../utils/claudeResponseText');
 const { getCompanyProfile } = require('../utils/companyProfile');
+const { saveDraftEmail } = require('../utils/saveDraftEmail');
 
 router.use(requireLogin);
 
@@ -289,6 +290,29 @@ Respond ONLY with valid JSON (no markdown): {"subject": "...", "body": "..."}. T
     if (err.status === 401) errorMsg = 'Invalid Claude API key — check it in Settings → API Keys.';
     else if (err.status === 429) errorMsg = 'Rate limited — too many requests. Wait a moment and try again.';
     res.status(500).json({ error: errorMsg });
+  }
+});
+
+// Saves an AI-drafted outreach email as a real Draft in the info@legacypnp.ltd
+// mailbox (via IMAP APPEND to the Drafts folder), instead of just opening a
+// pre-filled Gmail compose window that depends on the browser tab staying
+// open. The draft lands ready to review/send from any mail client logged
+// into that mailbox.
+router.post('/:id/draft-outreach-save', async (req, res) => {
+  const [[institution]] = await db.query('SELECT id FROM institutions WHERE id = ?', [req.params.id]);
+  if (!institution) return res.status(404).json({ error: 'Institution not found.' });
+
+  const { to, subject, body } = req.body;
+  if (!body || !body.trim()) {
+    return res.status(400).json({ error: 'Nothing to save — the draft body is empty.' });
+  }
+
+  try {
+    await saveDraftEmail({ to, subject, body });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Save draft to mailbox error:', err);
+    res.status(500).json({ error: `Could not save to the mailbox: ${err.message}` });
   }
 });
 

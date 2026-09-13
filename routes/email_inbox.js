@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const db = require('../config/database');
 const { requireLogin } = require('../middleware/auth');
@@ -8,6 +7,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { getClaudeApiKey } = require('../utils/claudeApiKey');
 const { extractResponseText } = require('../utils/claudeResponseText');
 const { parseJsonLoose } = require('../utils/parseJsonLoose');
+const { createImapClient } = require('../utils/imapClient');
 
 router.use(requireLogin);
 
@@ -401,19 +401,6 @@ ${oppTexts}`
   }
 }
 
-function createClient() {
-  return new ImapFlow({
-    host: process.env.IMAP_HOST || 'imap.gmail.com',
-    port: parseInt(process.env.IMAP_PORT) || 993,
-    secure: process.env.IMAP_USE_SSL !== 'false',
-    auth: {
-      user: process.env.IMAP_USERNAME,
-      pass: process.env.IMAP_PASSWORD
-    },
-    logger: false
-  });
-}
-
 function formatFrom(envFrom) {
   if (!envFrom || !envFrom.length) return 'Unknown';
   const f = envFrom[0];
@@ -422,7 +409,7 @@ function formatFrom(envFrom) {
 }
 
 async function fetchEmailBody(uid) {
-  const client = createClient();
+  const client = createImapClient();
   let email = null;
   try {
     await client.connect();
@@ -451,7 +438,7 @@ async function fetchEmailBody(uid) {
 // ── List inbox ───────────────────────────────────────────
 router.get('/', async (req, res) => {
   const showAll = req.query.show === 'all';
-  const client = createClient();
+  const client = createImapClient();
   let messages = [];
   let error = null;
   let previewTruncated = false;
