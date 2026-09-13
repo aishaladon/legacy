@@ -296,11 +296,17 @@ roughly 45–60 seconds — a "Claude is drafting your response…" message
 appears, and the button doesn't visibly change state while it works, so it
 can look frozen. Wait it out.
 
-Output is a fully editable textarea, exportable via **📄 Download as Word**
-or **📋 Copy to Clipboard**. The draft is context-aware: a record with no
-stated requirements gets a reusable shell with bracketed placeholders and an
-explicit "do not submit with placeholder text intact" warning, rather than
-invented specifics.
+Output is a fully editable textarea. Three ways to get it out of the app:
+- **💾 Save as Draft in Inbox** — builds the same .docx as Download as Word,
+  attaches it to a real draft saved into the info@legacypnp.ltd mailbox
+  over IMAP, and writes a short cover note as the body. Open it from any
+  mail client on that account, add a recipient, and send.
+- **📄 Download as Word** — saves the .docx locally.
+- **📋 Copy to Clipboard** — paste the raw text anywhere.
+
+The draft is context-aware: a record with no stated requirements gets a
+reusable shell with bracketed placeholders and an explicit "do not submit
+with placeholder text intact" warning, rather than invented specifics.
 
 ### Draft Outreach Email
 On any institution page. Uses your capability statement and the

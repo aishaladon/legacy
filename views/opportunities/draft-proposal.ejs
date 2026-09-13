@@ -45,17 +45,19 @@
     <textarea id="draftText" style="width:100%;font-family:monospace;font-size:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:4px;resize:vertical;height:400px;margin-bottom:1rem;"></textarea>
 
     <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <button id="saveDraftBtn" class="btn btn-primary">💾 Save as Draft in Inbox</button>
       <form id="downloadForm" style="display:inline;">
         <input type="hidden" name="title" value="<%= opp.title %>">
         <input type="hidden" id="draftInput" name="draft" value="">
-        <button type="submit" class="btn btn-primary" formaction="/opportunities/<%= opp.id %>/download-proposal" formmethod="POST">📄 Download as Word</button>
+        <button type="submit" class="btn btn-secondary" formaction="/opportunities/<%= opp.id %>/download-proposal" formmethod="POST">📄 Download as Word</button>
       </form>
       <button id="copyBtn" class="btn btn-secondary">📋 Copy to Clipboard</button>
       <button onclick="document.getElementById('draftSection').style.display='none'" class="btn-link">Close</button>
     </div>
+    <p id="saveDraftStatus" style="font-size:.85rem;margin-top:.5rem;"></p>
 
     <p style="font-size:.85rem;color:var(--text-muted);margin-top:1rem;">
-      💡 <strong>Tip:</strong> Edit the draft above, then download as Word to share with your team or submit with the opportunity.
+      💡 <strong>Save as Draft in Inbox</strong> attaches this as a .docx to a real draft in the info@legacypnp.ltd mailbox — open it from any mail client on that account, add a recipient, and send. Edit the draft above first, then download as Word to share with your team or submit with the opportunity.
     </p>
   </section>
 </div>
@@ -93,6 +95,36 @@
     } catch (err) {
       document.getElementById('loadingSpinner').style.display = 'none';
       alert('Error: ' + err.message);
+    }
+  });
+
+  document.getElementById('saveDraftBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const btn = e.target;
+    const status = document.getElementById('saveDraftStatus');
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    status.textContent = '';
+    status.style.color = '';
+
+    try {
+      const res = await fetch('/opportunities/<%= opp.id %>/draft-proposal-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft: document.getElementById('draftText').value })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save the draft.');
+
+      status.style.color = 'var(--success, #166534)';
+      status.textContent = '✓ Saved to the info@legacypnp.ltd Drafts folder, with the response attached as a Word doc.';
+    } catch (err) {
+      status.style.color = 'var(--danger, #c53030)';
+      status.textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
     }
   });
 

@@ -6,7 +6,7 @@ const { createImapClient } = require('./imapClient');
 // folder with the \Draft flag — so it shows up as an actual draft in
 // whatever mail client points at IMAP_USERNAME (info@legacypnp.ltd), not
 // just a pre-filled compose URL that needs the browser and Gmail open.
-async function saveDraftEmail({ to, subject, body }) {
+async function saveDraftEmail({ to, subject, body, attachments }) {
   if (!process.env.IMAP_USERNAME || !process.env.IMAP_PASSWORD) {
     throw new Error('IMAP_USERNAME / IMAP_PASSWORD not configured — cannot save to the mailbox.');
   }
@@ -15,7 +15,8 @@ async function saveDraftEmail({ to, subject, body }) {
     from: process.env.IMAP_USERNAME,
     to: to || undefined,
     subject: subject || '(no subject)',
-    text: body || ''
+    text: body || '',
+    attachments: attachments || undefined
   });
   const raw = await new Promise((resolve, reject) => {
     composer.compile().build((err, message) => (err ? reject(err) : resolve(message)));
