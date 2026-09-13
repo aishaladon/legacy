@@ -1,0 +1,36 @@
+{
+  "name": "legacy-bd-workspace",
+  "version": "1.0.0",
+  "description": "Legacy P&P Business Development Workspace",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "init": "node init_db.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.3",
+    "archiver": "^7.0.1",
+    "bcryptjs": "^2.4.3",
+    "docx": "^8.5.0",
+    "connect-flash": "^0.1.1",
+    "csv-parse": "^7.0.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-mysql-session": "^3.0.3",
+    "express-session": "^1.18.0",
+    "imapflow": "^1.0.162",
+    "mailparser": "^3.7.1",
+    "mammoth": "^1.8.0",
+    "multer": "^2.2.0",
+    "mysql2": "^3.9.7",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^6.9.14",
+    "pdf-parse": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

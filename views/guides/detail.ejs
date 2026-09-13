@@ -1,0 +1,15 @@
+<div class="page-header">
+  <h2><%= guide.title %></h2>
+  <div class="page-actions">
+    <span class="badge"><%= guide.opportunity_type %></span>
+    <% if (guide.is_template) { %><span class="badge badge--template">Template</span><% } %>
+    <a href="/guides/<%= guide.id %>/edit" class="btn btn-secondary">Edit</a>
+    <form action="/guides/<%= guide.id %>/delete" method="POST" style="display:inline" onsubmit="return confirm('Delete this guide?')">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<section class="card">
+  <div class="prose guide-content"><%= guide.content %></div>
+</section>

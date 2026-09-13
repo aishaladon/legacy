@@ -1,0 +1,11 @@
+# Legacy GovCon — optional OS-level cron jobs
+#
+# NOTE: Daily SAM.gov / Grants.gov automation does NOT need a crontab entry —
+# it already runs inside the running Node.js app via node-cron
+# (see services/scheduler.js), scheduled for 7:00 AM server time.
+# This file is only for extra jobs the app itself doesn't do, like backups.
+#
+# Install with: crontab -e
+
+# ── Database backup — 2:00 AM daily ──────────────────────────────────────────
+0 2 * * * mysqldump -u DB_USER -pDB_PASSWORD DB_NAME > /path/to/backups/legacy-govcon-$(date +\%Y\%m\%d).sql

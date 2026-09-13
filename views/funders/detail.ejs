@@ -1,0 +1,37 @@
+<div class="page-header">
+  <h2><%= funder.name %></h2>
+  <a href="/funders/<%= funder.id %>/edit" class="btn btn-secondary">Edit</a>
+  <form action="/funders/<%= funder.id %>/delete" method="POST" onsubmit="return confirm('Delete this funder? This cannot be undone.')" style="display:inline;">
+    <button type="submit" class="btn btn-danger">Delete</button>
+  </form>
+</div>
+
+<section class="card">
+  <dl class="detail-list">
+    <dt>Type</dt><dd><span class="badge"><%= funder.funder_type %></span></dd>
+    <dt>Website</dt><dd><% if (funder.website) { %><a href="<%= funder.website %>" target="_blank" rel="noopener"><%= funder.website %></a><% } else { %>—<% } %></dd>
+    <dt>Eligible Institutions</dt><dd><%= funder.eligible_institution_types || '—' %></dd>
+  </dl>
+  <% if (funder.notes) { %><div class="prose" style="margin-top:1rem"><%= funder.notes %></div><% } %>
+</section>
+
+<% if (grants.length > 0) { %>
+<section class="card" style="margin-top:1rem">
+  <div class="card-header"><h3>Grant Opportunities</h3></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Title</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <% grants.forEach(function(g) { %>
+          <tr>
+            <td><a href="/opportunities/<%= g.id %>"><%= g.title %></a></td>
+            <td><%= g.due_date ? new Date(g.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+            <td><%= g.amount_max ? '$' + Number(g.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+            <td><span class="badge badge--<%= g.status.toLowerCase().replace(' ','-') %>"><%= g.status %></span></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } %>

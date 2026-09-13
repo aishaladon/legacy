@@ -1,0 +1,36 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (funder) { %><a href="/funders/<%= funder.id %>" class="btn-link">Cancel</a><% } else { %><a href="/funders" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= funder ? '/funders/' + funder.id + '/edit' : '/funders' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Name <span class="req">*</span></label>
+      <input type="text" name="name" value="<%= funder ? funder.name : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select name="funder_type">
+        <% ['Federal','State','Foundation','Corporate','Other'].forEach(function(t) { %>
+          <option value="<%= t %>" <%= (funder && funder.funder_type === t) ? 'selected' : '' %>><%= t %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Website</label>
+    <input type="url" name="website" value="<%= funder ? (funder.website || '') : '' %>">
+  </div>
+  <div class="form-group">
+    <label>Eligible Institution Types</label>
+    <input type="text" name="eligible_institution_types" value="<%= funder ? (funder.eligible_institution_types || '') : '' %>" placeholder="Museums, Libraries, Universities…">
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="4"><%= funder ? (funder.notes || '') : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

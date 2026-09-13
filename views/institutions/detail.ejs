@@ -1,0 +1,224 @@
+<div class="page-header">
+  <h2><%= institution.name %></h2>
+  <div class="page-header-actions">
+    <a href="/institutions/<%= institution.id %>/draft-outreach" class="btn btn-secondary">✉️ Draft Outreach Email</a>
+    <a href="/institutions/<%= institution.id %>/edit" class="btn btn-secondary">Edit</a>
+    <form action="/institutions/<%= institution.id %>/delete" method="POST" onsubmit="return confirm('Delete this institution? This cannot be undone.')" style="display:inline;">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <section class="card">
+    <h3>Overview</h3>
+    <dl class="detail-list">
+      <dt>Status</dt><dd><span class="inst-status inst-status--<%= (institution.relationship_status || 'Target').toLowerCase() %>"><%= institution.relationship_status || 'Target' %></span></dd>
+      <dt>Type</dt><dd><%= institution.institution_type || '—' %></dd>
+      <dt>Address</dt><dd>
+        <% if (institution.address || institution.city || institution.state || institution.zip_code) { %>
+          <% if (institution.address) { %><%= institution.address %><br><% } %>
+          <%= [institution.city, institution.state].filter(Boolean).join(', ') %> <%= institution.zip_code || '' %>
+        <% } else { %>—<% } %>
+      </dd>
+      <dt>Region</dt><dd><%= institution.region || '—' %></dd>
+      <dt>Phone</dt><dd><% if (institution.phone) { %><a href="tel:<%= institution.phone %>"><%= institution.phone %></a><% } else { %>—<% } %></dd>
+      <dt>Website</dt><dd><% if (institution.website) { %><a href="<%= institution.website %>" target="_blank" rel="noopener"><%= institution.website %></a><% } else { %>—<% } %></dd>
+    </dl>
+    <% if (contacts.length > 0) { %>
+      <div class="inst-primary-contact">
+        <strong style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Primary Contact</strong>
+        <div class="inst-contact-name"><%= contacts[0].first_name %> <%= contacts[0].last_name %><% if (contacts[0].title) { %> <span class="inst-contact-title">— <%= contacts[0].title %></span><% } %></div>
+        <div class="inst-contact-details">
+          <% if (contacts[0].email) { %><a href="mailto:<%= contacts[0].email %>"><%= contacts[0].email %></a><% } %>
+          <% if (contacts[0].phone) { %><span><%= contacts[0].phone %></span><% } %>
+        </div>
+      </div>
+    <% } %>
+    <% if (institution.notes) { %>
+      <div style="margin-top:1rem;">
+        <strong style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);">Relationship Notes</strong>
+        <div class="prose" style="margin-top:.4rem"><%= institution.notes %></div>
+      </div>
+    <% } else { %>
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--text-muted);">No relationship notes yet. <a href="/institutions/<%= institution.id %>/edit" class="btn-link">Add notes</a> about your history or next steps.</p>
+    <% } %>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Contacts (<%= contacts.length %>)</h3>
+      <a href="/contacts/new" class="btn-link">+ Add</a>
+    </div>
+    <% if (contacts.length === 0) { %>
+      <p class="empty-state">No contacts linked to this institution.</p>
+    <% } else { %>
+      <ul class="item-list">
+        <% contacts.forEach(function(c) { %>
+          <li class="item-row">
+            <a href="/contacts/<%= c.id %>"><%= c.first_name %> <%= c.last_name %></a>
+            <span class="muted"><%= c.title || '' %></span>
+            <% if (c.email) { %><a href="mailto:<%= c.email %>" class="muted"><%= c.email %></a><% } %>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<!-- Communication log (emails, calls, meetings) -->
+<section class="card" style="margin-top:1rem" id="communications">
+  <div class="card-header">
+    <h3>Communication Log (<%= communications.length %>)</h3>
+  </div>
+
+  <form action="/institutions/<%= institution.id %>/communications" method="POST" class="comm-log-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select name="comm_type">
+          <% commTypes.forEach(function(t) { %><option value="<%= t %>"><%= t %></option><% }); %>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Direction</label>
+        <select name="direction">
+          <option value="Outbound">Outbound</option>
+          <option value="Inbound">Inbound</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="logged_at" value="<%= new Date().toISOString().split('T')[0] %>" required>
+      </div>
+      <% if (contacts.length > 0) { %>
+      <div class="form-group">
+        <label>Contact</label>
+        <select name="contact_id">
+          <option value="">—</option>
+          <% contacts.forEach(function(c) { %><option value="<%= c.id %>"><%= c.first_name %> <%= c.last_name %></option><% }); %>
+        </select>
+      </div>
+      <% } %>
+    </div>
+    <div class="form-group">
+      <label>Subject / Summary</label>
+      <input type="text" name="subject" placeholder="e.g. Intro call re: digitization project">
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea name="notes" rows="2" placeholder="What was discussed, next steps, etc."></textarea>
+    </div>
+    <button type="submit" class="btn btn-secondary btn-sm">Log Communication</button>
+  </form>
+
+  <% if (communications.length === 0) { %>
+    <p class="empty-state">No communications logged yet.</p>
+  <% } else { %>
+    <ul class="comm-log-list">
+      <% communications.forEach(function(c) { %>
+        <li class="comm-log-item">
+          <div class="comm-log-header">
+            <span class="badge badge--<%= c.comm_type.toLowerCase() %>"><%= c.comm_type %></span>
+            <span class="comm-log-direction"><%= c.direction %></span>
+            <span class="comm-log-date"><%= new Date(c.logged_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) %></span>
+            <% if (c.first_name) { %><span class="comm-log-contact">with <%= c.first_name %> <%= c.last_name %></span><% } %>
+            <form action="/institutions/<%= institution.id %>/communications/<%= c.id %>/delete" method="POST" style="display:inline;margin-left:auto;">
+              <button type="submit" class="btn-link btn-link--muted" title="Remove this entry" onclick="return confirm('Remove this communication log entry?')">Remove</button>
+            </form>
+          </div>
+          <% if (c.subject) { %><div class="comm-log-subject"><%= c.subject %></div><% } %>
+          <% if (c.notes) { %><div class="comm-log-notes"><%= c.notes %></div><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>
+
+<!-- Proposals submitted to / for this institution -->
+<section class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>Proposals &amp; Opportunities (<%= opportunities.length %>)</h3>
+    <a href="/opportunities/new" class="btn-link">+ Add</a>
+  </div>
+  <% if (opportunities.length === 0) { %>
+    <p class="empty-state">No proposals or opportunities linked to this institution yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Due</th><th>Amount</th></tr></thead>
+        <tbody>
+          <% opportunities.forEach(function(o) { %>
+            <tr>
+              <td><a href="/opportunities/<%= o.id %>"><%= o.title %></a></td>
+              <td><%= o.opportunity_type === 'Job' ? 'Freelance/Gig' : o.opportunity_type %></td>
+              <td><span class="badge badge--<%= o.status.toLowerCase().replace(/\s+/g,'-') %>"><%= o.status %></span></td>
+              <td><%= o.due_date ? new Date(o.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+              <td>
+                <% if (o.amount_min || o.amount_max) { %>
+                  <% if (o.amount_max) { %>Up to $<%= Number(o.amount_max).toLocaleString('en-US',{maximumFractionDigits:0}) %><% } else { %>$<%= Number(o.amount_min).toLocaleString('en-US',{maximumFractionDigits:0}) %>+<% } %>
+                <% } else { %>—<% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<!-- Active and past contracts / projects with this institution -->
+<section class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>Contracts &amp; Projects (<%= projects.length %>)</h3>
+    <a href="/projects/new" class="btn-link">+ Add</a>
+  </div>
+  <% if (projects.length === 0) { %>
+    <p class="empty-state">No contracts or projects linked to this institution yet.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Period</th><th>Value</th><th>Contract #</th></tr></thead>
+        <tbody>
+          <% projects.forEach(function(p) { %>
+            <tr>
+              <td><a href="/projects/<%= p.id %>"><%= p.title %></a></td>
+              <td><%= p.project_type %></td>
+              <td><span class="badge badge--<%= p.status.toLowerCase() %>"><%= p.status %></span></td>
+              <td>
+                <% if (p.start_date) { %><%= new Date(p.start_date).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %><% } %>
+                <% if (p.start_date && p.end_date) { %> – <% } %>
+                <% if (p.end_date) { %><%= new Date(p.end_date).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) %><% } %>
+                <% if (!p.start_date && !p.end_date) { %>—<% } %>
+              </td>
+              <td><%= p.contract_value ? '$' + Number(p.contract_value).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+              <td><%= p.contract_number || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<% if (awards.length > 0) { %>
+<section class="card" style="margin-top:1rem">
+  <h3>Federal Award History (USASpending)</h3>
+  <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Past federal awards this institution has received — from USASpending research data.</p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Title</th><th>Type</th><th>Amount</th><th>Period</th></tr></thead>
+      <tbody>
+        <% awards.forEach(function(a) { %>
+          <tr>
+            <td><%= a.title %></td>
+            <td><%= a.award_type %></td>
+            <td><%= a.amount ? '$' + Number(a.amount).toLocaleString('en-US',{maximumFractionDigits:0}) : '—' %></td>
+            <td><%= a.period_start ? new Date(a.period_start).toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) : '—' %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } %>

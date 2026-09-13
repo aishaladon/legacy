@@ -1,0 +1,89 @@
+<div class="page-header">
+  <h2>Institutions</h2>
+  <a href="/institutions/new" class="btn btn-primary">+ Add</a>
+</div>
+<p class="page-desc">Your BD network — agencies, primes, foundations, and universities you want to work with or already do. Use relationship status to track where each org is in your pipeline.</p>
+
+<details class="how-to">
+  <summary>How to use Institutions</summary>
+  <div class="how-to-body">
+    <ol>
+      <li><strong>Start with your target list, not just your history.</strong> Add every agency, funder, and prime contractor you want to pursue — even if you've never had a conversation with them. That's what <em>Target</em> status is for.</li>
+      <li>Move orgs through the pipeline as the relationship develops: <strong>Target → Prospect</strong> (you've made contact) <strong>→ Partner</strong> (active teaming or collaboration) <strong>→ Client</strong> (they've awarded you work).</li>
+      <li>Use <strong>Vendor</strong> for subconsultants and suppliers you bring in on your proposals.</li>
+      <li>Link contacts to their institution so every person in your network is one click from their org's profile, awards history, and opportunities.</li>
+      <li>Use <strong>Save as Teaming Partner</strong> on USASpending to quickly add primes that win contracts in your space — they're both competitors and future teaming partners.</li>
+    </ol>
+    <p>The list is sorted by relationship depth: Clients and Partners appear first, Targets last — so your hottest relationships are always at the top.</p>
+  </div>
+</details>
+
+<form class="filter-bar" method="GET" action="/institutions">
+  <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="Search name…" class="filter-input">
+  <select name="status" class="filter-input filter-input--sm">
+    <option value="">All Statuses</option>
+    <% statuses.forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <input type="text" name="state" value="<%= filters.state || '' %>" placeholder="State (e.g. CA)" class="filter-input filter-input--sm">
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/institutions" class="btn-link">Clear</a>
+</form>
+
+<% if (institutions.length === 0) { %>
+  <p class="empty-state">No institutions found. <a href="/institutions/new">Add your first target organization.</a></p>
+<% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Name</th><th>Status</th><th>Type</th><th>City</th><th>State</th><th>Website</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% institutions.forEach(function(i) { %>
+          <tr>
+            <td><a href="/institutions/<%= i.id %>"><%= i.name %></a></td>
+            <td><span class="inst-status inst-status--<%= (i.relationship_status || 'Target').toLowerCase() %>"><%= i.relationship_status || 'Target' %></span></td>
+            <td><%= i.institution_type || '—' %></td>
+            <td><%= i.city || '—' %></td>
+            <td><%= i.state || '—' %></td>
+            <td><% if (i.website) { %><a href="<%= i.website %>" target="_blank" rel="noopener">&#8599;</a><% } else { %>—<% } %></td>
+            <td>
+              <form action="/institutions/<%= i.id %>/delete" method="POST" onsubmit="return confirm('Delete this institution? This cannot be undone.')">
+                <button type="submit" class="btn-link btn-link--danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<section class="card" id="import" style="margin-top:2rem">
+  <h3>Import Institutions from CSV</h3>
+  <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:.75rem;">
+    Upload a .csv file or paste CSV text to bulk-import institutions. Existing institutions (matched by name) are skipped.
+    Required column: <code>name</code>. Optional: <code>institution_type</code>, <code>relationship_status</code>, <code>address</code>, <code>city</code>, <code>state</code>, <code>zip_code</code>, <code>phone</code>, <code>website</code>, <code>notes</code>.
+  </p>
+  <details style="margin-bottom:.85rem;">
+    <summary style="font-size:.85rem;cursor:pointer;color:var(--text-muted);">Show CSV template</summary>
+    <pre style="font-size:.78rem;background:var(--bg-subtle,#f5f5f5);padding:.6rem .85rem;border-radius:4px;margin-top:.4rem;overflow-x:auto;">name,institution_type,relationship_status,address,city,state,zip_code,phone,website,notes
+National Archives,Federal Agency,Target,700 Pennsylvania Ave NW,Washington,DC,20408,202-555-0100,https://archives.gov,Main federal archive
+Example Museum,Museum,Prospect,123 Main St,Chicago,IL,60601,,https://example.org,University affiliated</pre>
+  </details>
+  <form action="/institutions/import-csv" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="csv_file" style="font-weight:600;">Upload CSV file</label>
+      <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv,text/plain" style="display:block;margin-top:.35rem;">
+      <span style="font-size:.8rem;color:var(--text-muted);">Max 5 MB. Accepted: .csv or .txt</span>
+    </div>
+    <div style="text-align:center;margin:.6rem 0;font-size:.85rem;color:var(--text-muted);">— or paste CSV text below —</div>
+    <div class="form-group">
+      <textarea name="csv_data" rows="8" placeholder="Paste CSV here (first row must be column headers)…" style="width:100%;font-family:monospace;font-size:.82rem;resize:vertical;"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Import CSV</button>
+    </div>
+  </form>
+</section>

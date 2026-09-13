@@ -1,0 +1,138 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (contact) { %><a href="/contacts/<%= contact.id %>" class="btn-link">Cancel</a><% } else { %><a href="/contacts" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= contact ? '/contacts/' + contact.id + '/edit' : '/contacts' %>" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group">
+      <label>First Name <span class="req">*</span></label>
+      <input type="text" name="first_name" value="<%= contact ? contact.first_name : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Last Name <span class="req">*</span></label>
+      <input type="text" name="last_name" value="<%= contact ? contact.last_name : '' %>" required>
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Title / Role</label>
+      <input type="text" name="title" value="<%= contact ? (contact.title || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Institution <span class="req">*</span></label>
+      <div style="display:flex;gap:.5rem;align-items:flex-start;">
+        <select name="institution_id" id="institutionSelect" required style="flex:1;">
+          <option value="" disabled <%= (contact && contact.institution_id) || (!contact && typeof presetInstitutionId !== 'undefined' && presetInstitutionId) ? '' : 'selected' %>>Select an institution&hellip;</option>
+          <% institutions.forEach(function(i) { %>
+            <option value="<%= i.id %>" <%= (contact && contact.institution_id == i.id) || (!contact && typeof presetInstitutionId !== 'undefined' && presetInstitutionId == i.id) ? 'selected' : '' %>><%= i.name %></option>
+          <% }); %>
+        </select>
+        <button type="button" id="newInstitutionToggle" class="btn btn-secondary btn-sm" style="flex-shrink:0;">+ New</button>
+      </div>
+      <div id="newInstitutionBox" style="display:none;margin-top:.6rem;padding:.75rem;background:var(--paper-surface,#eae9e9);border-radius:var(--radius,2px);">
+        <div class="form-row" style="margin-bottom:.5rem;">
+          <div class="form-group form-group--wide">
+            <label>New Institution Name</label>
+            <input type="text" id="newInstitutionName" placeholder="e.g. Smithsonian Institution">
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <input type="text" id="newInstitutionType" placeholder="Museum, Library…">
+          </div>
+        </div>
+        <button type="button" id="newInstitutionSave" class="btn btn-primary btn-sm">Add Institution</button>
+        <button type="button" id="newInstitutionCancel" class="btn-link" style="margin-left:.5rem;">Cancel</button>
+        <span id="newInstitutionError" class="text-error" style="display:none;margin-left:.5rem;font-size:.8rem;"></span>
+      </div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" name="email" value="<%= contact ? (contact.email || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" name="phone" value="<%= contact ? (contact.phone || '') : '' %>">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>LinkedIn</label>
+      <input type="url" name="linkedin" value="<%= contact ? (contact.linkedin || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="4"><%= contact ? (contact.notes || '') : '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+
+<script>
+(function() {
+  var toggle = document.getElementById('newInstitutionToggle');
+  var box = document.getElementById('newInstitutionBox');
+  var nameInput = document.getElementById('newInstitutionName');
+  var typeInput = document.getElementById('newInstitutionType');
+  var saveBtn = document.getElementById('newInstitutionSave');
+  var cancelBtn = document.getElementById('newInstitutionCancel');
+  var errEl = document.getElementById('newInstitutionError');
+  var select = document.getElementById('institutionSelect');
+
+  toggle.addEventListener('click', function() {
+    box.style.display = 'block';
+    toggle.style.display = 'none';
+    nameInput.focus();
+  });
+  cancelBtn.addEventListener('click', function() {
+    box.style.display = 'none';
+    toggle.style.display = '';
+    nameInput.value = '';
+    typeInput.value = '';
+    errEl.style.display = 'none';
+  });
+
+  function addInstitution() {
+    var name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+    errEl.style.display = 'none';
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Adding…';
+
+    fetch('/institutions/quick-create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      credentials: 'same-origin',
+      body: 'name=' + encodeURIComponent(name) + '&institution_type=' + encodeURIComponent(typeInput.value.trim())
+    })
+      .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+      .then(function(res) {
+        if (!res.ok) throw new Error(res.data.error || 'Could not add institution.');
+        var opt = document.createElement('option');
+        opt.value = res.data.id;
+        opt.textContent = res.data.name;
+        opt.selected = true;
+        select.appendChild(opt);
+        box.style.display = 'none';
+        toggle.style.display = '';
+        nameInput.value = '';
+        typeInput.value = '';
+      })
+      .catch(function(err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'inline';
+      })
+      .finally(function() {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Add Institution';
+      });
+  }
+
+  saveBtn.addEventListener('click', addInstitution);
+  nameInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); addInstitution(); }
+  });
+})();
+</script>

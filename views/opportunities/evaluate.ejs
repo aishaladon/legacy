@@ -1,0 +1,229 @@
+<div class="page-header">
+  <h2>AI Opportunity Evaluator</h2>
+  <a href="/opportunities" class="btn btn-secondary">← Back</a>
+</div>
+<p class="page-desc">Paste opportunity details or speak to text. Claude will evaluate fit for your business (1-10 score), identify opportunity type, and suggest whether to add to your system.</p>
+
+<section class="card">
+  <h3>Paste Details or Speak</h3>
+  <div class="form-group">
+    <label for="oppText">Opportunity Details</label>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.5rem;">Paste contract details, grant announcement, opportunity URL content, or use the mic button to speak. Include title, agency/funder, description, deadline, funding amount if available.</p>
+    <textarea id="oppText" placeholder="Paste opportunity details here… or use the mic button below…" style="width:100%;font-family:monospace;font-size:.82rem;resize:vertical;height:200px;"></textarea>
+  </div>
+
+  <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <button id="micBtn" class="btn btn-secondary" title="Click to start recording (requires microphone)">
+      🎤 Speak to Text
+    </button>
+    <span id="micStatus" style="font-size:.85rem;color:var(--text-muted);"></span>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+    <button id="evaluateBtn" class="btn btn-primary">Evaluate with AI</button>
+    <button id="clearBtn" class="btn btn-secondary">Clear</button>
+  </div>
+</section>
+
+<div id="loadingSpinner" style="display:none;text-align:center;margin:2rem 0;">
+  <div style="display:inline-block;border:3px solid var(--bg-subtle);border-top:3px solid var(--text-primary);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;"></div>
+  <p style="margin-top:.5rem;color:var(--text-muted);">Claude is evaluating…</p>
+</div>
+
+<div id="results" style="display:none;">
+  <section class="card" style="margin-top:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3>Evaluation Results</h3>
+      <button onclick="document.getElementById('results').style.display='none'" class="btn-link">Close</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+      <div style="padding:1rem;background:var(--bg-subtle,#f5f5f5);border-radius:4px;">
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Fit Score</div>
+        <div style="font-size:2.5rem;font-weight:bold;color:var(--text-primary);"><span id="fitScore">—</span>/10</div>
+      </div>
+      <div style="padding:1rem;background:var(--bg-subtle,#f5f5f5);border-radius:4px;">
+        <div style="font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Type</div>
+        <div style="font-size:1.2rem;font-weight:600;color:var(--text-primary);"><span id="oppType">—</span></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="margin-bottom:.5rem;">Why This Score?</h4>
+      <p id="reasoning" style="color:var(--text-muted);line-height:1.6;margin:0;"></p>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="margin-bottom:.5rem;">Tags</h4>
+      <div id="tags" style="display:flex;flex-wrap:wrap;gap:.5rem;"></div>
+    </div>
+
+    <div style="padding:1rem;background:var(--bg-subtle,#f5f5f5);border-radius:4px;margin-bottom:1.5rem;border-left:4px solid #007bff;">
+      <strong>Claude's Recommendation:</strong> <span id="recommendation" style="font-weight:600;"></span>
+    </div>
+
+    <% if (institutions && institutions.length) { %>
+      <div style="margin-bottom:1rem;">
+        <label for="prefillInstitution" style="font-weight:600;font-size:.9rem;">Link to Institution (optional)</label>
+        <select id="prefillInstitution" style="width:100%;margin-top:.25rem;">
+          <option value="">— No institution —</option>
+          <% institutions.forEach(i => { %>
+            <option value="<%= i.id %>"><%= i.name %></option>
+          <% }); %>
+        </select>
+      </div>
+    <% } %>
+
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <button id="addBtn" class="btn btn-primary">Add to Opportunities</button>
+      <button onclick="document.getElementById('results').style.display='none'" class="btn btn-secondary">Back to Evaluation</button>
+    </div>
+  </section>
+</div>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let isListening = false;
+
+  if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      isListening = true;
+      document.getElementById('micBtn').textContent = '◼ Stop Recording';
+      document.getElementById('micStatus').textContent = 'Listening…';
+      document.getElementById('micStatus').style.color = '#28a745';
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      document.getElementById('micBtn').textContent = '🎤 Speak to Text';
+      document.getElementById('micStatus').textContent = '';
+    };
+
+    recognition.onerror = (e) => {
+      document.getElementById('micStatus').textContent = '❌ ' + (e.error === 'no-speech' ? 'No speech detected' : 'Error: ' + e.error);
+      document.getElementById('micStatus').style.color = '#dc3545';
+      isListening = false;
+    };
+
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) transcript += e.results[i][0].transcript + ' ';
+      }
+      if (transcript) {
+        document.getElementById('oppText').value += transcript;
+        document.getElementById('micStatus').textContent = '✓ Transcript added';
+        document.getElementById('micStatus').style.color = '#28a745';
+      }
+    };
+
+    document.getElementById('micBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+  } else {
+    document.getElementById('micBtn').disabled = true;
+    document.getElementById('micBtn').title = 'Speech Recognition not supported in this browser';
+    document.getElementById('micStatus').textContent = 'Not available in this browser';
+    document.getElementById('micStatus').style.color = '#6c757d';
+  }
+
+  document.getElementById('clearBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('oppText').value = '';
+    document.getElementById('results').style.display = 'none';
+  });
+
+  document.getElementById('evaluateBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const text = document.getElementById('oppText').value.trim();
+    if (!text) {
+      alert('Please enter or paste opportunity details first.');
+      return;
+    }
+
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    try {
+      const res = await fetch('/opportunities/evaluate-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Evaluation failed');
+      }
+
+      const data = await res.json();
+      document.getElementById('fitScore').textContent = data.fit_score;
+      document.getElementById('oppType').textContent = data.opportunity_type || 'Unknown';
+      document.getElementById('reasoning').textContent = data.reasoning;
+      document.getElementById('recommendation').textContent = data.recommendation;
+
+      const tagsDiv = document.getElementById('tags');
+      tagsDiv.innerHTML = '';
+      if (data.tags && Array.isArray(data.tags)) {
+        data.tags.forEach(tag => {
+          const badge = document.createElement('span');
+          badge.className = 'badge';
+          badge.textContent = tag;
+          tagsDiv.appendChild(badge);
+        });
+      }
+
+      window.lastEvaluation = data;
+      document.getElementById('loadingSpinner').style.display = 'none';
+      document.getElementById('results').style.display = 'block';
+    } catch (err) {
+      document.getElementById('loadingSpinner').style.display = 'none';
+      alert('Error: ' + err.message);
+    }
+  });
+
+  document.getElementById('addBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!window.lastEvaluation) return;
+
+    const data = window.lastEvaluation;
+    const institutionId = document.getElementById('prefillInstitution')?.value || null;
+    const text = document.getElementById('oppText').value;
+
+    try {
+      const res = await fetch('/opportunities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          title: data.opportunity_type === 'Grant' ? 'Grant: ' + text.substring(0, 50) : 'Contract: ' + text.substring(0, 50),
+          opportunity_type: data.opportunity_type || 'Contract',
+          description: text.substring(0, 500),
+          region: data.region || '',
+          status: 'New',
+          institution_id: institutionId || ''
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to add opportunity');
+      window.location.href = '/opportunities';
+    } catch (err) {
+      alert('Error adding opportunity: ' + err.message);
+    }
+  });
+</script>

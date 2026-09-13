@@ -1,0 +1,99 @@
+<div class="page-header">
+  <h2><%= title %></h2>
+  <% if (institution) { %><a href="/institutions/<%= institution.id %>" class="btn-link">Cancel</a><% } else { %><a href="/institutions" class="btn-link">Cancel</a><% } %>
+</div>
+
+<form action="<%= institution ? '/institutions/' + institution.id + '/edit' : '/institutions' %>" method="POST" class="form-card">
+
+  <h4 class="form-section-title">Organization</h4>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Name <span class="req">*</span></label>
+      <input type="text" name="name" value="<%= institution ? institution.name : '' %>" required>
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <input type="text" name="institution_type" value="<%= institution ? (institution.institution_type || '') : '' %>" placeholder="Museum, Library, Federal Agency…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Relationship Status</label>
+      <select name="relationship_status">
+        <% statuses.forEach(function(s) { %>
+          <option value="<%= s %>" <%= (institution ? institution.relationship_status : 'Target') === s ? 'selected' : '' %>><%= s %></option>
+        <% }); %>
+      </select>
+      <small class="form-hint">Target = want to pursue &nbsp;|&nbsp; Prospect = in contact &nbsp;|&nbsp; Partner = active teaming &nbsp;|&nbsp; Client = awarded you work</small>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Street Address</label>
+      <input type="text" name="address" value="<%= institution ? (institution.address || '') : '' %>" placeholder="123 Main St">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>City</label>
+      <input type="text" name="city" value="<%= institution ? (institution.city || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>State</label>
+      <input type="text" name="state" value="<%= institution ? (institution.state || '') : '' %>" placeholder="CA">
+    </div>
+    <div class="form-group">
+      <label>Zip</label>
+      <input type="text" name="zip_code" value="<%= institution ? (institution.zip_code || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Region</label>
+      <input type="text" name="region" value="<%= institution ? (institution.region || '') : '' %>" placeholder="California, Northeast…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" name="phone" value="<%= institution ? (institution.phone || '') : '' %>" placeholder="(555) 000-0000">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Website</label>
+      <input type="url" name="website" value="<%= institution ? (institution.website || '') : '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Relationship Notes</label>
+    <textarea name="notes" rows="3" placeholder="History, context, next steps with this organization…"><%= institution ? (institution.notes || '') : '' %></textarea>
+  </div>
+
+  <h4 class="form-section-title" style="margin-top:1.5rem;">Primary Contact</h4>
+  <p class="form-hint" style="margin-bottom:.75rem;">If you know someone at this organization, add them here. They'll be saved as a Contact linked to this institution automatically.</p>
+  <div class="form-row">
+    <div class="form-group">
+      <label>First Name</label>
+      <input type="text" name="contact_first_name" value="<%= (institution && primaryContact) ? primaryContact.first_name : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Last Name</label>
+      <input type="text" name="contact_last_name" value="<%= (institution && primaryContact) ? primaryContact.last_name : '' %>">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Title / Role</label>
+      <input type="text" name="contact_title" value="<%= (institution && primaryContact) ? (primaryContact.title || '') : '' %>" placeholder="Executive Director, Grants Manager…">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Email</label>
+      <input type="email" name="contact_email" value="<%= (institution && primaryContact) ? (primaryContact.email || '') : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" name="contact_phone" value="<%= (institution && primaryContact) ? (primaryContact.phone || '') : '' %>" placeholder="(555) 000-0000">
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

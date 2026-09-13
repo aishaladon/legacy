@@ -1,0 +1,144 @@
+<div class="page-header">
+  <h2>Grants.gov Search</h2>
+</div>
+<p class="page-desc">Search open federal grant opportunities directly from Grants.gov — no account needed. Save any opportunity to your grants list with one click.</p>
+
+<details class="how-to">
+  <summary>How to use Grants.gov Search</summary>
+  <div class="how-to-body">
+    <ol>
+      <li>Search by <strong>keyword</strong> (e.g. "historic preservation", "cultural heritage", "museum") or leave keyword empty and filter by eligibility or status.</li>
+      <li><strong>Status: Posted</strong> means the grant is currently open and accepting applications. <strong>Forecasted</strong> means it's coming soon — watch it before it opens.</li>
+      <li>Check the <strong>Eligibility</strong> filter to narrow to grants your organization can actually apply for. Most preservation-related grants are open to nonprofits (501c3) or government entities.</li>
+      <li>Click <strong>Save as Grant</strong> to add to your Grants list — the funder (agency), CFDA number, award range, and deadline are all imported automatically.</li>
+      <li>Click <strong>View on Grants.gov</strong> to read the full Notice of Funding Opportunity (NOFO), required attachments, and eligibility rules.</li>
+    </ol>
+    <p>CFDA numbers (now called Assistance Listings) identify specific grant programs. If you know a program you like, search by its CFDA number to find new funding cycles.</p>
+  </div>
+</details>
+
+<form class="sam-search-form" method="GET" action="/grants-search">
+  <div class="sam-search-row">
+    <div class="form-group sam-search-wide">
+      <label>Keywords</label>
+      <input type="text" name="q" value="<%= filters.q %>" placeholder="e.g. historic preservation, cultural heritage, archival">
+    </div>
+    <div class="form-group">
+      <label>CFDA / Listing #</label>
+      <input type="text" name="cfda" value="<%= filters.cfda %>" placeholder="e.g. 45.024" style="width:8rem;">
+    </div>
+  </div>
+  <div class="sam-search-row">
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <option value="posted,forecasted" <%= filters.status === 'posted,forecasted' ? 'selected' : '' %>>Open &amp; Forecasted</option>
+        <option value="posted"            <%= filters.status === 'posted'            ? 'selected' : '' %>>Open Only</option>
+        <option value="forecasted"        <%= filters.status === 'forecasted'        ? 'selected' : '' %>>Forecasted Only</option>
+        <option value="closed,archived"   <%= filters.status === 'closed,archived'   ? 'selected' : '' %>>Closed / Archived</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Eligibility</label>
+      <select name="eligibility">
+        <option value="">Any Eligibility</option>
+        <% Object.entries(eligibilities).forEach(function([code, label]) { %>
+          <option value="<%= code %>" <%= filters.eligibility === code ? 'selected' : '' %>><%= label %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group sam-search-btn-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary">Search Grants.gov</button>
+      <a href="/grants-search" class="btn-link">Clear</a>
+    </div>
+  </div>
+</form>
+
+<% if (error) { %>
+  <div class="inbox-error"><strong>Grants.gov API error.</strong><br><%= error %><br><small>Grants.gov may be temporarily unavailable. Try again in a few minutes.</small></div>
+<% } else if (searched && results !== null) { %>
+
+  <% if (results.length === 0) { %>
+    <p class="empty-state">No grants found. Try broader keywords or change the status filter to include forecasted opportunities.</p>
+  <% } else { %>
+
+    <div class="sam-results-header">
+      <span><strong><%= total.toLocaleString() %></strong> grants found — showing page <%= page %></span>
+      <div class="sam-pagination">
+        <% if (page > 1) { %>
+          <a href="/grants-search?q=<%= encodeURIComponent(filters.q) %>&cfda=<%= filters.cfda %>&eligibility=<%= filters.eligibility %>&status=<%= encodeURIComponent(filters.status) %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">&#8592; Prev</a>
+        <% } %>
+        <% if (total > page * rows) { %>
+          <a href="/grants-search?q=<%= encodeURIComponent(filters.q) %>&cfda=<%= filters.cfda %>&eligibility=<%= filters.eligibility %>&status=<%= encodeURIComponent(filters.status) %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">Next &#8594;</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="sam-results">
+      <% results.forEach(function(g) { %>
+        <div class="sam-card">
+          <div class="sam-card-title">
+            <a href="<%= g.grantsUrl %>" target="_blank" rel="noopener"><%= g.title %></a>
+            <% if (g.status === 'forecasted') { %><span class="badge" style="margin-left:.5rem;background:#fefcbf;color:#744210;">Forecasted</span><% } %>
+          </div>
+          <div class="sam-card-meta">
+            <% if (g.agency) { %><span class="sam-meta-item"><strong>Agency:</strong> <%= g.agency %></span><% } %>
+            <% if (g.cfda) { %><span class="sam-meta-item"><strong>CFDA:</strong> <%= g.cfda %></span><% } %>
+            <% if (g.cfdaTitle) { %><span class="sam-meta-item"><em><%= g.cfdaTitle %></em></span><% } %>
+            <% if (g.number) { %><span class="sam-meta-item"><strong>Opp #:</strong> <%= g.number %></span><% } %>
+          </div>
+          <div class="sam-card-meta" style="margin-top:.2rem;">
+            <% if (g.awardMin || g.awardMax) { %>
+              <span class="sam-meta-item grants-award-range">
+                <strong>Award:</strong>
+                <% if (g.awardMin && g.awardMax) { %>
+                  $<%= Number(g.awardMin).toLocaleString('en-US',{maximumFractionDigits:0}) %> – $<%= Number(g.awardMax).toLocaleString('en-US',{maximumFractionDigits:0}) %>
+                <% } else if (g.awardMax) { %>
+                  Up to $<%= Number(g.awardMax).toLocaleString('en-US',{maximumFractionDigits:0}) %>
+                <% } else { %>
+                  From $<%= Number(g.awardMin).toLocaleString('en-US',{maximumFractionDigits:0}) %>
+                <% } %>
+              </span>
+            <% } %>
+          </div>
+          <div class="sam-card-dates">
+            <% if (g.openDate) { %><span>Posted: <%= new Date(g.openDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %></span><% } %>
+            <% if (g.closeDate) { %>
+              <span class="sam-due <%= new Date(g.closeDate) < new Date(Date.now() + 14*86400000) ? 'sam-due--urgent' : '' %>">
+                Deadline: <%= new Date(g.closeDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
+              </span>
+            <% } %>
+          </div>
+          <div class="sam-card-actions">
+            <a href="<%= g.grantsUrl %>" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View on Grants.gov &#8599;</a>
+            <form action="/grants-search/save" method="POST" style="display:inline;">
+              <input type="hidden" name="title" value="<%= g.title %>">
+              <input type="hidden" name="agency" value="<%= g.agency %>">
+              <input type="hidden" name="cfda" value="<%= g.cfda %>">
+              <input type="hidden" name="cfda_title" value="<%= g.cfdaTitle %>">
+              <input type="hidden" name="close_date" value="<%= g.closeDate %>">
+              <input type="hidden" name="open_date" value="<%= g.openDate %>">
+              <input type="hidden" name="award_min" value="<%= g.awardMin || '' %>">
+              <input type="hidden" name="award_max" value="<%= g.awardMax || '' %>">
+              <input type="hidden" name="number" value="<%= g.number %>">
+              <input type="hidden" name="grants_url" value="<%= g.grantsUrl %>">
+              <button type="submit" class="btn btn-primary btn-sm">Save as Grant</button>
+            </form>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <% if (total > page * rows || page > 1) { %>
+    <div class="sam-pagination sam-pagination--bottom">
+      <% if (page > 1) { %>
+        <a href="/grants-search?q=<%= encodeURIComponent(filters.q) %>&cfda=<%= filters.cfda %>&eligibility=<%= filters.eligibility %>&status=<%= encodeURIComponent(filters.status) %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">&#8592; Previous Page</a>
+      <% } %>
+      <% if (total > page * rows) { %>
+        <a href="/grants-search?q=<%= encodeURIComponent(filters.q) %>&cfda=<%= filters.cfda %>&eligibility=<%= filters.eligibility %>&status=<%= encodeURIComponent(filters.status) %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">Next Page &#8594;</a>
+      <% } %>
+    </div>
+    <% } %>
+  <% } %>
+<% } %>

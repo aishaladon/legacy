@@ -1,0 +1,104 @@
+<div class="page-header">
+  <h2>Convert Email to Opportunity</h2>
+  <a href="/email-inbox" class="btn-link">Back to Inbox</a>
+</div>
+
+<% if (isDigest) { %>
+<div class="digest-banner">
+  <span class="digest-banner-icon">&#9632;</span>
+  <div>
+    <strong>This looks like a digest with multiple opportunities.</strong>
+    Want to import them as separate records instead?
+    <% if (digestUrl) { %>
+      <br><a href="<%= digestUrl %>" target="_blank" rel="noopener noreferrer">Open full bid list on source site &#8599;</a>
+    <% } %>
+  </div>
+  <a href="/email-inbox/<%= email.uid %>/parse" class="btn btn-primary btn-sm">Parse &amp; Import All</a>
+</div>
+<% } %>
+
+<div class="email-preview-card">
+  <div class="email-preview-row"><span class="email-lbl">From</span><span><%= email.from %></span></div>
+  <div class="email-preview-row"><span class="email-lbl">Subject</span><span><%= email.subject %></span></div>
+  <div class="email-preview-row"><span class="email-lbl">Date</span><span><%= email.date ? new Date(email.date).toLocaleString('en-US') : '' %></span></div>
+  <div class="email-preview-body"><pre class="email-body-text"><%= email.body %></pre></div>
+</div>
+
+<h3 class="section-heading">Opportunity Details</h3>
+<p class="page-desc">Review and edit the fields below before saving. The email subject and body have been pre-filled — add any additional details you know.</p>
+
+<form action="/email-inbox/<%= email.uid %>/save" method="POST" class="form-card">
+  <div class="form-row">
+    <div class="form-group form-group--wide">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" name="title" value="<%= email.subject %>" required>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Type</label>
+      <select name="opportunity_type">
+        <% ['Government Contract','Grant','Job','Subcontract','Other'].forEach(function(t) { %>
+          <option value="<%= t %>"><%= t === 'Job' ? 'Freelance/Gig' : t %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <% ['New','Reviewing','Pursuing','Submitted','Awarded','Not Pursuing','Closed'].forEach(function(s) { %>
+          <option value="<%= s %>" <%= s === 'New' ? 'selected' : '' %>><%= s %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Region</label>
+      <input type="text" name="region" placeholder="e.g. California, National">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Source</label>
+      <input type="text" name="source" value="<%= email.fromAddress %>">
+    </div>
+    <div class="form-group form-group--wide">
+      <label>Source URL</label>
+      <input type="url" name="source_url" value="<%= sourceUrl || '' %>" placeholder="https://">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Posted Date</label>
+      <input type="date" name="posted_date">
+    </div>
+    <div class="form-group">
+      <label>Due Date</label>
+      <input type="date" name="due_date">
+    </div>
+    <div class="form-group">
+      <label>Amount Min ($)</label>
+      <input type="number" name="amount_min">
+    </div>
+    <div class="form-group">
+      <label>Amount Max ($)</label>
+      <input type="number" name="amount_max">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Description / Notes</label>
+    <textarea name="description" rows="10"><%= email.body %></textarea>
+  </div>
+
+  <div class="form-group form-check">
+    <label><input type="checkbox" name="is_starred" value="1"> Star this opportunity</label>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save Opportunity</button>
+    <a href="/email-inbox" class="btn-link">Cancel</a>
+  </div>
+</form>

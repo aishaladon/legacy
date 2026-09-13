@@ -1,0 +1,9 @@
+INSERT IGNORE INTO funders (name, funder_type, website, eligible_institution_types, notes) VALUES
+('IMLS — Institute of Museum and Library Services', 'Federal',    'https://www.imls.gov',                    'Museums, Libraries, Archives, Tribal institutions',         'Primary federal funder for digitization and preservation projects'),
+('NEH — National Endowment for the Humanities',    'Federal',    'https://www.neh.gov',                     'Universities, Cultural institutions, Nonprofits',           'Preservation and Access, Digital Humanities grants'),
+('California Humanities',                          'State',      'https://calhum.org',                      'California nonprofits and cultural institutions',           'State humanities council — grant cycles vary'),
+('California Arts Council',                        'State',      'https://arts.ca.gov',                     'California nonprofits and arts organizations',              'State arts council — various grant programs'),
+('Mellon Foundation',                              'Foundation', 'https://mellon.org',                      'Universities, Cultural institutions, Libraries, Archives',  'Major funder of archival and cultural heritage work'),
+('Kresge Foundation',                              'Foundation', 'https://kresge.org',                      'Nonprofits, Cultural institutions',                         'Arts and culture program'),
+('CLIR — Council on Library & Information Resources','Foundation','https://www.clir.org',                   'Libraries, Archives, Universities',                         'Digitization and digital preservation grants'),
+('HathiTrust',                                     'Foundation', 'https://www.hathitrust.org',              'Libraries, Universities',                                   'Digital library partnership and grant programs');
